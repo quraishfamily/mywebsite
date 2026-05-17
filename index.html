@@ -729,7 +729,7 @@ function renderNews(news=null){
   if(!news)news=JSON.parse(localStorage.getItem('admin-news')||'null')||defaultNews;
   document.getElementById('newsGrid').innerHTML=news.map(n=>`
     <div class="news-card reveal">
-      <div class="news-img" style="${n.img ? 'background:url('+n.img+') center/cover no-repeat;' : ''}">
+      <div class="news-img" style="${n.img ? 'background-image:url('+n.img+');background-size:cover;background-position:center;' : ''}">
         <span class="news-date">${n.date||'اليوم'}</span>
         ${!n.img ? '<span style=\"font-size:2.5rem;\">'+(n.icon||'📰')+'</span>' : ''}
       </div>
@@ -807,7 +807,7 @@ function renderCourses(courses=null){
   document.getElementById('coursesGrid').innerHTML=courses.map(c=>`
     <div class="course-card reveal">
       ${c.badge?'<div class="c-badge">'+c.badge+'</div>':''}
-      <div class="c-img" style="${c.img ? 'background:url('+c.img+') center/cover no-repeat;background-size:cover;' : ''}">${!c.img ? (c.icon||'📚') : ''}</div>
+      <div class="c-img" style="${c.img ? 'background-image:url('+c.img+');background-size:cover;background-position:center;' : ''}">${!c.img ? (c.icon||'📚') : ''}</div>
       <div class="c-body">
         <h3>${c.title}</h3>
         <p>${c.desc}</p>
