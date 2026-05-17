@@ -254,7 +254,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
         <div class="form-grid">
           <div class="fg"><label>عنوان المقابلة</label><input type="text" id="iv-title" placeholder="مقابلة على قناة MBC"></div>
           <div class="fg"><label>الجهة / القناة</label><input type="text" id="iv-channel" placeholder="MBC"></div>
-          <div class="fg fg-full"><label>Video ID من يوتيوب</label><input type="text" id="iv-vid" placeholder="dQw4w9WgXcQ"></div>
+          <div class="fg fg-full"><label>رابط الفيديو من يوتيوب</label><input type="text" id="iv-vid" placeholder="https://www.youtube.com/watch?v=..."></div>
         </div>
         <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="addInterview()">إضافة</button></div>
       </div>
@@ -276,7 +276,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
         </div>
         <div class="form-grid">
           <div class="fg"><label>عنوان المقطع</label><input type="text" id="wk-title" placeholder="عنوان العمل"></div>
-          <div class="fg"><label>معرف الفيديو (Video ID)</label><input type="text" id="wk-vid" placeholder="dQw4w9WgXcQ"></div>
+          <div class="fg"><label>رابط الفيديو</label><input type="text" id="wk-vid" placeholder="https://www.youtube.com/watch?v=..."></div>
           <div class="fg fg-full"><label>وصف مختصر</label><input type="text" id="wk-desc" placeholder="وصف قصير للعمل"></div>
         </div>
         <div class="form-actions">
@@ -751,7 +751,7 @@ function addWork(){
   const vid=document.getElementById('wk-vid').value.trim();
   if(!title||!vid){toast('أدخل العنوان ومعرف الفيديو',true);return;}
   const works=getWorks();
-  const newWork={id:'w'+Date.now(),title,vid,desc:document.getElementById('wk-desc').value};
+  const newWork={id:'w'+Date.now(),title,vid:extractVideoId(vid),desc:document.getElementById('wk-desc').value};
   works.push(newWork);
   saveWorksData(works);
   saveCollection('works',works).then(()=>toast('تم إضافة العمل! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
@@ -913,6 +913,23 @@ async function previewPodcast(){
   } catch(e){
     document.getElementById('podcast-table').innerHTML='<p style="color:var(--red);">فشل التحميل، تحقق من رابط RSS</p>';
   }
+}
+
+// Extract YouTube video ID from any YouTube URL format
+function extractVideoId(url) {
+  if (!url) return '';
+  // Already an ID (no slashes or dots)
+  if (/^[a-zA-Z0-9_-]{11}$/.test(url.trim())) return url.trim();
+  // Match various YouTube URL formats
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return url.trim();
 }
 // ═══════════════════════════════════════
 // EXPOSE FUNCTIONS TO GLOBAL SCOPE (required for type="module")
