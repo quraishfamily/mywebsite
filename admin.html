@@ -468,30 +468,28 @@ const db = firebase.firestore();
 
 // Helper: save entire array to Firebase collection
 async function saveCollection(colName, items) {
-  // Delete all existing docs first
-  const snap = await getDocs(db.collection( colName));
-  const deletes = snap.docs.map(d => collection(db, colName).doc(d.id).delete());
+  const snap = await db.collection(colName).get();
+  const deletes = snap.docs.map(d => d.ref.delete());
   await Promise.all(deletes);
-  // Add new docs
   let order = 0;
   for (const item of items) {
-    await setDoc(collection(db, colName).doc(item.id || ('item_'+Date.now()+'_'+(order++))), {...item, order: order++});
+    const id = item.id || ('item_' + Date.now() + '_' + order);
+    await db.collection(colName).doc(id).set({...item, order: order++});
   }
 }
 
 async function addToCollection(colName, item) {
-  const snap = await getDocs(db.collection( colName));
+  const snap = await db.collection(colName).get();
   item.order = snap.size;
-  await setDoc(doc(db, colName, item.id || ('item_'+Date.now())), item);
+  await db.collection(colName).doc(item.id || ('item_'+Date.now())).set(item);
 }
 
 async function deleteFromCollection(colName, docId) {
   await db.collection(colName).doc(docId).delete();
 }
 
-async function loadCollection(colName) {
-  const q = query(db.collection( colName), orderBy("order", "asc"));
-  const snap = await q.get();
+async async function loadCollection(colName) {
+  const snap = await db.collection(colName).orderBy("order","asc").get();
   return snap.docs.map(d => ({id: d.id, ...d.data()}));
 }
 
