@@ -748,8 +748,9 @@ function renderPodcast(eps=null){
     document.getElementById('podcastGrid').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ تحميل الحلقات...</p>';
     return;
   }
-  document.getElementById('podcastGrid').innerHTML=eps.slice(0,5).map((e,i)=>`
-    <div class="ep-card reveal" onclick="${e.link && e.link!=='#' ? 'window.open(''+e.link+'','_blank')' : ''}">
+  document.getElementById('podcastGrid').innerHTML=eps.slice(0,5).map((e,i)=>{
+    const clickFn = (e.link && e.link!=='#') ? `onclick="window.open('${e.link}','_blank')"` : '';
+    return `<div class="ep-card reveal" ${clickFn}>
       <div class="ep-num">${String(i+1).padStart(2,'0')}</div>
       <div class="ep-info">
         <h4 style="color:var(--text-muted);font-size:.8rem;font-weight:400;margin-bottom:.2rem;">${e.ep||''}</h4>
@@ -757,7 +758,8 @@ function renderPodcast(eps=null){
         <div class="ep-meta"><span>⏱ ${e.dur||''}</span><span>📅 ${e.date||''}</span></div>
       </div>
       <div class="ep-play">▶</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 }
 
