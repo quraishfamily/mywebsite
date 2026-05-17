@@ -158,6 +158,7 @@ function deleteCmt(nid,i){_call('deleteCmt',[nid,i])}
 function saveRSS(){_call('saveRSS',[])}
 function previewPodcast(){_call('previewPodcast',[])}
 function closeConfirm(){_call('closeConfirm',[])}
+function saveBooks(){_call('saveBooks',[])}
 </script>
 
 </head>
@@ -412,6 +413,14 @@ function closeConfirm(){_call('closeConfirm',[])}
         <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="saveSocials()">حفظ الروابط</button></div>
       </div>
       <div class="card">
+        <div class="card-header"><span class="card-title">روابط شراء الكتب</span></div>
+        <div class="form-grid">
+          <div class="fg"><label>رابط شراء "لا بأس يا صديقي"</label><input type="url" id="book1-url" placeholder="https://..."></div>
+          <div class="fg"><label>رابط شراء "من الخوف إلى المايك"</label><input type="url" id="book2-url" placeholder="https://..."></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="saveBooks()">حفظ روابط الكتب</button></div>
+      </div>
+      <div class="card">
         <div class="card-header"><span class="card-title">تغيير كلمة المرور</span></div>
         <div class="form-grid">
           <div class="fg"><label>كلمة المرور الحالية</label><input type="password" id="pw-old" placeholder="..."></div>
@@ -439,6 +448,7 @@ function closeConfirm(){_call('closeConfirm',[])}
       <div class="fg"><label>التصنيف</label><select id="nm-cat"><option>أخبار</option><option>دورات</option><option>إنجازات</option><option>فعاليات</option></select></div>
       <div class="fg"><label>التاريخ والوقت</label><input type="datetime-local" id="nm-date"></div>
       <div class="fg"><label>الأيقونة (رمز)</label><input type="text" id="nm-icon" placeholder="🎙️"></div>
+      <div class="fg fg-full"><label>رابط صورة الخبر (اختياري)</label><input type="url" id="nm-img" placeholder="https://..."></div>
       <div class="fg fg-full"><label>ملخص الخبر</label><textarea id="nm-body" placeholder="اكتب نص الخبر..."></textarea></div>
     </div>
     <input type="hidden" id="nm-edit-id">
@@ -462,6 +472,7 @@ function closeConfirm(){_call('closeConfirm',[])}
       <div class="fg"><label>عدد الجلسات</label><input type="text" id="cm-sess" placeholder="24 جلسة"></div>
       <div class="fg"><label>المستوى</label><input type="text" id="cm-lvl" placeholder="جميع المستويات"></div>
       <div class="fg"><label>الوسم (badge)</label><input type="text" id="cm-badge" placeholder="جديدة / مميزة"></div>
+      <div class="fg fg-full"><label>رابط صورة الدورة (اختياري)</label><input type="url" id="cm-img" placeholder="https://..."></div>
       <div class="fg fg-full"><label>وصف الدورة</label><textarea id="cm-desc" placeholder="اكتب وصف الدورة..."></textarea></div>
     </div>
     <input type="hidden" id="cm-edit-id">
@@ -667,6 +678,7 @@ function openNewsModal(id=''){
     document.getElementById('nm-title').value=n.title||'';
     document.getElementById('nm-cat').value=n.category||'أخبار';
     document.getElementById('nm-date').value=n.dateRaw||'';
+    document.getElementById('nm-img').value=n.img||'';
     document.getElementById('nm-icon').value=n.icon||'';
     document.getElementById('nm-body').value=n.body||n.excerpt||'';
     document.getElementById('news-modal-title').textContent='تعديل الخبر';
@@ -689,6 +701,7 @@ function saveNews(){
     date:formattedDate,
     dateRaw:rawDate,
     icon:document.getElementById('nm-icon').value,
+    img:document.getElementById('nm-img').value,
     body:document.getElementById('nm-body').value,
   };
   if(!data.title){toast('أدخل عنوان الخبر',true);return;}
@@ -735,6 +748,7 @@ function openCourseModal(id=''){
     document.getElementById('cm-sess').value=c.sess||c.sessions||'';
     document.getElementById('cm-lvl').value=c.lvl||c.level||'';
     document.getElementById('cm-badge').value=c.badge||'';
+    document.getElementById('cm-img').value=c.img||'';
     document.getElementById('cm-desc').value=c.desc||'';
     document.getElementById('course-modal-title').textContent='تعديل الدورة';
   } else {
@@ -750,6 +764,7 @@ function saveCourse(){
     id:id||'c'+Date.now(),
     title:document.getElementById('cm-title').value,
     icon:document.getElementById('cm-icon').value,
+    img:document.getElementById('cm-img').value,
     price:document.getElementById('cm-price').value,
     dur:document.getElementById('cm-dur').value,
     sess:document.getElementById('cm-sess').value,
@@ -858,6 +873,9 @@ function deleteCmt(newsId,idx){
 function loadSettings(){
   const s=JSON.parse(localStorage.getItem('admin-settings')||'{}');
   if(s.name)document.getElementById('s-name').value=s.name;
+  const b=JSON.parse(localStorage.getItem('admin-books')||'{}');
+  if(b.book1)document.getElementById('book1-url').value=b.book1;
+  if(b.book2)document.getElementById('book2-url').value=b.book2;
   if(s.title)document.getElementById('s-title').value=s.title;
   if(s.email)document.getElementById('s-email').value=s.email;
   if(s.phone)document.getElementById('s-phone').value=s.phone;
@@ -1063,6 +1081,17 @@ function deleteInterview(idx){
   });
 }
 
+
+function saveBooks(){
+  const b = {
+    book1: document.getElementById('book1-url').value.trim(),
+    book2: document.getElementById('book2-url').value.trim(),
+  };
+  localStorage.setItem('admin-books', JSON.stringify(b));
+  db.collection('settings').doc('books').set(b)
+    .then(()=>toast('تم حفظ روابط الكتب! ✓'))
+    .catch(()=>toast('حُفظ محلياً فقط'));
+}
 // ═══════════════════════════════════════
 // EXPOSE FUNCTIONS TO GLOBAL SCOPE (required for type="module")
 // ═══════════════════════════════════════
@@ -1090,6 +1119,7 @@ window._real_saveSettings = saveSettings;
 window._real_saveSocials = saveSocials;
 window._real_changePw = changePw;
 window._real_resetAll = resetAll;
+window._real_saveBooks = saveBooks;
 window._real_formatDateAr = formatDateAr;
 window._real_saveRSS = saveRSS;
 window._real_previewPodcast = previewPodcast;
