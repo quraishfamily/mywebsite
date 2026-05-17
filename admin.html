@@ -118,6 +118,14 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   filter: invert(0.8) sepia(1) saturate(2) hue-rotate(5deg);
   cursor:pointer;
 }
+
+.nav-badge{
+  background:var(--gold);color:var(--black);
+  font-size:.65rem;font-weight:700;
+  min-width:18px;height:18px;border-radius:100px;
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:0 5px;margin-right:auto;
+}
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -160,6 +168,8 @@ function previewPodcast(){_call('previewPodcast',[])}
 function closeConfirm(){_call('closeConfirm',[])}
 function saveBooks(){_call('saveBooks',[])}
 function deleteDoc(a,b,c,d){_call('deleteDoc',[a,b,c,d])}
+function markSeen(t){_call('markSeen',[t])}
+function updateBadges(){_call('updateBadges',[])}
 function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
 </script>
 
@@ -193,9 +203,9 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
       <div class="nav-item" onclick="showPage('podcast')"><span class="nav-icon">🎧</span>حلقات صباحو</div>
       <div class="nav-item" onclick="showPage('interviews')"><span class="nav-icon">🎬</span>المقابلات</div>
       <div class="nav-item" onclick="showPage('works')"><span class="nav-icon">🎙️</span>الأعمال الصوتية</div>
-      <div class="nav-item" onclick="showPage('regs')"><span class="nav-icon">📋</span>التسجيلات</div>
-      <div class="nav-item" onclick="showPage('consulting')"><span class="nav-icon">💼</span>طلبات الاستشارة</div>
-      <div class="nav-item" onclick="showPage('messages')"><span class="nav-icon">✉</span>الرسائل</div>
+      <div class="nav-item" onclick="showPage('regs')"><span class="nav-icon">📋</span>التسجيلات<span class="nav-badge" id="badge-regs" style="display:none">0</span></div>
+      <div class="nav-item" onclick="showPage('consulting')"><span class="nav-icon">💼</span>طلبات الاستشارة<span class="nav-badge" id="badge-consulting" style="display:none">0</span></div>
+      <div class="nav-item" onclick="showPage('messages')"><span class="nav-icon">✉</span>الرسائل<span class="nav-badge" id="badge-msgs" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('comments')"><span class="nav-icon">💬</span>التعليقات</div>
       <div class="nav-item" onclick="showPage('settings')"><span class="nav-icon">⚙</span>الإعدادات</div>
     </div>
@@ -638,6 +648,9 @@ function getConsults(){return JSON.parse(localStorage.getItem('admin-consults')|
 function initAdmin(){
   renderPage('dashboard');
   loadSettings();
+  updateBadges();
+  // Refresh badges every 60 seconds
+  setInterval(updateBadges, 60000);
 }
 
 function renderPage(id){
@@ -647,9 +660,9 @@ function renderPage(id){
   else if(id==='podcast'){renderPodcastTable();}  
   else if(id==='interviews')renderInterviewsTable();
   else if(id==='works')renderWorksTable();
-  else if(id==='regs')renderRegsTable();
-  else if(id==='consulting')renderConsultTable();
-  else if(id==='messages')renderMsgsTable();
+  else if(id==='regs'){renderRegsTable();markSeen('regs');}
+  else if(id==='consulting'){renderConsultTable();markSeen('consulting');}
+  else if(id==='messages'){renderMsgsTable();markSeen('messages');}
   else if(id==='comments')renderCommentsTable();
 }
 
@@ -1219,6 +1232,51 @@ function deleteDoc(colName, docId, tableId, reloadFn){
       .catch(()=>toast('فشل الحذف', true));
   });
 }
+
+// ═══════════════════════════════════════
+// NOTIFICATION BADGES
+// ═══════════════════════════════════════
+function updateBadges(){
+  const lastSeen = {
+    regs: parseInt(localStorage.getItem('seen-regs')||'0'),
+    consulting: parseInt(localStorage.getItem('seen-consulting')||'0'),
+    msgs: parseInt(localStorage.getItem('seen-msgs')||'0'),
+  };
+
+  db.collection('registrations').get().then(snap=>{
+    const count = snap.size;
+    const unseen = Math.max(0, count - lastSeen.regs);
+    const badge = document.getElementById('badge-regs');
+    if(badge){ badge.textContent=unseen; badge.style.display=unseen>0?'inline-flex':'none'; }
+  }).catch(()=>{});
+
+  db.collection('consulting').get().then(snap=>{
+    const count = snap.size;
+    const unseen = Math.max(0, count - lastSeen.consulting);
+    const badge = document.getElementById('badge-consulting');
+    if(badge){ badge.textContent=unseen; badge.style.display=unseen>0?'inline-flex':'none'; }
+  }).catch(()=>{});
+
+  db.collection('messages').get().then(snap=>{
+    const count = snap.size;
+    const unseen = Math.max(0, count - lastSeen.msgs);
+    const badge = document.getElementById('badge-msgs');
+    if(badge){ badge.textContent=unseen; badge.style.display=unseen>0?'inline-flex':'none'; }
+  }).catch(()=>{});
+}
+
+// Mark as seen when user opens the page
+function markSeen(type){
+  const colMap = {regs:'registrations', consulting:'consulting', messages:'messages'};
+  const col = colMap[type];
+  if(!col) return;
+  db.collection(col).get().then(snap=>{
+    const key = type==='messages'?'seen-msgs':'seen-'+type;
+    localStorage.setItem(key, snap.size);
+    const badge = document.getElementById('badge-'+(type==='messages'?'msgs':type));
+    if(badge){ badge.style.display='none'; }
+  }).catch(()=>{});
+}
 // ═══════════════════════════════════════
 // EXPOSE FUNCTIONS TO GLOBAL SCOPE (required for type="module")
 // ═══════════════════════════════════════
@@ -1248,6 +1306,8 @@ window._real_changePw = changePw;
 window._real_resetAll = resetAll;
 window._real_saveBooks = saveBooks;
 window._real_deleteDoc = deleteDoc;
+window._real_markSeen = markSeen;
+window._real_updateBadges = updateBadges;
 window._real_handleImageUpload = handleImageUpload;
 window._real_formatDateAr = formatDateAr;
 window._real_saveRSS = saveRSS;
