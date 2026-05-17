@@ -804,6 +804,27 @@ function renderWorks(works=null){
 
 function renderCourses(courses=null){
   if(!courses)courses=JSON.parse(localStorage.getItem('admin-courses')||'null')||defaultCourses;
+  if(!courses || courses.length===0){
+    document.getElementById('coursesGrid').innerHTML=`
+      <div style="grid-column:1/-1;text-align:center;padding:4rem 2rem;">
+        <div style="font-size:3rem;margin-bottom:1rem;">🎓</div>
+        <h3 style="font-family:'Cairo',sans-serif;font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:.8rem;">لا توجد دورات حالياً</h3>
+        <p style="color:var(--text-muted);font-size:.9rem;line-height:1.8;max-width:400px;margin:0 auto 1.5rem;">نعمل على تجهيز دورات تدريبية متميزة لكم. تابعونا على وسائل التواصل الاجتماعي لتكونوا أول من يعلم.</p>
+        <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;">
+          <a id="empty-tw" href="#" target="_blank" class="btn btn-outline" style="font-size:.82rem;padding:.5rem 1.2rem;">تويتر</a>
+          <a id="empty-ig" href="#" target="_blank" class="btn btn-outline" style="font-size:.82rem;padding:.5rem 1.2rem;">انستقرام</a>
+        </div>
+      </div>`;
+    // Update social links if available
+    db.collection('settings').doc('socials').get().then(snap=>{
+      if(snap.exists){
+        const sc=snap.data();
+        if(sc.tw){const el=document.getElementById('empty-tw');if(el)el.href=sc.tw;}
+        if(sc.ig){const el=document.getElementById('empty-ig');if(el)el.href=sc.ig;}
+      }
+    }).catch(()=>{});
+    return;
+  }
   document.getElementById('coursesGrid').innerHTML=courses.map(c=>`
     <div class="course-card reveal">
       ${c.badge?'<div class="c-badge">'+c.badge+'</div>':''}
