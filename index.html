@@ -222,6 +222,8 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
   .yt-input{width:100%;}
 }
 </style>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <div class="cursor" id="cursor"></div>
@@ -543,13 +545,12 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
   </div>
 </div>
 
-<script type="module">
+<script>
 
 // ═══════════════════════════════════════
 // FIREBASE
 // ═══════════════════════════════════════
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs, getDoc, doc, onSnapshot, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+// Firebase SDK loaded via <head> scripts
 
 const firebaseConfig = {
   apiKey: "AIzaSyBCheHz_5vWYWJdnTpaYstOVKUgvR5tCPQ",
@@ -560,16 +561,15 @@ const firebaseConfig = {
   appId: "1:777596990140:web:8f336a1f2336a450a416b9"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 // ═══════════════════════════════════════
 // LOAD FROM FIREBASE (with localStorage fallback)
 // ═══════════════════════════════════════
 async function loadFromFirebase(collectionName, fallback, renderFn) {
   try {
-    const q = query(collection(db, collectionName), orderBy("order", "asc"));
-    onSnapshot(q, (snapshot) => {
+    db.collection(collectionName).orderBy("order","asc").onSnapshot((snapshot) => {
       if (!snapshot.empty) {
         const data = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
         renderFn(data);
@@ -836,30 +836,23 @@ function submitForm(e,t){e.preventDefault();closeModal(t);toast(t==='course'?'ت
 // ═══════════════════════════════════════
 async function loadSettings() {
   try {
-    // Load main settings
-    const settingsSnap = await getDoc(doc(db, 'settings', 'main'));
-    if (settingsSnap.exists()) {
+    const settingsSnap = await db.collection('settings').doc('main').get();
+    if (settingsSnap.exists) {
       const s = settingsSnap.data();
       if (s.email) document.getElementById('site-email').textContent = s.email;
       if (s.phone) document.getElementById('site-phone').textContent = s.phone;
       if (s.price) document.getElementById('site-price').textContent = s.price;
     }
-
-    // Load socials
-    const socialsSnap = await getDoc(doc(db, 'settings', 'socials'));
-    if (socialsSnap.exists()) {
+    const socialsSnap = await db.collection('settings').doc('socials').get();
+    if (socialsSnap.exists) {
       const sc = socialsSnap.data();
-      const map = {tw:'sc-tw', ig:'sc-ig', yt:'sc-yt', sn:'sc-sn'};
-      const map2 = {tw:'ct-tw', ig:'ct-ig', yt:'ct-yt', sn:'ct-sn'};
-      const map3 = {tw:'ft-tw', ig:'ft-ig', yt:'ft-yt', sn:'ft-sn'};
       ['tw','ig','yt','sn'].forEach(k => {
         const url = sc[k];
-        if (url) {
-          [map[k], map2[k], map3[k]].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.href = url;
-          });
-        }
+        if (!url) return;
+        ['sc-'+k, 'ct-'+k, 'ft-'+k].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.href = url;
+        });
       });
     }
   } catch(e) {
