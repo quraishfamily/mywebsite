@@ -268,6 +268,7 @@ nav{top:36px !important;}
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 <div class="cursor" id="cursor"></div>
@@ -620,6 +621,14 @@ const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // ═══════════════════════════════════════
+// EMAILJS
+// ═══════════════════════════════════════
+emailjs.init('QnIPBoSRBkpNWiNt4');
+const EJS_SERVICE = 'service_6g3odwb';
+const EJS_TEMPLATE_MSG = 'bozx1s3';
+const EJS_TEMPLATE_REG = 't2l4rkn';
+
+// ═══════════════════════════════════════
 // LOAD FROM FIREBASE (with localStorage fallback)
 // ═══════════════════════════════════════
 async function loadFromFirebase(collectionName, fallback, renderFn) {
@@ -911,38 +920,66 @@ function sendMsg(e){
     msg: inputs[3]?.value || '',
     time: new Date().toLocaleString('ar-SA')
   };
-  db.collection('messages').add(data)
-    .then(()=>toast('تم إرسال رسالتك! ✓'))
-    .catch(()=>toast('تم استلام رسالتك!'));
+  // Save to Firebase
+  db.collection('messages').add(data).catch(()=>{});
+  // Send email notification
+  emailjs.send(EJS_SERVICE, EJS_TEMPLATE_MSG, {
+    from_name: data.name,
+    from_email: data.email,
+    subject: data.subject,
+    message: data.msg,
+    time: data.time
+  }).catch(()=>{});
+  toast('تم إرسال رسالتك! ✓');
   form.reset();
 }
 function submitForm(e,t){
   e.preventDefault();
   const form = e.target;
   const inputs = form.querySelectorAll('input,textarea,select');
-  const data = { time: new Date().toLocaleString('ar-SA') };
-  inputs.forEach(inp => { if(inp.name||inp.id||inp.placeholder) data[inp.placeholder||inp.id||inp.name] = inp.value; });
+  const time = new Date().toLocaleString('ar-SA');
 
   if(t==='course'){
-    // Get course name from modal title
     const title = document.getElementById('mc-title')?.textContent || '';
-    data.course = title.replace('التسجيل: ','');
-    data.name = inputs[0]?.value || '';
-    data.phone = inputs[1]?.value || '';
-    data.email = inputs[2]?.value || '';
-    data.notes = inputs[3]?.value || '';
-    db.collection('registrations').add(data)
-      .then(()=>{}).catch(()=>{});
+    const data = {
+      name: inputs[0]?.value || '',
+      phone: inputs[1]?.value || '',
+      email: inputs[2]?.value || '',
+      notes: inputs[3]?.value || '',
+      course: title.replace('التسجيل: ',''),
+      time
+    };
+    db.collection('registrations').add(data).catch(()=>{});
+    emailjs.send(EJS_SERVICE, EJS_TEMPLATE_REG, {
+      from_name: data.name,
+      phone: data.phone,
+      from_email: data.email,
+      course: data.course,
+      notes: data.notes,
+      time,
+      subject: 'طلب تسجيل جديد — ' + data.course
+    }).catch(()=>{});
     closeModal(t);
     toast('تم استلام طلب التسجيل! ✓');
   } else {
-    data.name = inputs[0]?.value || '';
-    data.phone = inputs[1]?.value || '';
-    data.email = inputs[2]?.value || '';
-    data.level = inputs[3]?.value || '';
-    data.goal = inputs[4]?.value || '';
-    db.collection('consulting').add(data)
-      .then(()=>{}).catch(()=>{});
+    const data = {
+      name: inputs[0]?.value || '',
+      phone: inputs[1]?.value || '',
+      email: inputs[2]?.value || '',
+      level: inputs[3]?.value || '',
+      goal: inputs[4]?.value || '',
+      time
+    };
+    db.collection('consulting').add(data).catch(()=>{});
+    emailjs.send(EJS_SERVICE, EJS_TEMPLATE_REG, {
+      from_name: data.name,
+      phone: data.phone,
+      from_email: data.email,
+      course: 'استشارة تدريبية',
+      notes: 'المستوى: ' + data.level + '\nالهدف: ' + data.goal,
+      time,
+      subject: 'طلب استشارة جديد — ' + data.name
+    }).catch(()=>{});
     closeModal(t);
     toast('تم استلام طلب الحجز! ✓');
   }
