@@ -655,13 +655,41 @@ const defaultNews=[
   {id:'n2',icon:'📺',cat:'تلفزيون',date:'رمضان',title:'مقدم برنامج "أمة حكواتي" على شاهد',body:'الانطلاق بتقديم البرنامج التلفزيوني الرمضاني "أمة حكواتي" على منصة شاهد.'},
   {id:'n3',icon:'📚',cat:'تأليف',date:'2024',title:'إصدار كتاب "من الخوف إلى المايك"',body:'صدر الكتاب الثاني "من الخوف إلى المايك"، دليل عملي لكل من يسعى للتغلب على رهبة الجمهور.'},
 ];
-const defaultPodcast=[
-  {ep:'الحلقة ٢١٠',title:'كيف تبني صوتاً مؤثراً؟',dur:'٣٢ دقيقة',date:'الأسبوع الماضي'},
-  {ep:'الحلقة ٢٠٩',title:'أسرار مقدم الاحتفالات الناجح',dur:'٢٨ دقيقة',date:'أسبوعان'},
-  {ep:'الحلقة ٢٠٨',title:'الخوف من الجمهور: كيف تتحرر؟',dur:'٣٥ دقيقة',date:'٣ أسابيع'},
-  {ep:'الحلقة ٢٠٧',title:'ما الذي يميز المعلق الصوتي المحترف',dur:'٢٦ دقيقة',date:'شهر'},
-  {ep:'الحلقة ٢٠٦',title:'رحلتي من المايك إلى الكتاب',dur:'٤٠ دقيقة',date:'شهر ونصف'},
-];
+const defaultPodcast=[];
+const RSS_FEED = 'https://feeds.libsyn.com/565035/rss';
+
+async function fetchPodcastFromRSS() {
+  try {
+    const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(RSS_FEED);
+    const res = await fetch(proxy);
+    const data = await res.json();
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(data.contents, 'text/xml');
+    const items = Array.from(xml.querySelectorAll('item')).slice(0,5);
+    const episodes = items.map((item, i) => {
+      const title = item.querySelector('title')?.textContent || '';
+      const pubDate = item.querySelector('pubDate')?.textContent || '';
+      const duration = item.querySelector('duration')?.textContent || '';
+      const link = item.querySelector('enclosure')?.getAttribute('url') || 
+                   item.querySelector('link')?.textContent || '#';
+      const d = pubDate ? new Date(pubDate) : null;
+      const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+      const dateAr = d ? `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}` : '';
+      // Format duration from seconds to minutes
+      let durText = duration;
+      if (/^\d+$/.test(duration)) {
+        const mins = Math.floor(parseInt(duration)/60);
+        durText = mins + ' دقيقة';
+      }
+      return { ep: 'حلقة ' + (i+1), title, dur: durText, date: dateAr, link };
+    });
+    renderPodcast(episodes);
+  } catch(e) {
+    console.log('RSS fetch failed:', e);
+    renderPodcast([]);
+  }
+}
+
 const defaultInterviews=[
   {id:'i1',vid:'dQw4w9WgXcQ',title:'مقابلة على قناة MBC',channel:'MBC'},
   {id:'i2',vid:'dQw4w9WgXcQ',title:'لقاء في برنامج صباح الخير',channel:'قناة السعودية'},
@@ -715,13 +743,17 @@ function renderNews(news=null){
 }
 
 function renderPodcast(eps=null){
-  if(!eps)eps=JSON.parse(localStorage.getItem('admin-podcast')||'null')||defaultPodcast;
+  if(!eps)eps=[];
+  if(eps.length===0){
+    document.getElementById('podcastGrid').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ تحميل الحلقات...</p>';
+    return;
+  }
   document.getElementById('podcastGrid').innerHTML=eps.slice(0,5).map((e,i)=>`
-    <div class="ep-card reveal">
+    <div class="ep-card reveal" onclick="${e.link && e.link!=='#' ? 'window.open(''+e.link+'','_blank')' : ''}">
       <div class="ep-num">${String(i+1).padStart(2,'0')}</div>
       <div class="ep-info">
-        <h4>${e.ep||'حلقة جديدة'}</h4>
-        <h4 style="font-weight:400;color:var(--text-muted);font-size:.85rem;">${e.title}</h4>
+        <h4 style="color:var(--text-muted);font-size:.8rem;font-weight:400;margin-bottom:.2rem;">${e.ep||''}</h4>
+        <h4>${e.title}</h4>
         <div class="ep-meta"><span>⏱ ${e.dur||''}</span><span>📅 ${e.date||''}</span></div>
       </div>
       <div class="ep-play">▶</div>
@@ -786,7 +818,7 @@ function submitForm(e,t){e.preventDefault();closeModal(t);toast(t==='course'?'ت
 // INIT — load from Firebase, fallback to defaults
 // ═══════════════════════════════════════
 loadFromFirebase('news', defaultNews, renderNews);
-loadFromFirebase('podcast', defaultPodcast, renderPodcast);
+fetchPodcastFromRSS();
 loadFromFirebase('interviews', defaultInterviews, renderInterviews);
 loadFromFirebase('works', defaultWorks, renderWorks);
 loadFromFirebase('courses', defaultCourses, renderCourses);
