@@ -717,6 +717,11 @@ function saveNews(){
     body:document.getElementById('nm-body').value,
   };
   if(!data.title){toast('أدخل عنوان الخبر',true);return;}
+  // Check if image is still uploading
+  const newsPreview = document.getElementById('nm-img-preview');
+  if(newsPreview && newsPreview.innerHTML.includes('جارٍ الرفع')){
+    toast('انتظر حتى ينتهي رفع الصورة...',true);return;
+  }
   let news=getNews();
   if(id)news=news.map(n=>n.id===id?data:n);
   else news.push(data);
@@ -786,6 +791,10 @@ function saveCourse(){
     desc:document.getElementById('cm-desc').value,
   };
   if(!data.title){toast('أدخل عنوان الدورة',true);return;}
+  const coursePreview = document.getElementById('cm-img-preview');
+  if(coursePreview && coursePreview.innerHTML.includes('جارٍ الرفع')){
+    toast('انتظر حتى ينتهي رفع الصورة...',true);return;
+  }
   let courses=getCourses();
   if(id)courses=courses.map(c=>c.id===id?data:c);
   else courses.push(data);
