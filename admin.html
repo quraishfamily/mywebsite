@@ -831,6 +831,36 @@ function resetAll(){
     toast('تمت إعادة التهيئة');renderPage('dashboard');
   });
 }
+
+// ═══════════════════════════════════════
+// EXPOSE FUNCTIONS TO GLOBAL SCOPE (required for type="module")
+// ═══════════════════════════════════════
+window.showPage = showPage;
+window.doLogin = doLogin;
+window.logout = logout;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.openNewsModal = openNewsModal;
+window.editNews = editNews;
+window.saveNews = saveNews;
+window.deleteNews = deleteNews;
+window.openCourseModal = openCourseModal;
+window.editCourse = editCourse;
+window.saveCourse = saveCourse;
+window.deleteCourse = deleteCourse;
+window.addWork = addWork;
+window.deleteWork = deleteWork;
+window.saveYT = saveYT;
+window.addPodcast = addPodcast;
+window.deletePodcast = deletePodcast;
+window.addInterview = addInterview;
+window.deleteInterview = deleteInterview;
+window.saveSettings = saveSettings;
+window.saveSocials = saveSocials;
+window.changePw = changePw;
+window.resetAll = resetAll;
+window.deleteCmt = deleteCmt;
+
 </script>
 </body>
 </html>
