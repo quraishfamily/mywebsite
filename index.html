@@ -847,8 +847,54 @@ function loadYT(){
   if(!id){toast('أدخل Channel ID أولاً');return;}
   toast('سيتم تحميل المقاطع عبر YouTube API');
 }
-function sendMsg(e){e.preventDefault();toast('تم إرسال رسالتك!');e.target.reset();}
-function submitForm(e,t){e.preventDefault();closeModal(t);toast(t==='course'?'تم استلام طلب التسجيل!':'تم استلام طلب الحجز!');e.target.reset();}
+function sendMsg(e){
+  e.preventDefault();
+  const form = e.target;
+  const inputs = form.querySelectorAll('input,textarea');
+  const data = {
+    name: inputs[0]?.value || '',
+    email: inputs[1]?.value || '',
+    subject: inputs[2]?.value || '',
+    msg: inputs[3]?.value || '',
+    time: new Date().toLocaleString('ar-SA')
+  };
+  db.collection('messages').add(data)
+    .then(()=>toast('تم إرسال رسالتك! ✓'))
+    .catch(()=>toast('تم استلام رسالتك!'));
+  form.reset();
+}
+function submitForm(e,t){
+  e.preventDefault();
+  const form = e.target;
+  const inputs = form.querySelectorAll('input,textarea,select');
+  const data = { time: new Date().toLocaleString('ar-SA') };
+  inputs.forEach(inp => { if(inp.name||inp.id||inp.placeholder) data[inp.placeholder||inp.id||inp.name] = inp.value; });
+
+  if(t==='course'){
+    // Get course name from modal title
+    const title = document.getElementById('mc-title')?.textContent || '';
+    data.course = title.replace('التسجيل: ','');
+    data.name = inputs[0]?.value || '';
+    data.phone = inputs[1]?.value || '';
+    data.email = inputs[2]?.value || '';
+    data.notes = inputs[3]?.value || '';
+    db.collection('registrations').add(data)
+      .then(()=>{}).catch(()=>{});
+    closeModal(t);
+    toast('تم استلام طلب التسجيل! ✓');
+  } else {
+    data.name = inputs[0]?.value || '';
+    data.phone = inputs[1]?.value || '';
+    data.email = inputs[2]?.value || '';
+    data.level = inputs[3]?.value || '';
+    data.goal = inputs[4]?.value || '';
+    db.collection('consulting').add(data)
+      .then(()=>{}).catch(()=>{});
+    closeModal(t);
+    toast('تم استلام طلب الحجز! ✓');
+  }
+  form.reset();
+}
 
 
 // ═══════════════════════════════════════
