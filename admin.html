@@ -159,6 +159,7 @@ function saveRSS(){_call('saveRSS',[])}
 function previewPodcast(){_call('previewPodcast',[])}
 function closeConfirm(){_call('closeConfirm',[])}
 function saveBooks(){_call('saveBooks',[])}
+function deleteDoc(a,b,c,d){_call('deleteDoc',[a,b,c,d])}
 function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
 </script>
 
@@ -855,25 +856,74 @@ function saveYT(){
 
 // REGS / CONSULT / MSGS (demo data)
 function renderRegsTable(){
-  const regs=getRegs();
-  document.getElementById('regs-table').innerHTML=regs.length
-    ?`<table><thead><tr><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الدورة</th></tr></thead>
-      <tbody>${regs.map(r=>`<tr><td>${r.name||'—'}</td><td>${r.phone||'—'}</td><td>${r.email||'—'}</td><td>${r.course||'—'}</td></tr>`).join('')}</tbody></table>`
-    :`<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد تسجيلات بعد.<br><small>ستظهر هنا عند قيام الزوار بالتسجيل من الموقع.</small></p>`;
+  document.getElementById('regs-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('registrations').orderBy('time','desc').get().then(snap=>{
+    if(snap.empty){
+      document.getElementById('regs-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد تسجيلات بعد.</p>';
+      return;
+    }
+    const rows=snap.docs.map(d=>{
+      const r=d.data();
+      return `<tr>
+        <td>${r.name||'—'}</td>
+        <td>${r.phone||'—'}</td>
+        <td>${r.email||'—'}</td>
+        <td>${r.course||'—'}</td>
+        <td style="font-size:.75rem;color:var(--text-muted);">${r.time||'—'}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteDoc('registrations','${d.id}','regs-table',renderRegsTable)">حذف</button></td>
+      </tr>`;
+    }).join('');
+    document.getElementById('regs-table').innerHTML=`<table><thead><tr><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الدورة</th><th>الوقت</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  }).catch(()=>{
+    document.getElementById('regs-table').innerHTML='<p style="color:var(--red);font-size:.85rem;">فشل التحميل</p>';
+  });
 }
 function renderConsultTable(){
-  const cs=getConsults();
-  document.getElementById('consult-table').innerHTML=cs.length
-    ?`<table><thead><tr><th>الاسم</th><th>الجوال</th><th>المستوى</th><th>الهدف</th></tr></thead>
-      <tbody>${cs.map(c=>`<tr><td>${c.name||'—'}</td><td>${c.phone||'—'}</td><td>${c.level||'—'}</td><td>${c.goal||'—'}</td></tr>`).join('')}</tbody></table>`
-    :`<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد طلبات استشارة بعد.</p>`;
+  document.getElementById('consult-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('consulting').orderBy('time','desc').get().then(snap=>{
+    if(snap.empty){
+      document.getElementById('consult-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد طلبات استشارة بعد.</p>';
+      return;
+    }
+    const rows=snap.docs.map(d=>{
+      const c=d.data();
+      return `<tr>
+        <td>${c.name||'—'}</td>
+        <td>${c.phone||'—'}</td>
+        <td>${c.email||'—'}</td>
+        <td>${c.level||'—'}</td>
+        <td>${c.goal||'—'}</td>
+        <td style="font-size:.75rem;color:var(--text-muted);">${c.time||'—'}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteDoc('consulting','${d.id}','consult-table',renderConsultTable)">حذف</button></td>
+      </tr>`;
+    }).join('');
+    document.getElementById('consult-table').innerHTML=`<table><thead><tr><th>الاسم</th><th>الجوال</th><th>البريد</th><th>المستوى</th><th>الهدف</th><th>الوقت</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  }).catch(()=>{
+    document.getElementById('consult-table').innerHTML='<p style="color:var(--red);font-size:.85rem;">فشل التحميل</p>';
+  });
 }
 function renderMsgsTable(){
-  const msgs=getMsgs();
-  document.getElementById('msgs-table').innerHTML=msgs.length
-    ?`<table><thead><tr><th>الاسم</th><th>البريد</th><th>الموضوع</th><th>الرسالة</th></tr></thead>
-      <tbody>${msgs.map(m=>`<tr><td>${m.name||'—'}</td><td>${m.email||'—'}</td><td>${m.subject||'—'}</td><td>${m.msg||'—'}</td></tr>`).join('')}</tbody></table>`
-    :`<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد رسائل بعد.</p>`;
+  document.getElementById('msgs-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('messages').orderBy('time','desc').get().then(snap=>{
+    if(snap.empty){
+      document.getElementById('msgs-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد رسائل بعد.</p>';
+      return;
+    }
+    const rows=snap.docs.map(d=>{
+      const m=d.data();
+      return `<tr>
+        <td>${m.name||'—'}</td>
+        <td>${m.email||'—'}</td>
+        <td>${m.subject||'—'}</td>
+        <td>${m.msg||'—'}</td>
+        <td style="font-size:.75rem;color:var(--text-muted);">${m.time||'—'}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteDoc('messages','${d.id}','msgs-table',renderMsgsTable)">حذف</button></td>
+      </tr>`;
+    }).join('');
+    document.getElementById('msgs-table').innerHTML=`<table><thead><tr><th>الاسم</th><th>البريد</th><th>الموضوع</th><th>الرسالة</th><th>الوقت</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  }).catch(()=>{
+    document.getElementById('msgs-table').innerHTML='<p style="color:var(--red);font-size:.85rem;">فشل التحميل</p>';
+  });
 }
 function renderCommentsTable(){
   const news=getNews();
@@ -1161,6 +1211,14 @@ function handleImageUpload(inputId, previewId, hiddenId) {
     toast('فشل رفع الصورة — تأكد من إعداد Unsigned Preset', true);
   });
 }
+
+function deleteDoc(colName, docId, tableId, reloadFn){
+  confirm_action(()=>{
+    db.collection(colName).doc(docId).delete()
+      .then(()=>{ toast('تم الحذف ✓'); reloadFn(); })
+      .catch(()=>toast('فشل الحذف', true));
+  });
+}
 // ═══════════════════════════════════════
 // EXPOSE FUNCTIONS TO GLOBAL SCOPE (required for type="module")
 // ═══════════════════════════════════════
@@ -1189,6 +1247,7 @@ window._real_saveSocials = saveSocials;
 window._real_changePw = changePw;
 window._real_resetAll = resetAll;
 window._real_saveBooks = saveBooks;
+window._real_deleteDoc = deleteDoc;
 window._real_handleImageUpload = handleImageUpload;
 window._real_formatDateAr = formatDateAr;
 window._real_saveRSS = saveRSS;
