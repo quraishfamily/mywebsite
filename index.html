@@ -245,10 +245,10 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
 </nav>
 
 <div class="social-sidebar">
-  <a href="#" title="تويتر">𝕏</a>
-  <a href="#" title="انستقرام">◈</a>
-  <a href="#" title="يوتيوب">▶</a>
-  <a href="#" title="سناب">👻</a>
+  <a id="sc-tw" href="#" title="تويتر">𝕏</a>
+  <a id="sc-ig" href="#" title="انستقرام">◈</a>
+  <a id="sc-yt" href="#" title="يوتيوب">▶</a>
+  <a id="sc-sn" href="#" title="سناب">👻</a>
 </div>
 
 <!-- HERO -->
@@ -431,7 +431,7 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
     </div>
     <div class="reveal">
       <div class="price-box">
-        <div class="price">499</div>
+        <div class="price" id="site-price">499</div>
         <div class="price-label">ريال سعودي · جلسة 60 دقيقة</div>
         <button class="btn btn-primary" onclick="openModal('consulting')">احجز جلستك الآن</button>
         <button class="btn btn-outline" onclick="openModal('consulting')">سجل اهتمامك مجاناً</button>
@@ -452,21 +452,21 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
       <div class="reveal">
         <div class="c-item">
           <div class="c-icon">✉</div>
-          <div class="c-item-text"><span>البريد الإلكتروني</span><p>ahmed@example.com</p></div>
+          <div class="c-item-text"><span>البريد الإلكتروني</span><p id="site-email">ahmed@example.com</p></div>
         </div>
         <div class="c-item">
           <div class="c-icon">📱</div>
-          <div class="c-item-text"><span>الواتساب</span><p>+966 5X XXX XXXX</p></div>
+          <div class="c-item-text"><span>الواتساب</span><p id="site-phone">+966 5X XXX XXXX</p></div>
         </div>
         <div class="c-item">
           <div class="c-icon">📍</div>
           <div class="c-item-text"><span>الموقع</span><p>المملكة العربية السعودية</p></div>
         </div>
         <div class="social-row" style="margin-top:2rem;">
-          <a href="#" title="تويتر">𝕏</a>
-          <a href="#" title="انستقرام">◈</a>
-          <a href="#" title="يوتيوب">▶</a>
-          <a href="#" title="سناب">👻</a>
+          <a id="ct-tw" href="#" title="تويتر">𝕏</a>
+          <a id="ct-ig" href="#" title="انستقرام">◈</a>
+          <a id="ct-yt" href="#" title="يوتيوب">▶</a>
+          <a id="ct-sn" href="#" title="سناب">👻</a>
         </div>
       </div>
       <form class="contact-form reveal" onsubmit="sendMsg(event)">
@@ -495,10 +495,10 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
       <li><a href="admin.html">الأدمن</a></li>
     </ul>
     <div class="social-row">
-      <a href="#" title="تويتر">𝕏</a>
-      <a href="#" title="انستقرام">◈</a>
-      <a href="#" title="يوتيوب">▶</a>
-      <a href="#" title="سناب">👻</a>
+      <a id="ft-tw" href="#" title="تويتر">𝕏</a>
+      <a id="ft-ig" href="#" title="انستقرام">◈</a>
+      <a id="ft-yt" href="#" title="يوتيوب">▶</a>
+      <a id="ft-sn" href="#" title="سناب">👻</a>
     </div>
   </div>
   <div class="foot-copy">© 2025 أحمد قريش — جميع الحقوق محفوظة</div>
@@ -549,7 +549,7 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
 // FIREBASE
 // ═══════════════════════════════════════
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs, onSnapshot, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, getDoc, doc, onSnapshot, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBCheHz_5vWYWJdnTpaYstOVKUgvR5tCPQ",
@@ -830,9 +830,46 @@ function loadYT(){
 function sendMsg(e){e.preventDefault();toast('تم إرسال رسالتك!');e.target.reset();}
 function submitForm(e,t){e.preventDefault();closeModal(t);toast(t==='course'?'تم استلام طلب التسجيل!':'تم استلام طلب الحجز!');e.target.reset();}
 
+
+// ═══════════════════════════════════════
+// LOAD SETTINGS FROM FIREBASE
+// ═══════════════════════════════════════
+async function loadSettings() {
+  try {
+    // Load main settings
+    const settingsSnap = await getDoc(doc(db, 'settings', 'main'));
+    if (settingsSnap.exists()) {
+      const s = settingsSnap.data();
+      if (s.email) document.getElementById('site-email').textContent = s.email;
+      if (s.phone) document.getElementById('site-phone').textContent = s.phone;
+      if (s.price) document.getElementById('site-price').textContent = s.price;
+    }
+
+    // Load socials
+    const socialsSnap = await getDoc(doc(db, 'settings', 'socials'));
+    if (socialsSnap.exists()) {
+      const sc = socialsSnap.data();
+      const map = {tw:'sc-tw', ig:'sc-ig', yt:'sc-yt', sn:'sc-sn'};
+      const map2 = {tw:'ct-tw', ig:'ct-ig', yt:'ct-yt', sn:'ct-sn'};
+      const map3 = {tw:'ft-tw', ig:'ft-ig', yt:'ft-yt', sn:'ft-sn'};
+      ['tw','ig','yt','sn'].forEach(k => {
+        const url = sc[k];
+        if (url) {
+          [map[k], map2[k], map3[k]].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.href = url;
+          });
+        }
+      });
+    }
+  } catch(e) {
+    console.log('Settings load failed:', e);
+  }
+}
 // ═══════════════════════════════════════
 // INIT — load from Firebase, fallback to defaults
 // ═══════════════════════════════════════
+loadSettings();
 loadFromFirebase('news', defaultNews, renderNews);
 fetchPodcastFromRSS();
 loadFromFirebase('interviews', defaultInterviews, renderInterviews);
