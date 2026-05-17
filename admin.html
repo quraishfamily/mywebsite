@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الإدارة</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--gold-light:#E8C96A;--black:#0A0A0A;--dark:#111111;--dark2:#1A1A1A;--dark3:#222222;--text:#E8E0D0;--text-muted:#888880;--border:rgba(201,168,76,0.2);--red:#e05555;--green:#55c2a0;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Tajawal',sans-serif;background:var(--black);color:var(--text);min-height:100vh;}
+/* LOGIN */
+.login-screen{position:fixed;inset:0;background:var(--black);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.login-box{background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:3rem;width:360px;text-align:center;}
+.login-box h2{font-family:'Cairo',sans-serif;font-size:1.8rem;font-weight:900;color:var(--gold);margin-bottom:.5rem;}
+.login-box p{font-size:.85rem;color:var(--text-muted);margin-bottom:2rem;}
+.login-form{display:flex;flex-direction:column;gap:1rem;}
+.inp{background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.8rem 1rem;color:var(--text);font-family:'Tajawal',sans-serif;font-size:.9rem;outline:none;width:100%;transition:border-color .3s;}
+.inp:focus{border-color:var(--gold);}
+.btn{padding:.85rem 2rem;border-radius:4px;font-family:'Tajawal',sans-serif;font-size:.95rem;font-weight:700;text-decoration:none;cursor:pointer;border:none;transition:all .3s;display:inline-block;}
+.btn-primary{background:var(--gold);color:var(--black);}
+.btn-primary:hover{background:var(--gold-light);}
+.btn-outline{border:1px solid var(--gold);color:var(--gold);background:transparent;}
+.btn-outline:hover{background:rgba(201,168,76,.1);}
+.btn-danger{background:var(--red);color:#fff;border:none;}
+.btn-danger:hover{opacity:.85;}
+.btn-sm{padding:.4rem .9rem;font-size:.8rem;}
+.login-err{color:var(--red);font-size:.82rem;margin-top:.5rem;display:none;}
+/* LAYOUT */
+.admin-layout{display:none;min-height:100vh;}
+.admin-layout.visible{display:flex;}
+/* SIDEBAR */
+.sidebar{width:240px;background:var(--dark);border-left:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;right:0;bottom:0;z-index:100;}
+.sidebar-logo{padding:1.5rem 1.5rem 1rem;font-family:'Cairo',sans-serif;font-size:1.2rem;font-weight:900;color:var(--gold);border-bottom:1px solid var(--border);}
+.sidebar-logo span{display:block;font-size:.72rem;color:var(--text-muted);font-weight:400;margin-top:.2rem;}
+.sidebar-nav{flex:1;padding:1rem 0;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:.8rem;padding:.75rem 1.5rem;cursor:pointer;color:var(--text-muted);font-size:.88rem;transition:all .2s;border-right:2px solid transparent;}
+.nav-item:hover{color:var(--text);background:rgba(201,168,76,.05);}
+.nav-item.active{color:var(--gold);background:rgba(201,168,76,.07);border-right-color:var(--gold);}
+.nav-icon{font-size:1rem;width:20px;text-align:center;}
+.sidebar-bottom{padding:1rem 1.5rem;border-top:1px solid var(--border);}
+.sidebar-bottom a{display:block;font-size:.82rem;color:var(--text-muted);text-decoration:none;margin-bottom:.5rem;transition:color .2s;}
+.sidebar-bottom a:hover{color:var(--gold);}
+/* MAIN */
+.main{margin-right:240px;padding:2rem;min-height:100vh;}
+.page{display:none;}
+.page.active{display:block;}
+.page-header{margin-bottom:2rem;}
+.page-title{font-family:'Cairo',sans-serif;font-size:1.8rem;font-weight:900;margin-bottom:.3rem;}
+.page-sub{font-size:.85rem;color:var(--text-muted);}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-bottom:2.5rem;}
+.stat-card{background:var(--dark2);border:1px solid var(--border);border-radius:4px;padding:1.5rem;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;right:0;width:40%;height:1px;background:linear-gradient(90deg,transparent,var(--gold));}
+.stat-num{font-size:2.2rem;font-weight:900;color:var(--gold);font-family:'Cairo',sans-serif;}
+.stat-label{font-size:.82rem;color:var(--text-muted);margin-top:.2rem;}
+/* TABLE */
+.card{background:var(--dark2);border:1px solid var(--border);border-radius:4px;padding:1.5rem;margin-bottom:1.5rem;}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
+.card-title{font-weight:700;font-size:1rem;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:right;padding:.7rem 1rem;font-size:.8rem;color:var(--text-muted);border-bottom:1px solid var(--border);font-weight:600;}
+td{padding:.8rem 1rem;font-size:.85rem;border-bottom:1px solid rgba(201,168,76,.07);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(201,168,76,.03);}
+.badge{display:inline-block;padding:.2rem .6rem;border-radius:100px;font-size:.72rem;font-weight:700;}
+.badge-gold{background:rgba(201,168,76,.15);color:var(--gold);}
+.badge-green{background:rgba(85,194,160,.15);color:var(--green);}
+.badge-red{background:rgba(224,85,85,.15);color:var(--red);}
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.fg{display:flex;flex-direction:column;gap:.4rem;}
+.fg label{font-size:.8rem;color:var(--text-muted);}
+.fg input,.fg textarea,.fg select{background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.7rem 1rem;color:var(--text);font-family:'Tajawal',sans-serif;font-size:.88rem;outline:none;transition:border-color .3s;}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--gold);}
+.fg textarea{resize:vertical;min-height:90px;}
+.fg-full{grid-column:1/-1;}
+.form-actions{display:flex;gap:.8rem;margin-top:1rem;}
+/* TOAST */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--dark2);border:1px solid var(--gold);border-radius:4px;padding:.8rem 1.5rem;font-size:.85rem;color:var(--gold);z-index:9000;transition:transform .4s;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:2rem;width:90%;max-width:580px;position:relative;max-height:90vh;overflow-y:auto;}
+.modal-close{position:absolute;top:1rem;left:1rem;width:32px;height:32px;border:1px solid var(--border);border-radius:50%;background:transparent;color:var(--text-muted);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .3s;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal h3{font-family:'Cairo',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;}
+/* CONFIRM */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:3000;display:none;align-items:center;justify-content:center;}
+.confirm-overlay.open{display:flex;}
+.confirm-box{background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:2rem;width:340px;text-align:center;}
+.confirm-box h4{margin-bottom:.5rem;font-size:1.1rem;}
+.confirm-box p{font-size:.85rem;color:var(--text-muted);margin-bottom:1.5rem;}
+.confirm-btns{display:flex;gap:.8rem;justify-content:center;}
+@media(max-width:768px){
+  .sidebar{width:100%;height:auto;position:relative;flex-direction:row;flex-wrap:wrap;}
+  .main{margin-right:0;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .form-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <h2>لوحة الإدارة</h2>
+    <p>سجّل دخولك للمتابعة</p>
+    <div class="login-form">
+      <input type="text" class="inp" id="loginUser" placeholder="اسم المستخدم" value="admin">
+      <input type="password" class="inp" id="loginPass" placeholder="كلمة المرور" value="admin123" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="btn btn-primary" onclick="doLogin()">دخول</button>
+      <div class="login-err" id="loginErr">بيانات خاطئة، حاول مجدداً</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LAYOUT -->
+<div class="admin-layout" id="adminLayout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">لوحة الإدارة <span>إدارة المحتوى</span></div>
+    <div class="sidebar-nav">
+      <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span>لوحة التحكم</div>
+      <div class="nav-item" onclick="showPage('news')"><span class="nav-icon">📰</span>الأخبار</div>
+      <div class="nav-item" onclick="showPage('courses')"><span class="nav-icon">🎓</span>الدورات</div>
+      <div class="nav-item" onclick="showPage('podcast')"><span class="nav-icon">🎧</span>حلقات صباحو</div>
+      <div class="nav-item" onclick="showPage('interviews')"><span class="nav-icon">🎬</span>المقابلات</div>
+      <div class="nav-item" onclick="showPage('works')"><span class="nav-icon">🎙️</span>الأعمال الصوتية</div>
+      <div class="nav-item" onclick="showPage('regs')"><span class="nav-icon">📋</span>التسجيلات</div>
+      <div class="nav-item" onclick="showPage('consulting')"><span class="nav-icon">💼</span>طلبات الاستشارة</div>
+      <div class="nav-item" onclick="showPage('messages')"><span class="nav-icon">✉</span>الرسائل</div>
+      <div class="nav-item" onclick="showPage('comments')"><span class="nav-icon">💬</span>التعليقات</div>
+      <div class="nav-item" onclick="showPage('settings')"><span class="nav-icon">⚙</span>الإعدادات</div>
+    </div>
+    <div class="sidebar-bottom">
+      <a href="index.html" target="_blank">← عرض الموقع</a>
+      <a href="#" onclick="logout()" style="color:var(--red);">تسجيل الخروج</a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title">لوحة التحكم</div>
+        <div class="page-sub">نظرة عامة على الموقع</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num" id="count-news">0</div><div class="stat-label">أخبار منشورة</div></div>
+        <div class="stat-card"><div class="stat-num" id="count-courses">0</div><div class="stat-label">دورات متاحة</div></div>
+        <div class="stat-card"><div class="stat-num" id="count-regs">0</div><div class="stat-label">طلبات تسجيل</div></div>
+        <div class="stat-card"><div class="stat-num" id="count-msgs">0</div><div class="stat-label">رسائل واردة</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">أحدث التسجيلات</span></div>
+        <div id="dash-regs-table"></div>
+      </div>
+    </div>
+
+    <!-- NEWS -->
+    <div class="page" id="page-news">
+      <div class="page-header">
+        <div class="page-title">إدارة الأخبار</div>
+        <div class="page-sub">إضافة وتعديل وحذف الأخبار</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">الأخبار الحالية</span>
+          <button class="btn btn-primary btn-sm" onclick="openNewsModal()">+ إضافة خبر</button>
+        </div>
+        <div id="news-table"></div>
+      </div>
+    </div>
+
+    <!-- COURSES -->
+    <div class="page" id="page-courses">
+      <div class="page-header">
+        <div class="page-title">إدارة الدورات</div>
+        <div class="page-sub">إضافة وتعديل الدورات التدريبية</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">الدورات المتاحة</span>
+          <button class="btn btn-primary btn-sm" onclick="openCourseModal()">+ إضافة دورة</button>
+        </div>
+        <div id="courses-table"></div>
+      </div>
+    </div>
+
+    <!-- PODCAST -->
+    <div class="page" id="page-podcast">
+      <div class="page-header">
+        <div class="page-title">حلقات بودكاست صباحو</div>
+        <div class="page-sub">إدارة آخر الحلقات المعروضة في الموقع</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">إضافة حلقة</span></div>
+        <div class="form-grid">
+          <div class="fg"><label>رقم الحلقة</label><input type="text" id="pod-ep" placeholder="الحلقة ٢١٠"></div>
+          <div class="fg"><label>عنوان الحلقة</label><input type="text" id="pod-title" placeholder="عنوان الحلقة"></div>
+          <div class="fg"><label>المدة</label><input type="text" id="pod-dur" placeholder="٣٠ دقيقة"></div>
+          <div class="fg"><label>التاريخ</label><input type="text" id="pod-date" placeholder="الأسبوع الماضي"></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="addPodcast()">إضافة</button></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">الحلقات المضافة</span></div>
+        <div id="podcast-table"></div>
+      </div>
+    </div>
+
+    <!-- INTERVIEWS -->
+    <div class="page" id="page-interviews">
+      <div class="page-header">
+        <div class="page-title">المقابلات</div>
+        <div class="page-sub">إدارة المقابلات الإعلامية المعروضة في الموقع</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">إضافة مقابلة</span></div>
+        <div class="form-grid">
+          <div class="fg"><label>عنوان المقابلة</label><input type="text" id="iv-title" placeholder="مقابلة على قناة MBC"></div>
+          <div class="fg"><label>الجهة / القناة</label><input type="text" id="iv-channel" placeholder="MBC"></div>
+          <div class="fg fg-full"><label>Video ID من يوتيوب</label><input type="text" id="iv-vid" placeholder="dQw4w9WgXcQ"></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="addInterview()">إضافة</button></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">المقابلات المضافة</span></div>
+        <div id="interviews-table"></div>
+      </div>
+    </div>
+
+    <!-- WORKS -->
+    <div class="page" id="page-works">
+      <div class="page-header">
+        <div class="page-title">الأعمال الصوتية</div>
+        <div class="page-sub">إدارة مقاطع يوتيوب المعروضة في الموقع</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">إضافة مقطع</span>
+        </div>
+        <div class="form-grid">
+          <div class="fg"><label>عنوان المقطع</label><input type="text" id="wk-title" placeholder="عنوان العمل"></div>
+          <div class="fg"><label>معرف الفيديو (Video ID)</label><input type="text" id="wk-vid" placeholder="dQw4w9WgXcQ"></div>
+          <div class="fg fg-full"><label>وصف مختصر</label><input type="text" id="wk-desc" placeholder="وصف قصير للعمل"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary btn-sm" onclick="addWork()">إضافة</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">المقاطع المضافة</span></div>
+        <div id="works-table"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">إعدادات YouTube API</span></div>
+        <div class="form-grid">
+          <div class="fg"><label>Channel ID</label><input type="text" id="yt-channel" placeholder="UCxxxxxxxxxxxxxxxx"></div>
+          <div class="fg"><label>API Key</label><input type="text" id="yt-api" placeholder="AIzaSyXXXXXXXXXXXXXXX"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary btn-sm" onclick="saveYT()">حفظ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGS -->
+    <div class="page" id="page-regs">
+      <div class="page-header">
+        <div class="page-title">طلبات التسجيل</div>
+        <div class="page-sub">طلبات التسجيل في الدورات</div>
+      </div>
+      <div class="card">
+        <div id="regs-table"></div>
+      </div>
+    </div>
+
+    <!-- CONSULTING -->
+    <div class="page" id="page-consulting">
+      <div class="page-header">
+        <div class="page-title">طلبات الاستشارة</div>
+        <div class="page-sub">حجوزات جلسات الاستشارة التدريبية</div>
+      </div>
+      <div class="card">
+        <div id="consult-table"></div>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="page" id="page-messages">
+      <div class="page-header">
+        <div class="page-title">الرسائل الواردة</div>
+        <div class="page-sub">رسائل صفحة تواصل معي</div>
+      </div>
+      <div class="card">
+        <div id="msgs-table"></div>
+      </div>
+    </div>
+
+    <!-- COMMENTS -->
+    <div class="page" id="page-comments">
+      <div class="page-header">
+        <div class="page-title">إدارة التعليقات</div>
+        <div class="page-sub">عرض وحذف تعليقات الأخبار</div>
+      </div>
+      <div class="card">
+        <div id="comments-table"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div class="page-title">الإعدادات</div>
+        <div class="page-sub">معلومات الموقع وحسابات التواصل الاجتماعي</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">المعلومات الشخصية</span></div>
+        <div class="form-grid">
+          <div class="fg"><label>الاسم</label><input type="text" id="s-name" placeholder="اسمك الكريم"></div>
+          <div class="fg"><label>المسمى الوظيفي</label><input type="text" id="s-title" placeholder="معلق صوتي ومدرب معتمد"></div>
+          <div class="fg"><label>البريد الإلكتروني</label><input type="email" id="s-email" placeholder="your@email.com"></div>
+          <div class="fg"><label>الجوال</label><input type="tel" id="s-phone" placeholder="+966 5X XXX XXXX"></div>
+          <div class="fg fg-full"><label>نبذة شخصية</label><textarea id="s-bio" placeholder="اكتب نبذتك هنا..."></textarea></div>
+          <div class="fg"><label>سعر الاستشارة (ريال)</label><input type="number" id="s-price" placeholder="499"></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="saveSettings()">حفظ المعلومات</button></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">روابط التواصل الاجتماعي</span></div>
+        <div class="form-grid">
+          <div class="fg"><label>تويتر / X</label><input type="url" id="sc-tw" placeholder="https://x.com/username"></div>
+          <div class="fg"><label>انستقرام</label><input type="url" id="sc-ig" placeholder="https://instagram.com/username"></div>
+          <div class="fg"><label>يوتيوب</label><input type="url" id="sc-yt" placeholder="https://youtube.com/@username"></div>
+          <div class="fg"><label>لينكدإن</label><input type="url" id="sc-li" placeholder="https://linkedin.com/in/username"></div>
+          <div class="fg"><label>سناب شات</label><input type="url" id="sc-sn" placeholder="https://snapchat.com/add/username"></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="saveSocials()">حفظ الروابط</button></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">تغيير كلمة المرور</span></div>
+        <div class="form-grid">
+          <div class="fg"><label>كلمة المرور الحالية</label><input type="password" id="pw-old" placeholder="..."></div>
+          <div class="fg"><label>كلمة المرور الجديدة</label><input type="password" id="pw-new" placeholder="..."></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-outline btn-sm" onclick="changePw()">تغيير</button></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title" style="color:var(--red);">منطقة الخطر</span></div>
+        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem;">حذف جميع البيانات المخزنة محلياً وإعادة الموقع للبيانات الافتراضية.</p>
+        <button class="btn btn-danger btn-sm" onclick="resetAll()">مسح جميع البيانات</button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /admin-layout -->
+
+<!-- NEWS MODAL -->
+<div class="modal-overlay" id="newsModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('newsModal')">✕</button>
+    <h3 id="news-modal-title">إضافة خبر</h3>
+    <div class="form-grid">
+      <div class="fg"><label>العنوان</label><input type="text" id="nm-title" placeholder="عنوان الخبر"></div>
+      <div class="fg"><label>التصنيف</label><select id="nm-cat"><option>أخبار</option><option>دورات</option><option>إنجازات</option><option>فعاليات</option></select></div>
+      <div class="fg"><label>التاريخ</label><input type="text" id="nm-date" placeholder="15 يناير"></div>
+      <div class="fg"><label>الأيقونة (رمز)</label><input type="text" id="nm-icon" placeholder="🎙️"></div>
+      <div class="fg fg-full"><label>ملخص الخبر</label><textarea id="nm-body" placeholder="اكتب نص الخبر..."></textarea></div>
+    </div>
+    <input type="hidden" id="nm-edit-id">
+    <div class="form-actions">
+      <button class="btn btn-primary btn-sm" onclick="saveNews()">حفظ</button>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('newsModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- COURSE MODAL -->
+<div class="modal-overlay" id="courseModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('courseModal')">✕</button>
+    <h3 id="course-modal-title">إضافة دورة</h3>
+    <div class="form-grid">
+      <div class="fg"><label>عنوان الدورة</label><input type="text" id="cm-title" placeholder="اسم الدورة"></div>
+      <div class="fg"><label>الأيقونة</label><input type="text" id="cm-icon" placeholder="🎙️"></div>
+      <div class="fg"><label>السعر</label><input type="text" id="cm-price" placeholder="1200 ريال"></div>
+      <div class="fg"><label>المدة</label><input type="text" id="cm-dur" placeholder="8 أسابيع"></div>
+      <div class="fg"><label>عدد الجلسات</label><input type="text" id="cm-sess" placeholder="24 جلسة"></div>
+      <div class="fg"><label>المستوى</label><input type="text" id="cm-lvl" placeholder="جميع المستويات"></div>
+      <div class="fg"><label>الوسم (badge)</label><input type="text" id="cm-badge" placeholder="جديدة / مميزة"></div>
+      <div class="fg fg-full"><label>وصف الدورة</label><textarea id="cm-desc" placeholder="اكتب وصف الدورة..."></textarea></div>
+    </div>
+    <input type="hidden" id="cm-edit-id">
+    <div class="form-actions">
+      <button class="btn btn-primary btn-sm" onclick="saveCourse()">حفظ</button>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('courseModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h4>تأكيد الحذف</h4>
+    <p>هل أنت متأكد من حذف هذا العنصر؟ لا يمكن التراجع.</p>
+    <div class="confirm-btns">
+      <button class="btn btn-danger btn-sm" id="confirmYes">حذف</button>
+      <button class="btn btn-outline btn-sm" onclick="closeConfirm()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// AUTH
+const ADMIN_USER='admin', ADMIN_PASS_KEY='admin-pass';
+function getPass(){return localStorage.getItem(ADMIN_PASS_KEY)||'admin123';}
+function doLogin(){
+  const u=document.getElementById('loginUser').value;
+  const p=document.getElementById('loginPass').value;
+  if(u===ADMIN_USER&&p===getPass()){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('adminLayout').classList.add('visible');
+    initAdmin();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+  }
+}
+function logout(){
+  document.getElementById('adminLayout').classList.remove('visible');
+  document.getElementById('loginScreen').style.display='flex';
+}
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// TOAST
+function toast(msg,err=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.borderColor=err?'var(--red)':'var(--gold)';
+  t.style.color=err?'var(--red)':'var(--gold)';
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// PAGES
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  renderPage(id);
+}
+
+// MODALS
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+});
+
+// CONFIRM
+let confirmCb=null;
+function confirm(cb){confirmCb=cb;document.getElementById('confirmOverlay').classList.add('open');}
+function closeConfirm(){document.getElementById('confirmOverlay').classList.remove('open');confirmCb=null;}
+document.getElementById('confirmYes').onclick=()=>{if(confirmCb)confirmCb();closeConfirm();};
+
+// DATA HELPERS
+const defaultNews=[
+  {id:'n1',icon:'🎙️',category:'دورات',date:'15 يناير',title:'إطلاق دورة التعليق الصوتي الاحترافي 2025',body:'يسعدني الإعلان عن إطلاق نسخة جديدة ومطورة من دورة التعليق الصوتي الاحترافي.'},
+  {id:'n2',icon:'📻',category:'أخبار',date:'20 فبراير',title:'شراكة استراتيجية مع كبرى المحطات الإذاعية',body:'إعلان عن شراكة جديدة تفتح آفاقاً واسعة للمتدربين.'},
+  {id:'n3',icon:'🏆',category:'إنجازات',date:'5 مارس',title:'تكريم في مهرجان الإعلام العربي',body:'شرف التكريم في المهرجان الإعلامي العربي الدولي.'},
+];
+const defaultCourses=[
+  {id:'c1',icon:'🎙️',badge:'مميزة',title:'التعليق الصوتي الاحترافي',desc:'دورة شاملة من الأساسيات حتى الاحتراف.',price:'1200 ريال',dur:'8 أسابيع',sess:'24 جلسة',lvl:'جميع المستويات'},
+  {id:'c2',icon:'🎤',badge:'جديدة',title:'أسرار الإلقاء والخطابة',desc:'فن الإلقاء المؤثر وبناء الثقة بالصوت.',price:'800 ريال',dur:'4 أسابيع',sess:'12 جلسة',lvl:'مبتدئ - متوسط'},
+  {id:'c3',icon:'🎵',badge:'متقدمة',title:'إنتاج المحتوى الصوتي',desc:'إنتاج وتحرير المحتوى الصوتي الرقمي.',price:'1500 ريال',dur:'6 أسابيع',sess:'18 جلسة',lvl:'متقدم'},
+];
+const defaultWorks=[
+  {id:'w1',vid:'dQw4w9WgXcQ',title:'إعلان تلفزيوني',desc:'نموذج تعليق إعلاني'},
+  {id:'w2',vid:'dQw4w9WgXcQ',title:'تغطية إذاعية',desc:'نموذج صوتي'},
+  {id:'w3',vid:'dQw4w9WgXcQ',title:'محتوى بودكاست',desc:'حلقة متكاملة'},
+];
+
+function getNews(){return JSON.parse(localStorage.getItem('admin-news')||'null')||defaultNews;}
+function saveNewsData(d){localStorage.setItem('admin-news',JSON.stringify(d));}
+function getCourses(){return JSON.parse(localStorage.getItem('admin-courses')||'null')||defaultCourses;}
+function saveCoursesData(d){localStorage.setItem('admin-courses',JSON.stringify(d));}
+function getWorks(){return JSON.parse(localStorage.getItem('admin-works')||'null')||defaultWorks;}
+function saveWorksData(d){localStorage.setItem('admin-works',JSON.stringify(d));}
+function getRegs(){return JSON.parse(localStorage.getItem('admin-regs')||'[]');}
+function getMsgs(){return JSON.parse(localStorage.getItem('admin-msgs')||'[]');}
+function getConsults(){return JSON.parse(localStorage.getItem('admin-consults')||'[]');}
+
+// INIT
+function initAdmin(){
+  renderPage('dashboard');
+  loadSettings();
+}
+
+function renderPage(id){
+  if(id==='dashboard')renderDashboard();
+  else if(id==='news')renderNewsTable();
+  else if(id==='courses')renderCoursesTable();
+  else if(id==='podcast')renderPodcastTable();
+  else if(id==='interviews')renderInterviewsTable();
+  else if(id==='works')renderWorksTable();
+  else if(id==='regs')renderRegsTable();
+  else if(id==='consulting')renderConsultTable();
+  else if(id==='messages')renderMsgsTable();
+  else if(id==='comments')renderCommentsTable();
+}
+
+function renderDashboard(){
+  const news=getNews(),courses=getCourses(),regs=getRegs(),msgs=getMsgs();
+  document.getElementById('count-news').textContent=news.length;
+  const ivs=JSON.parse(localStorage.getItem('admin-interviews')||'[]');
+  const pods=JSON.parse(localStorage.getItem('admin-podcast')||'[]');
+  document.getElementById('count-courses').textContent=courses.length;
+  document.getElementById('count-regs').textContent=regs.length;
+  document.getElementById('count-msgs').textContent=msgs.length;
+  const latest=regs.slice(-5).reverse();
+  document.getElementById('dash-regs-table').innerHTML=latest.length
+    ?`<table><thead><tr><th>الاسم</th><th>الدورة</th><th>الجوال</th><th>الحالة</th></tr></thead><tbody>
+      ${latest.map(r=>`<tr><td>${r.name||'—'}</td><td>${r.course||'—'}</td><td>${r.phone||'—'}</td><td><span class="badge badge-gold">جديد</span></td></tr>`).join('')}
+      </tbody></table>`
+    :'<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem 0;">لا توجد تسجيلات بعد</p>';
+}
+
+// NEWS
+function renderNewsTable(){
+  const news=getNews();
+  document.getElementById('news-table').innerHTML=`<table>
+    <thead><tr><th>الخبر</th><th>التصنيف</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+    <tbody>${news.map(n=>`<tr>
+      <td>${n.icon||''} ${n.title}</td>
+      <td><span class="badge badge-gold">${n.category}</span></td>
+      <td>${n.date||'—'}</td>
+      <td>
+        <button class="btn btn-outline btn-sm" style="margin-left:.4rem;" onclick="editNews('${n.id}')">تعديل</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteNews('${n.id}')">حذف</button>
+      </td>
+    </tr>`).join('')}</tbody></table>`;
+}
+function openNewsModal(id=''){
+  document.getElementById('nm-edit-id').value=id;
+  if(id){
+    const n=getNews().find(x=>x.id===id);
+    if(!n)return;
+    document.getElementById('nm-title').value=n.title||'';
+    document.getElementById('nm-cat').value=n.category||'أخبار';
+    document.getElementById('nm-date').value=n.date||'';
+    document.getElementById('nm-icon').value=n.icon||'';
+    document.getElementById('nm-body').value=n.body||n.excerpt||'';
+    document.getElementById('news-modal-title').textContent='تعديل الخبر';
+  } else {
+    ['nm-title','nm-date','nm-icon','nm-body'].forEach(x=>document.getElementById(x).value='');
+    document.getElementById('nm-cat').value='أخبار';
+    document.getElementById('news-modal-title').textContent='إضافة خبر';
+  }
+  openModal('newsModal');
+}
+function editNews(id){openNewsModal(id);}
+function saveNews(){
+  const id=document.getElementById('nm-edit-id').value;
+  const data={
+    id:id||'n'+Date.now(),
+    title:document.getElementById('nm-title').value,
+    category:document.getElementById('nm-cat').value,
+    date:document.getElementById('nm-date').value,
+    icon:document.getElementById('nm-icon').value,
+    body:document.getElementById('nm-body').value,
+  };
+  if(!data.title){toast('أدخل عنوان الخبر',true);return;}
+  let news=getNews();
+  if(id)news=news.map(n=>n.id===id?data:n);
+  else news.push(data);
+  saveNewsData(news);closeModal('newsModal');renderNewsTable();toast('تم حفظ الخبر!');
+}
+function deleteNews(id){
+  confirm(()=>{
+    saveNewsData(getNews().filter(n=>n.id!==id));
+    renderNewsTable();toast('تم الحذف');
+  });
+}
+
+// COURSES
+function renderCoursesTable(){
+  const courses=getCourses();
+  document.getElementById('courses-table').innerHTML=`<table>
+    <thead><tr><th>الدورة</th><th>السعر</th><th>المدة</th><th>المستوى</th><th>إجراءات</th></tr></thead>
+    <tbody>${courses.map(c=>`<tr>
+      <td>${c.icon||''} ${c.title}</td>
+      <td style="color:var(--gold);font-weight:700;">${c.price}</td>
+      <td>${c.dur||c.duration}</td>
+      <td><span class="badge badge-green">${c.lvl||c.level}</span></td>
+      <td>
+        <button class="btn btn-outline btn-sm" style="margin-left:.4rem;" onclick="editCourse('${c.id}')">تعديل</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCourse('${c.id}')">حذف</button>
+      </td>
+    </tr>`).join('')}</tbody></table>`;
+}
+function openCourseModal(id=''){
+  document.getElementById('cm-edit-id').value=id;
+  if(id){
+    const c=getCourses().find(x=>x.id===id);if(!c)return;
+    document.getElementById('cm-title').value=c.title||'';
+    document.getElementById('cm-icon').value=c.icon||'';
+    document.getElementById('cm-price').value=c.price||'';
+    document.getElementById('cm-dur').value=c.dur||c.duration||'';
+    document.getElementById('cm-sess').value=c.sess||c.sessions||'';
+    document.getElementById('cm-lvl').value=c.lvl||c.level||'';
+    document.getElementById('cm-badge').value=c.badge||'';
+    document.getElementById('cm-desc').value=c.desc||'';
+    document.getElementById('course-modal-title').textContent='تعديل الدورة';
+  } else {
+    ['cm-title','cm-icon','cm-price','cm-dur','cm-sess','cm-lvl','cm-badge','cm-desc'].forEach(x=>document.getElementById(x).value='');
+    document.getElementById('course-modal-title').textContent='إضافة دورة';
+  }
+  openModal('courseModal');
+}
+function editCourse(id){openCourseModal(id);}
+function saveCourse(){
+  const id=document.getElementById('cm-edit-id').value;
+  const data={
+    id:id||'c'+Date.now(),
+    title:document.getElementById('cm-title').value,
+    icon:document.getElementById('cm-icon').value,
+    price:document.getElementById('cm-price').value,
+    dur:document.getElementById('cm-dur').value,
+    sess:document.getElementById('cm-sess').value,
+    lvl:document.getElementById('cm-lvl').value,
+    badge:document.getElementById('cm-badge').value,
+    desc:document.getElementById('cm-desc').value,
+  };
+  if(!data.title){toast('أدخل عنوان الدورة',true);return;}
+  let courses=getCourses();
+  if(id)courses=courses.map(c=>c.id===id?data:c);
+  else courses.push(data);
+  saveCoursesData(courses);closeModal('courseModal');renderCoursesTable();toast('تم حفظ الدورة!');
+}
+function deleteCourse(id){
+  confirm(()=>{saveCoursesData(getCourses().filter(c=>c.id!==id));renderCoursesTable();toast('تم الحذف');});
+}
+
+// WORKS
+function renderWorksTable(){
+  const works=getWorks();
+  document.getElementById('works-table').innerHTML=works.length
+    ?`<table><thead><tr><th>العنوان</th><th>Video ID</th><th>الوصف</th><th>إجراءات</th></tr></thead>
+      <tbody>${works.map(w=>`<tr>
+        <td>${w.title}</td><td style="direction:ltr;text-align:left;">${w.vid||w.videoId||''}</td><td>${w.desc||''}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteWork('${w.id}')">حذف</button></td>
+      </tr>`).join('')}</tbody></table>`
+    :'<p style="color:var(--text-muted);font-size:.85rem;">لا توجد أعمال مضافة</p>';
+  const cfg=JSON.parse(localStorage.getItem('yt-config')||'{}');
+  if(cfg.channel)document.getElementById('yt-channel').value=cfg.channel;
+  if(cfg.api)document.getElementById('yt-api').value=cfg.api;
+}
+function addWork(){
+  const title=document.getElementById('wk-title').value.trim();
+  const vid=document.getElementById('wk-vid').value.trim();
+  if(!title||!vid){toast('أدخل العنوان ومعرف الفيديو',true);return;}
+  const works=getWorks();
+  works.push({id:'w'+Date.now(),title,vid,desc:document.getElementById('wk-desc').value});
+  saveWorksData(works);
+  ['wk-title','wk-vid','wk-desc'].forEach(x=>document.getElementById(x).value='');
+  renderWorksTable();toast('تم إضافة العمل!');
+}
+function deleteWork(id){
+  confirm(()=>{saveWorksData(getWorks().filter(w=>w.id!==id));renderWorksTable();toast('تم الحذف');});
+}
+function saveYT(){
+  const ch=document.getElementById('yt-channel').value;
+  const api=document.getElementById('yt-api').value;
+  localStorage.setItem('yt-config',JSON.stringify({channel:ch,api}));
+  toast('تم حفظ إعدادات YouTube!');
+}
+
+// REGS / CONSULT / MSGS (demo data)
+function renderRegsTable(){
+  const regs=getRegs();
+  document.getElementById('regs-table').innerHTML=regs.length
+    ?`<table><thead><tr><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الدورة</th></tr></thead>
+      <tbody>${regs.map(r=>`<tr><td>${r.name||'—'}</td><td>${r.phone||'—'}</td><td>${r.email||'—'}</td><td>${r.course||'—'}</td></tr>`).join('')}</tbody></table>`
+    :`<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد تسجيلات بعد.<br><small>ستظهر هنا عند قيام الزوار بالتسجيل من الموقع.</small></p>`;
+}
+function renderConsultTable(){
+  const cs=getConsults();
+  document.getElementById('consult-table').innerHTML=cs.length
+    ?`<table><thead><tr><th>الاسم</th><th>الجوال</th><th>المستوى</th><th>الهدف</th></tr></thead>
+      <tbody>${cs.map(c=>`<tr><td>${c.name||'—'}</td><td>${c.phone||'—'}</td><td>${c.level||'—'}</td><td>${c.goal||'—'}</td></tr>`).join('')}</tbody></table>`
+    :`<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد طلبات استشارة بعد.</p>`;
+}
+function renderMsgsTable(){
+  const msgs=getMsgs();
+  document.getElementById('msgs-table').innerHTML=msgs.length
+    ?`<table><thead><tr><th>الاسم</th><th>البريد</th><th>الموضوع</th><th>الرسالة</th></tr></thead>
+      <tbody>${msgs.map(m=>`<tr><td>${m.name||'—'}</td><td>${m.email||'—'}</td><td>${m.subject||'—'}</td><td>${m.msg||'—'}</td></tr>`).join('')}</tbody></table>`
+    :`<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد رسائل بعد.</p>`;
+}
+function renderCommentsTable(){
+  const news=getNews();
+  let rows='';
+  news.forEach(n=>{
+    const cmts=JSON.parse(localStorage.getItem('cmts-'+n.id)||'[]');
+    cmts.forEach((c,i)=>{
+      rows+=`<tr>
+        <td>${n.title}</td>
+        <td>زائر</td>
+        <td>${c.txt}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteCmt('${n.id}',${i})">حذف</button></td>
+      </tr>`;
+    });
+  });
+  document.getElementById('comments-table').innerHTML=rows
+    ?`<table><thead><tr><th>الخبر</th><th>الكاتب</th><th>التعليق</th><th>إجراءات</th></tr></thead><tbody>${rows}</tbody></table>`
+    :'<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد تعليقات بعد.</p>';
+}
+function deleteCmt(newsId,idx){
+  confirm(()=>{
+    const cmts=JSON.parse(localStorage.getItem('cmts-'+newsId)||'[]');
+    cmts.splice(idx,1);
+    localStorage.setItem('cmts-'+newsId,JSON.stringify(cmts));
+    renderCommentsTable();toast('تم حذف التعليق');
+  });
+}
+
+// SETTINGS
+function loadSettings(){
+  const s=JSON.parse(localStorage.getItem('admin-settings')||'{}');
+  if(s.name)document.getElementById('s-name').value=s.name;
+  if(s.title)document.getElementById('s-title').value=s.title;
+  if(s.email)document.getElementById('s-email').value=s.email;
+  if(s.phone)document.getElementById('s-phone').value=s.phone;
+  if(s.bio)document.getElementById('s-bio').value=s.bio;
+  if(s.price)document.getElementById('s-price').value=s.price;
+  const sc=JSON.parse(localStorage.getItem('admin-socials')||'{}');
+  ['tw','ig','yt','li','sn'].forEach(k=>{if(sc[k])document.getElementById('sc-'+k).value=sc[k];});
+}
+function saveSettings(){
+  const s={
+    name:document.getElementById('s-name').value,
+    title:document.getElementById('s-title').value,
+    email:document.getElementById('s-email').value,
+    phone:document.getElementById('s-phone').value,
+    bio:document.getElementById('s-bio').value,
+    price:document.getElementById('s-price').value,
+  };
+  localStorage.setItem('admin-settings',JSON.stringify(s));toast('تم حفظ المعلومات!');
+}
+function saveSocials(){
+  const sc={};
+  ['tw','ig','yt','li','sn'].forEach(k=>sc[k]=document.getElementById('sc-'+k).value);
+  localStorage.setItem('admin-socials',JSON.stringify(sc));toast('تم حفظ روابط التواصل!');
+}
+function changePw(){
+  const old=document.getElementById('pw-old').value;
+  const nw=document.getElementById('pw-new').value;
+  if(old!==getPass()){toast('كلمة المرور الحالية خاطئة',true);return;}
+  if(!nw){toast('أدخل كلمة المرور الجديدة',true);return;}
+  localStorage.setItem(ADMIN_PASS_KEY,nw);
+  document.getElementById('pw-old').value='';document.getElementById('pw-new').value='';
+  toast('تم تغيير كلمة المرور!');
+}
+function resetAll(){
+  confirm(()=>{
+    ['admin-news','admin-courses','admin-works','admin-regs','admin-consults','admin-msgs','admin-settings','admin-socials','yt-config'].forEach(k=>localStorage.removeItem(k));
+    toast('تمت إعادة التهيئة');renderPage('dashboard');
+  });
+}
+</script>
+</body>
+</html>
