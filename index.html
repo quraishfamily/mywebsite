@@ -328,6 +328,7 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
         <div class="book-info">
           <h3>لا بأس يا صديقي</h3>
           <p>كتاب يأخذك في رحلة من التأمل والتحفيز، ليذكّرك أن الأزمات ممر لا مقر، وأن خلف كل ضيق فُسحةً للنفَس والأمل.</p>
+          <a id="book1-link" href="#" target="_blank" class="btn btn-outline" style="margin-top:1rem;font-size:.78rem;padding:.4rem 1rem;display:none;">🛒 اشتر الكتاب</a>
         </div>
       </div>
       <div class="book-card">
@@ -335,6 +336,7 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
         <div class="book-info">
           <h3>من الخوف إلى المايك</h3>
           <p>دليلك العملي للتحرر من رهبة الجمهور وبناء ثقتك بصوتك، مستمَدًّا من تجربة حقيقية في الصوت والإلقاء.</p>
+          <a id="book2-link" href="#" target="_blank" class="btn btn-outline" style="margin-top:1rem;font-size:.78rem;padding:.4rem 1rem;display:none;">🛒 اشتر الكتاب</a>
         </div>
       </div>
     </div>
@@ -727,7 +729,10 @@ function renderNews(news=null){
   if(!news)news=JSON.parse(localStorage.getItem('admin-news')||'null')||defaultNews;
   document.getElementById('newsGrid').innerHTML=news.map(n=>`
     <div class="news-card reveal">
-      <div class="news-img"><span class="news-date">${n.date||'اليوم'}</span><span>${n.icon||'📰'}</span></div>
+      <div class="news-img" style="${n.img ? 'background:url('+n.img+') center/cover no-repeat;' : ''}">
+        <span class="news-date">${n.date||'اليوم'}</span>
+        ${!n.img ? '<span style=\"font-size:2.5rem;\">'+(n.icon||'📰')+'</span>' : ''}
+      </div>
       <div class="news-body">
         <div class="news-cat">${n.cat||n.category||'خبر'}</div>
         <h3>${n.title}</h3>
@@ -802,7 +807,7 @@ function renderCourses(courses=null){
   document.getElementById('coursesGrid').innerHTML=courses.map(c=>`
     <div class="course-card reveal">
       ${c.badge?'<div class="c-badge">'+c.badge+'</div>':''}
-      <div class="c-img">${c.icon||'📚'}</div>
+      <div class="c-img" style="${c.img ? 'background:url('+c.img+') center/cover no-repeat;background-size:cover;' : ''}">${!c.img ? (c.icon||'📚') : ''}</div>
       <div class="c-body">
         <h3>${c.title}</h3>
         <p>${c.desc}</p>
@@ -854,6 +859,15 @@ async function loadSettings() {
           if (el) el.href = url;
         });
       });
+    }
+    // Load book links
+    const booksSnap = await db.collection('settings').doc('books').get();
+    if (booksSnap.exists) {
+      const b = booksSnap.data();
+      const b1 = document.getElementById('book1-link');
+      const b2 = document.getElementById('book2-link');
+      if (b1 && b.book1) { b1.href = b.book1; b1.style.display = 'inline-block'; }
+      if (b2 && b.book2) { b2.href = b.book2; b2.style.display = 'inline-block'; }
     }
   } catch(e) {
     console.log('Settings load failed:', e);
