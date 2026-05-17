@@ -711,11 +711,7 @@ const defaultInterviews=[
   {id:'i2',vid:'dQw4w9WgXcQ',title:'لقاء في برنامج صباح الخير',channel:'قناة السعودية'},
   {id:'i3',vid:'dQw4w9WgXcQ',title:'حوار حول رحلتي مع الصوت',channel:'إذاعة MBC'},
 ];
-const defaultCourses=[
-  {id:'c1',icon:'🎙️',badge:'مميزة',title:'التعليق الصوتي الاحترافي',desc:'من الأساسيات حتى الاحتراف، مع تطبيق عملي على مشاريع حقيقية.',price:'١٢٠٠ ريال',dur:'٨ أسابيع',sess:'٢٤ جلسة',lvl:'جميع المستويات'},
-  {id:'c2',icon:'🎤',badge:'جديدة',title:'الإلقاء ومواجهة الجمهور',desc:'تحرر من رهبة المايك وابنِ ثقتك بالإلقاء أمام الجمهور.',price:'٨٠٠ ريال',dur:'٤ أسابيع',sess:'١٢ جلسة',lvl:'مبتدئ - متوسط'},
-  {id:'c3',icon:'🎵',badge:'متقدمة',title:'إنتاج المحتوى الصوتي',desc:'إنتاج وتحرير الصوت للبودكاست والمنصات الرقمية.',price:'١٥٠٠ ريال',dur:'٦ أسابيع',sess:'١٨ جلسة',lvl:'متقدم'},
-];
+const defaultCourses=[];
 const defaultWorks=[
   {id:'w1',vid:'dQw4w9WgXcQ',title:'إعلان تلفزيوني',desc:'نموذج تعليق إعلاني'},
   {id:'w2',vid:'dQw4w9WgXcQ',title:'تعليق وثائقي',desc:'مادة وثائقية'},
@@ -803,7 +799,7 @@ function renderWorks(works=null){
 }
 
 function renderCourses(courses=null){
-  if(!courses)courses=JSON.parse(localStorage.getItem('admin-courses')||'null')||defaultCourses;
+  if(!courses)courses=[];
   if(!courses || courses.length===0){
     document.getElementById('coursesGrid').innerHTML=`
       <div style="grid-column:1/-1;text-align:center;padding:4rem 2rem;">
