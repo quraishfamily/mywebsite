@@ -119,6 +119,8 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   cursor:pointer;
 }
 </style>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -445,13 +447,12 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
 
 <div class="toast" id="toast"></div>
 
-<script type="module">
+<script>
 
 // ═══════════════════════════════════════
 // FIREBASE
 // ═══════════════════════════════════════
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+// Firebase loaded via CDN scripts in <head>
 
 const firebaseConfig = {
   apiKey: "AIzaSyBCheHz_5vWYWJdnTpaYstOVKUgvR5tCPQ",
@@ -462,35 +463,35 @@ const firebaseConfig = {
   appId: "1:777596990140:web:8f336a1f2336a450a416b9"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 // Helper: save entire array to Firebase collection
 async function saveCollection(colName, items) {
   // Delete all existing docs first
-  const snap = await getDocs(collection(db, colName));
-  const deletes = snap.docs.map(d => deleteDoc(doc(db, colName, d.id)));
+  const snap = await getDocs(db.collection( colName));
+  const deletes = snap.docs.map(d => collection(db, colName).doc(d.id).delete());
   await Promise.all(deletes);
   // Add new docs
   let order = 0;
   for (const item of items) {
-    await setDoc(doc(db, colName, item.id || ('item_'+Date.now()+'_'+(order++))), {...item, order: order++});
+    await setDoc(collection(db, colName).doc(item.id || ('item_'+Date.now()+'_'+(order++))), {...item, order: order++});
   }
 }
 
 async function addToCollection(colName, item) {
-  const snap = await getDocs(collection(db, colName));
+  const snap = await getDocs(db.collection( colName));
   item.order = snap.size;
   await setDoc(doc(db, colName, item.id || ('item_'+Date.now())), item);
 }
 
 async function deleteFromCollection(colName, docId) {
-  await deleteDoc(doc(db, colName, docId));
+  await db.collection(colName).doc(docId).delete();
 }
 
 async function loadCollection(colName) {
-  const q = query(collection(db, colName), orderBy("order", "asc"));
-  const snap = await getDocs(q);
+  const q = query(db.collection( colName), orderBy("order", "asc"));
+  const snap = await q.get();
   return snap.docs.map(d => ({id: d.id, ...d.data()}));
 }
 
@@ -838,13 +839,13 @@ function saveSettings(){
     price:document.getElementById('s-price').value,
   };
   localStorage.setItem('admin-settings',JSON.stringify(s));
-  setDoc(doc(db,'settings','main'), s).then(()=>toast('تم حفظ المعلومات! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
+  db.collection('settings').doc('main').set(s).then(()=>toast('تم حفظ المعلومات! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
 }
 function saveSocials(){
   const sc={};
   ['tw','ig','yt','li','sn'].forEach(k=>sc[k]=document.getElementById('sc-'+k).value);
   localStorage.setItem('admin-socials',JSON.stringify(sc));
-  setDoc(doc(db,'settings','socials'), sc).then(()=>toast('تم حفظ روابط التواصل! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
+  db.collection('settings').doc('socials').set(sc).then(()=>toast('تم حفظ روابط التواصل! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
 }
 function changePw(){
   const old=document.getElementById('pw-old').value;
