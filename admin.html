@@ -126,8 +126,9 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
 // Proxy functions - delegate to real implementations once loaded
 var _fns = {};
 function _call(name, args) {
-  if (window[name]) { window[name].apply(null, args); }
-  else { console.warn(name + ' not yet loaded'); }
+  var fn = window['_real_' + name];
+  if (fn) { fn.apply(null, args); }
+  else { console.warn(name + ' not yet ready'); }
 }
 function doLogin(){_call('doLogin',[])}
 function logout(){_call('logout',[])}
@@ -526,7 +527,7 @@ async function deleteFromCollection(colName, docId) {
   await db.collection(colName).doc(docId).delete();
 }
 
-async async function loadCollection(colName) {
+async function loadCollection(colName) {
   const snap = await db.collection(colName).orderBy("order","asc").get();
   return snap.docs.map(d => ({id: d.id, ...d.data()}));
 }
@@ -1065,41 +1066,41 @@ function deleteInterview(idx){
 // ═══════════════════════════════════════
 // EXPOSE FUNCTIONS TO GLOBAL SCOPE (required for type="module")
 // ═══════════════════════════════════════
-window.showPage = showPage;
-window.doLogin = doLogin;
-window.logout = logout;
-window.openModal = openModal;
-window.closeModal = closeModal;
-window.openNewsModal = openNewsModal;
-window.editNews = editNews;
-window.saveNews = saveNews;
-window.deleteNews = deleteNews;
-window.openCourseModal = openCourseModal;
-window.editCourse = editCourse;
-window.saveCourse = saveCourse;
-window.deleteCourse = deleteCourse;
-window.addWork = addWork;
-window.deleteWork = deleteWork;
-window.saveYT = saveYT;
-window.addPodcast = addPodcast;
-window.deletePodcast = deletePodcast;
-window.addInterview = addInterview;
-window.deleteInterview = deleteInterview;
-window.saveSettings = saveSettings;
-window.saveSocials = saveSocials;
-window.changePw = changePw;
-window.resetAll = resetAll;
-window.formatDateAr = formatDateAr;
-window.saveRSS = saveRSS;
-window.previewPodcast = previewPodcast;
-window.addPodcast = addPodcast;
-window.deletePodcast = deletePodcast;
-window.renderPodcastTable = renderPodcastTable;
-window.addInterview = addInterview;
-window.deleteInterview = deleteInterview;
-window.renderInterviewsTable = renderInterviewsTable;
-window.confirm_action = confirm_action;
-window.deleteCmt = deleteCmt;
+window._real_showPage = showPage;
+window._real_doLogin = doLogin;
+window._real_logout = logout;
+window._real_openModal = openModal;
+window._real_closeModal = closeModal;
+window._real_openNewsModal = openNewsModal;
+window._real_editNews = editNews;
+window._real_saveNews = saveNews;
+window._real_deleteNews = deleteNews;
+window._real_openCourseModal = openCourseModal;
+window._real_editCourse = editCourse;
+window._real_saveCourse = saveCourse;
+window._real_deleteCourse = deleteCourse;
+window._real_addWork = addWork;
+window._real_deleteWork = deleteWork;
+window._real_saveYT = saveYT;
+window._real_addPodcast = addPodcast;
+window._real_deletePodcast = deletePodcast;
+window._real_addInterview = addInterview;
+window._real_deleteInterview = deleteInterview;
+window._real_saveSettings = saveSettings;
+window._real_saveSocials = saveSocials;
+window._real_changePw = changePw;
+window._real_resetAll = resetAll;
+window._real_formatDateAr = formatDateAr;
+window._real_saveRSS = saveRSS;
+window._real_previewPodcast = previewPodcast;
+window._real_addPodcast = addPodcast;
+window._real_deletePodcast = deletePodcast;
+window._real_renderPodcastTable = renderPodcastTable;
+window._real_addInterview = addInterview;
+window._real_deleteInterview = deleteInterview;
+window._real_renderInterviewsTable = renderInterviewsTable;
+window._real_confirm_action = confirm_action;
+window._real_deleteCmt = deleteCmt;
 
 </script>
 </body>
