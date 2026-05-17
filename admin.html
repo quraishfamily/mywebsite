@@ -121,7 +121,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
 <script>
 // Proxy functions - delegate to real implementations once loaded
@@ -527,7 +526,6 @@ const firebaseConfig = {
 
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const storage = firebase.storage();
 
 // Helper: save entire array to Firebase collection
 async function saveCollection(colName, items) {
@@ -1109,29 +1107,38 @@ function saveBooks(){
 }
 
 // ═══════════════════════════════════════
-// IMAGE UPLOAD
+// IMAGE UPLOAD — Cloudinary
 // ═══════════════════════════════════════
-async function uploadImage(file, path) {
-  const ref = storage.ref(path + '/' + Date.now() + '_' + file.name);
-  await ref.put(file);
-  const url = await ref.getDownloadURL();
-  return url;
+const CLOUDINARY_CLOUD = 'dhnzsilai';
+const CLOUDINARY_PRESET = 'ahmed_site_unsigned';
+
+async function uploadImageToCloudinary(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY_PRESET);
+  formData.append('cloud_name', CLOUDINARY_CLOUD);
+  const res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', {
+    method: 'POST',
+    body: formData
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.secure_url;
 }
 
 function handleImageUpload(inputId, previewId, hiddenId) {
   const input = document.getElementById(inputId);
   const file = input.files[0];
   if (!file) return;
-  // Show loading
   const preview = document.getElementById(previewId);
   preview.innerHTML = '<span style="color:var(--text-muted);font-size:.75rem;">جارٍ الرفع...</span>';
-  uploadImage(file, 'images').then(url => {
+  uploadImageToCloudinary(file).then(url => {
     document.getElementById(hiddenId).value = url;
     preview.innerHTML = '<img src="'+url+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">';
     toast('تم رفع الصورة! ✓');
   }).catch(e => {
     preview.innerHTML = '';
-    toast('فشل رفع الصورة: ' + e.message, true);
+    toast('فشل رفع الصورة — تأكد من إعداد Unsigned Preset', true);
   });
 }
 // ═══════════════════════════════════════
