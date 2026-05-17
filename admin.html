@@ -541,7 +541,7 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 
 // CONFIRM
 let confirmCb=null;
-function confirm(cb){confirmCb=cb;document.getElementById('confirmOverlay').classList.add('open');}
+function confirm_action(cb){confirmCb=cb;document.getElementById('confirmOverlay').classList.add('open');}
 function closeConfirm(){document.getElementById('confirmOverlay').classList.remove('open');confirmCb=null;}
 document.getElementById('confirmYes').onclick=()=>{if(confirmCb)confirmCb();closeConfirm();};
 
@@ -582,7 +582,7 @@ function renderPage(id){
   if(id==='dashboard')renderDashboard();
   else if(id==='news')renderNewsTable();
   else if(id==='courses')renderCoursesTable();
-  else if(id==='podcast')renderPodcastTable();
+  else if(id==='podcast'){renderPodcastTable();}  
   else if(id==='interviews')renderInterviewsTable();
   else if(id==='works')renderWorksTable();
   else if(id==='regs')renderRegsTable();
@@ -663,7 +663,7 @@ function saveNews(){
   closeModal('newsModal');renderNewsTable();
 }
 function deleteNews(id){
-  confirm(()=>{
+  confirm_action(()=>{
     const updated = getNews().filter(n=>n.id!==id);
     saveNewsData(updated);
     saveCollection('news', updated).catch(()=>{});
@@ -729,7 +729,7 @@ function saveCourse(){
   closeModal('courseModal');renderCoursesTable();
 }
 function deleteCourse(id){
-  confirm(()=>{saveCoursesData(getCourses().filter(c=>c.id!==id));renderCoursesTable();toast('تم الحذف');});
+  confirm_action(()=>{saveCoursesData(getCourses().filter(c=>c.id!==id));renderCoursesTable();toast('تم الحذف');});
 }
 
 // WORKS
@@ -759,7 +759,7 @@ function addWork(){
   renderWorksTable();
 }
 function deleteWork(id){
-  confirm(()=>{saveWorksData(getWorks().filter(w=>w.id!==id));renderWorksTable();toast('تم الحذف');});
+  confirm_action(()=>{saveWorksData(getWorks().filter(w=>w.id!==id));renderWorksTable();toast('تم الحذف');});
 }
 function saveYT(){
   const ch=document.getElementById('yt-channel').value;
@@ -809,7 +809,7 @@ function renderCommentsTable(){
     :'<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد تعليقات بعد.</p>';
 }
 function deleteCmt(newsId,idx){
-  confirm(()=>{
+  confirm_action(()=>{
     const cmts=JSON.parse(localStorage.getItem('cmts-'+newsId)||'[]');
     cmts.splice(idx,1);
     localStorage.setItem('cmts-'+newsId,JSON.stringify(cmts));
@@ -857,7 +857,7 @@ function changePw(){
   toast('تم تغيير كلمة المرور!');
 }
 function resetAll(){
-  confirm(()=>{
+  confirm_action(()=>{
     ['admin-news','admin-courses','admin-works','admin-regs','admin-consults','admin-msgs','admin-settings','admin-socials','yt-config'].forEach(k=>localStorage.removeItem(k));
     toast('تمت إعادة التهيئة');renderPage('dashboard');
   });
@@ -931,6 +931,101 @@ function extractVideoId(url) {
   }
   return url.trim();
 }
+
+// ═══════════════════════════════════════
+// PODCAST FUNCTIONS
+// ═══════════════════════════════════════
+function renderPodcastTable(){
+  const eps=JSON.parse(localStorage.getItem('admin-podcast')||'null')||[];
+  document.getElementById('podcast-table').innerHTML=eps.length
+    ?`<table><thead><tr><th>#</th><th>رقم الحلقة</th><th>العنوان</th><th>المدة</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+      <tbody>${eps.map((e,i)=>`<tr>
+        <td>${i+1}</td>
+        <td>${e.ep||''}</td>
+        <td>${e.title}</td>
+        <td>${e.dur||''}</td>
+        <td>${e.date||''}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deletePodcast(${i})">حذف</button></td>
+      </tr>`).join('')}</tbody></table>`
+    :'<p style="color:var(--text-muted);font-size:.85rem;">لا توجد حلقات مضافة يدوياً</p>';
+}
+
+function addPodcast(){
+  const ep=document.getElementById('pod-ep').value.trim();
+  const title=document.getElementById('pod-title').value.trim();
+  if(!title){toast('أدخل عنوان الحلقة',true);return;}
+  const rawPodDate=document.getElementById('pod-date').value;
+  const eps=JSON.parse(localStorage.getItem('admin-podcast')||'null')||[];
+  const newEp={id:'pod_'+Date.now(),ep,title,
+    dur:document.getElementById('pod-dur').value,
+    date:rawPodDate?formatDateAr(rawPodDate):'',
+    dateRaw:rawPodDate};
+  eps.unshift(newEp);
+  const trimmed=eps.slice(0,5);
+  localStorage.setItem('admin-podcast',JSON.stringify(trimmed));
+  saveCollection('podcast',trimmed)
+    .then(()=>toast('تمت إضافة الحلقة! ✓'))
+    .catch(()=>toast('حُفظ محلياً فقط'));
+  ['pod-ep','pod-title','pod-dur','pod-date'].forEach(x=>document.getElementById(x).value='');
+  renderPodcastTable();
+}
+
+function deletePodcast(idx){
+  confirm_action(()=>{
+    const eps=JSON.parse(localStorage.getItem('admin-podcast')||'null')||[];
+    eps.splice(idx,1);
+    localStorage.setItem('admin-podcast',JSON.stringify(eps));
+    saveCollection('podcast',eps).catch(()=>{});
+    renderPodcastTable();
+    toast('تم الحذف');
+  });
+}
+
+// ═══════════════════════════════════════
+// INTERVIEW FUNCTIONS
+// ═══════════════════════════════════════
+function renderInterviewsTable(){
+  const ivs=JSON.parse(localStorage.getItem('admin-interviews')||'null')||[];
+  document.getElementById('interviews-table').innerHTML=ivs.length
+    ?`<table><thead><tr><th>العنوان</th><th>الجهة</th><th>Video ID</th><th>إجراءات</th></tr></thead>
+      <tbody>${ivs.map((iv,i)=>`<tr>
+        <td>${iv.title}</td>
+        <td>${iv.channel||'—'}</td>
+        <td style="direction:ltr;text-align:left;font-size:.75rem;">${iv.vid||''}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteInterview(${i})">حذف</button></td>
+      </tr>`).join('')}</tbody></table>`
+    :'<p style="color:var(--text-muted);font-size:.85rem;">لا توجد مقابلات مضافة</p>';
+}
+
+function addInterview(){
+  const title=document.getElementById('iv-title').value.trim();
+  const rawVid=document.getElementById('iv-vid').value.trim();
+  if(!title||!rawVid){toast('أدخل العنوان والرابط',true);return;}
+  const vid=extractVideoId(rawVid);
+  const ivs=JSON.parse(localStorage.getItem('admin-interviews')||'null')||[];
+  const newIv={id:'i'+Date.now(),title,
+    channel:document.getElementById('iv-channel').value,
+    vid:extractVideoId(vid)};
+  ivs.push(newIv);
+  localStorage.setItem('admin-interviews',JSON.stringify(ivs));
+  saveCollection('interviews',ivs)
+    .then(()=>toast('تمت إضافة المقابلة! ✓'))
+    .catch(()=>toast('حُفظ محلياً فقط'));
+  ['iv-title','iv-channel','iv-vid'].forEach(x=>document.getElementById(x).value='');
+  renderInterviewsTable();
+}
+
+function deleteInterview(idx){
+  confirm_action(()=>{
+    const ivs=JSON.parse(localStorage.getItem('admin-interviews')||'null')||[];
+    ivs.splice(idx,1);
+    localStorage.setItem('admin-interviews',JSON.stringify(ivs));
+    saveCollection('interviews',ivs).catch(()=>{});
+    renderInterviewsTable();
+    toast('تم الحذف');
+  });
+}
+
 // ═══════════════════════════════════════
 // EXPOSE FUNCTIONS TO GLOBAL SCOPE (required for type="module")
 // ═══════════════════════════════════════
@@ -961,6 +1056,13 @@ window.resetAll = resetAll;
 window.formatDateAr = formatDateAr;
 window.saveRSS = saveRSS;
 window.previewPodcast = previewPodcast;
+window.addPodcast = addPodcast;
+window.deletePodcast = deletePodcast;
+window.renderPodcastTable = renderPodcastTable;
+window.addInterview = addInterview;
+window.deleteInterview = deleteInterview;
+window.renderInterviewsTable = renderInterviewsTable;
+window.confirm_action = confirm_action;
 window.deleteCmt = deleteCmt;
 
 </script>
