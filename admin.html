@@ -735,8 +735,10 @@ function deleteNews(id){
   confirm_action(()=>{
     const updated = getNews().filter(n=>n.id!==id);
     saveNewsData(updated);
-    saveCollection('news', updated).catch(()=>{});
-    renderNewsTable();toast('تم الحذف');
+    saveCollection('news', updated)
+      .then(()=>toast('تم الحذف ✓'))
+      .catch(()=>toast('تم الحذف محلياً فقط'));
+    renderNewsTable();
   });
 }
 
@@ -805,7 +807,14 @@ function saveCourse(){
   closeModal('courseModal');renderCoursesTable();
 }
 function deleteCourse(id){
-  confirm_action(()=>{saveCoursesData(getCourses().filter(c=>c.id!==id));renderCoursesTable();toast('تم الحذف');});
+  confirm_action(()=>{
+    const updated=getCourses().filter(c=>c.id!==id);
+    saveCoursesData(updated);
+    saveCollection('courses', updated)
+      .then(()=>toast('تم الحذف ✓'))
+      .catch(()=>toast('تم الحذف محلياً فقط'));
+    renderCoursesTable();
+  });
 }
 
 // WORKS
