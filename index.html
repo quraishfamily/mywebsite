@@ -543,7 +543,45 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
   </div>
 </div>
 
-<script>
+<script type="module">
+
+// ═══════════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════════
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, onSnapshot, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBCheHz_5vWYWJdnTpaYstOVKUgvR5tCPQ",
+  authDomain: "ahmed-quraish.firebaseapp.com",
+  projectId: "ahmed-quraish",
+  storageBucket: "ahmed-quraish.firebasestorage.app",
+  messagingSenderId: "777596990140",
+  appId: "1:777596990140:web:8f336a1f2336a450a416b9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ═══════════════════════════════════════
+// LOAD FROM FIREBASE (with localStorage fallback)
+// ═══════════════════════════════════════
+async function loadFromFirebase(collectionName, fallback, renderFn) {
+  try {
+    const q = query(collection(db, collectionName), orderBy("order", "asc"));
+    onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const data = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+        renderFn(data);
+      } else {
+        renderFn(fallback);
+      }
+    });
+  } catch(e) {
+    renderFn(fallback);
+  }
+}
+
 // CURSOR
 const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
 document.addEventListener('mousemove',e=>{
@@ -643,8 +681,8 @@ const defaultWorks=[
   {id:'w6',vid:'dQw4w9WgXcQ',title:'برنامج رمضاني',desc:'أمة حكواتي'},
 ];
 
-function renderNews(){
-  const news=JSON.parse(localStorage.getItem('admin-news')||'null')||defaultNews;
+function renderNews(news=null){
+  if(!news)news=JSON.parse(localStorage.getItem('admin-news')||'null')||defaultNews;
   document.getElementById('newsGrid').innerHTML=news.map(n=>`
     <div class="news-card reveal">
       <div class="news-img"><span class="news-date">${n.date||'اليوم'}</span><span>${n.icon||'📰'}</span></div>
@@ -676,8 +714,8 @@ function renderNews(){
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 }
 
-function renderPodcast(){
-  const eps=JSON.parse(localStorage.getItem('admin-podcast')||'null')||defaultPodcast;
+function renderPodcast(eps=null){
+  if(!eps)eps=JSON.parse(localStorage.getItem('admin-podcast')||'null')||defaultPodcast;
   document.getElementById('podcastGrid').innerHTML=eps.slice(0,5).map((e,i)=>`
     <div class="ep-card reveal">
       <div class="ep-num">${String(i+1).padStart(2,'0')}</div>
@@ -691,8 +729,8 @@ function renderPodcast(){
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 }
 
-function renderInterviews(){
-  const ivs=JSON.parse(localStorage.getItem('admin-interviews')||'null')||defaultInterviews;
+function renderInterviews(ivs=null){
+  if(!ivs)ivs=JSON.parse(localStorage.getItem('admin-interviews')||'null')||defaultInterviews;
   document.getElementById('interviewsGrid').innerHTML=ivs.map(iv=>`
     <div class="int-card reveal">
       <div class="int-embed"><iframe src="https://www.youtube.com/embed/${iv.vid||iv.videoId}" allowfullscreen loading="lazy"></iframe></div>
@@ -701,8 +739,8 @@ function renderInterviews(){
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 }
 
-function renderWorks(){
-  const works=JSON.parse(localStorage.getItem('admin-works')||'null')||defaultWorks;
+function renderWorks(works=null){
+  if(!works)works=JSON.parse(localStorage.getItem('admin-works')||'null')||defaultWorks;
   document.getElementById('worksGrid').innerHTML=works.map(w=>`
     <div class="work-card reveal">
       <div class="work-embed"><iframe src="https://www.youtube.com/embed/${w.vid||w.videoId}" allowfullscreen loading="lazy"></iframe></div>
@@ -711,8 +749,8 @@ function renderWorks(){
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 }
 
-function renderCourses(){
-  const courses=JSON.parse(localStorage.getItem('admin-courses')||'null')||defaultCourses;
+function renderCourses(courses=null){
+  if(!courses)courses=JSON.parse(localStorage.getItem('admin-courses')||'null')||defaultCourses;
   document.getElementById('coursesGrid').innerHTML=courses.map(c=>`
     <div class="course-card reveal">
       ${c.badge?'<div class="c-badge">'+c.badge+'</div>':''}
@@ -744,8 +782,14 @@ function loadYT(){
 function sendMsg(e){e.preventDefault();toast('تم إرسال رسالتك!');e.target.reset();}
 function submitForm(e,t){e.preventDefault();closeModal(t);toast(t==='course'?'تم استلام طلب التسجيل!':'تم استلام طلب الحجز!');e.target.reset();}
 
-// INIT
-renderNews();renderPodcast();renderInterviews();renderWorks();renderCourses();
+// ═══════════════════════════════════════
+// INIT — load from Firebase, fallback to defaults
+// ═══════════════════════════════════════
+loadFromFirebase('news', defaultNews, renderNews);
+loadFromFirebase('podcast', defaultPodcast, renderPodcast);
+loadFromFirebase('interviews', defaultInterviews, renderInterviews);
+loadFromFirebase('works', defaultWorks, renderWorks);
+loadFromFirebase('courses', defaultCourses, renderCourses);
 </script>
 </body>
 </html>
