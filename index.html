@@ -790,6 +790,21 @@ loadFromFirebase('podcast', defaultPodcast, renderPodcast);
 loadFromFirebase('interviews', defaultInterviews, renderInterviews);
 loadFromFirebase('works', defaultWorks, renderWorks);
 loadFromFirebase('courses', defaultCourses, renderCourses);
+
+// ═══════════════════════════════════════
+// EXPOSE FUNCTIONS TO GLOBAL SCOPE
+// ═══════════════════════════════════════
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.toggleCmt = toggleCmt;
+window.addCmt = addCmt;
+window.shareTw = shareTw;
+window.shareWa = shareWa;
+window.shareCopy = shareCopy;
+window.loadYT = loadYT;
+window.sendMsg = sendMsg;
+window.submitForm = submitForm;
+
 </script>
 </body>
 </html>
