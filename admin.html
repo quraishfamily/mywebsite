@@ -121,6 +121,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
 <script>
 // Proxy functions - delegate to real implementations once loaded
@@ -159,6 +160,7 @@ function saveRSS(){_call('saveRSS',[])}
 function previewPodcast(){_call('previewPodcast',[])}
 function closeConfirm(){_call('closeConfirm',[])}
 function saveBooks(){_call('saveBooks',[])}
+function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
 </script>
 
 </head>
@@ -448,7 +450,12 @@ function saveBooks(){_call('saveBooks',[])}
       <div class="fg"><label>التصنيف</label><select id="nm-cat"><option>أخبار</option><option>دورات</option><option>إنجازات</option><option>فعاليات</option></select></div>
       <div class="fg"><label>التاريخ والوقت</label><input type="datetime-local" id="nm-date"></div>
       <div class="fg"><label>الأيقونة (رمز)</label><input type="text" id="nm-icon" placeholder="🎙️"></div>
-      <div class="fg fg-full"><label>رابط صورة الخبر (اختياري)</label><input type="url" id="nm-img" placeholder="https://..."></div>
+      <div class="fg fg-full">
+        <label>صورة الخبر (اختياري)</label>
+        <input type="file" id="nm-img-file" accept="image/*" onchange="handleImageUpload('nm-img-file','nm-img-preview','nm-img')" style="background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem;color:var(--text);width:100%;cursor:pointer;">
+        <input type="hidden" id="nm-img">
+        <div id="nm-img-preview"></div>
+      </div>
       <div class="fg fg-full"><label>ملخص الخبر</label><textarea id="nm-body" placeholder="اكتب نص الخبر..."></textarea></div>
     </div>
     <input type="hidden" id="nm-edit-id">
@@ -472,7 +479,12 @@ function saveBooks(){_call('saveBooks',[])}
       <div class="fg"><label>عدد الجلسات</label><input type="text" id="cm-sess" placeholder="24 جلسة"></div>
       <div class="fg"><label>المستوى</label><input type="text" id="cm-lvl" placeholder="جميع المستويات"></div>
       <div class="fg"><label>الوسم (badge)</label><input type="text" id="cm-badge" placeholder="جديدة / مميزة"></div>
-      <div class="fg fg-full"><label>رابط صورة الدورة (اختياري)</label><input type="url" id="cm-img" placeholder="https://..."></div>
+      <div class="fg fg-full">
+        <label>صورة الدورة (اختياري)</label>
+        <input type="file" id="cm-img-file" accept="image/*" onchange="handleImageUpload('cm-img-file','cm-img-preview','cm-img')" style="background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem;color:var(--text);width:100%;cursor:pointer;">
+        <input type="hidden" id="cm-img">
+        <div id="cm-img-preview"></div>
+      </div>
       <div class="fg fg-full"><label>وصف الدورة</label><textarea id="cm-desc" placeholder="اكتب وصف الدورة..."></textarea></div>
     </div>
     <input type="hidden" id="cm-edit-id">
@@ -515,6 +527,7 @@ const firebaseConfig = {
 
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const storage = firebase.storage();
 
 // Helper: save entire array to Firebase collection
 async function saveCollection(colName, items) {
@@ -679,6 +692,7 @@ function openNewsModal(id=''){
     document.getElementById('nm-cat').value=n.category||'أخبار';
     document.getElementById('nm-date').value=n.dateRaw||'';
     document.getElementById('nm-img').value=n.img||'';
+    document.getElementById('nm-img-preview').innerHTML = n.img ? '<img src="'+n.img+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">' : '';
     document.getElementById('nm-icon').value=n.icon||'';
     document.getElementById('nm-body').value=n.body||n.excerpt||'';
     document.getElementById('news-modal-title').textContent='تعديل الخبر';
@@ -749,6 +763,7 @@ function openCourseModal(id=''){
     document.getElementById('cm-lvl').value=c.lvl||c.level||'';
     document.getElementById('cm-badge').value=c.badge||'';
     document.getElementById('cm-img').value=c.img||'';
+    document.getElementById('cm-img-preview').innerHTML = c.img ? '<img src="'+c.img+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">' : '';
     document.getElementById('cm-desc').value=c.desc||'';
     document.getElementById('course-modal-title').textContent='تعديل الدورة';
   } else {
@@ -1092,6 +1107,33 @@ function saveBooks(){
     .then(()=>toast('تم حفظ روابط الكتب! ✓'))
     .catch(()=>toast('حُفظ محلياً فقط'));
 }
+
+// ═══════════════════════════════════════
+// IMAGE UPLOAD
+// ═══════════════════════════════════════
+async function uploadImage(file, path) {
+  const ref = storage.ref(path + '/' + Date.now() + '_' + file.name);
+  await ref.put(file);
+  const url = await ref.getDownloadURL();
+  return url;
+}
+
+function handleImageUpload(inputId, previewId, hiddenId) {
+  const input = document.getElementById(inputId);
+  const file = input.files[0];
+  if (!file) return;
+  // Show loading
+  const preview = document.getElementById(previewId);
+  preview.innerHTML = '<span style="color:var(--text-muted);font-size:.75rem;">جارٍ الرفع...</span>';
+  uploadImage(file, 'images').then(url => {
+    document.getElementById(hiddenId).value = url;
+    preview.innerHTML = '<img src="'+url+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">';
+    toast('تم رفع الصورة! ✓');
+  }).catch(e => {
+    preview.innerHTML = '';
+    toast('فشل رفع الصورة: ' + e.message, true);
+  });
+}
 // ═══════════════════════════════════════
 // EXPOSE FUNCTIONS TO GLOBAL SCOPE (required for type="module")
 // ═══════════════════════════════════════
@@ -1120,6 +1162,7 @@ window._real_saveSocials = saveSocials;
 window._real_changePw = changePw;
 window._real_resetAll = resetAll;
 window._real_saveBooks = saveBooks;
+window._real_handleImageUpload = handleImageUpload;
 window._real_formatDateAr = formatDateAr;
 window._real_saveRSS = saveRSS;
 window._real_previewPodcast = previewPodcast;
