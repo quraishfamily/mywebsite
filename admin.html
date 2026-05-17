@@ -419,7 +419,55 @@ tr:hover td{background:rgba(201,168,76,.03);}
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
+
+// ═══════════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════════
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBCheHz_5vWYWJdnTpaYstOVKUgvR5tCPQ",
+  authDomain: "ahmed-quraish.firebaseapp.com",
+  projectId: "ahmed-quraish",
+  storageBucket: "ahmed-quraish.firebasestorage.app",
+  messagingSenderId: "777596990140",
+  appId: "1:777596990140:web:8f336a1f2336a450a416b9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Helper: save entire array to Firebase collection
+async function saveCollection(colName, items) {
+  // Delete all existing docs first
+  const snap = await getDocs(collection(db, colName));
+  const deletes = snap.docs.map(d => deleteDoc(doc(db, colName, d.id)));
+  await Promise.all(deletes);
+  // Add new docs
+  let order = 0;
+  for (const item of items) {
+    await setDoc(doc(db, colName, item.id || ('item_'+Date.now()+'_'+(order++))), {...item, order: order++});
+  }
+}
+
+async function addToCollection(colName, item) {
+  const snap = await getDocs(collection(db, colName));
+  item.order = snap.size;
+  await setDoc(doc(db, colName, item.id || ('item_'+Date.now())), item);
+}
+
+async function deleteFromCollection(colName, docId) {
+  await deleteDoc(doc(db, colName, docId));
+}
+
+async function loadCollection(colName) {
+  const q = query(collection(db, colName), orderBy("order", "asc"));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({id: d.id, ...d.data()}));
+}
+
 // AUTH
 const ADMIN_USER='admin', ADMIN_PASS_KEY='admin-pass';
 function getPass(){return localStorage.getItem(ADMIN_PASS_KEY)||'admin123';}
@@ -580,11 +628,15 @@ function saveNews(){
   let news=getNews();
   if(id)news=news.map(n=>n.id===id?data:n);
   else news.push(data);
-  saveNewsData(news);closeModal('newsModal');renderNewsTable();toast('تم حفظ الخبر!');
+  saveNewsData(news);
+  saveCollection('news', news).then(()=>toast('تم حفظ الخبر! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
+  closeModal('newsModal');renderNewsTable();
 }
 function deleteNews(id){
   confirm(()=>{
-    saveNewsData(getNews().filter(n=>n.id!==id));
+    const updated = getNews().filter(n=>n.id!==id);
+    saveNewsData(updated);
+    saveCollection('news', updated).catch(()=>{});
     renderNewsTable();toast('تم الحذف');
   });
 }
@@ -642,7 +694,9 @@ function saveCourse(){
   let courses=getCourses();
   if(id)courses=courses.map(c=>c.id===id?data:c);
   else courses.push(data);
-  saveCoursesData(courses);closeModal('courseModal');renderCoursesTable();toast('تم حفظ الدورة!');
+  saveCoursesData(courses);
+  saveCollection('courses', courses).then(()=>toast('تم حفظ الدورة! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
+  closeModal('courseModal');renderCoursesTable();
 }
 function deleteCourse(id){
   confirm(()=>{saveCoursesData(getCourses().filter(c=>c.id!==id));renderCoursesTable();toast('تم الحذف');});
@@ -667,10 +721,12 @@ function addWork(){
   const vid=document.getElementById('wk-vid').value.trim();
   if(!title||!vid){toast('أدخل العنوان ومعرف الفيديو',true);return;}
   const works=getWorks();
-  works.push({id:'w'+Date.now(),title,vid,desc:document.getElementById('wk-desc').value});
+  const newWork={id:'w'+Date.now(),title,vid,desc:document.getElementById('wk-desc').value};
+  works.push(newWork);
   saveWorksData(works);
+  saveCollection('works',works).then(()=>toast('تم إضافة العمل! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
   ['wk-title','wk-vid','wk-desc'].forEach(x=>document.getElementById(x).value='');
-  renderWorksTable();toast('تم إضافة العمل!');
+  renderWorksTable();
 }
 function deleteWork(id){
   confirm(()=>{saveWorksData(getWorks().filter(w=>w.id!==id));renderWorksTable();toast('تم الحذف');});
@@ -752,7 +808,8 @@ function saveSettings(){
     bio:document.getElementById('s-bio').value,
     price:document.getElementById('s-price').value,
   };
-  localStorage.setItem('admin-settings',JSON.stringify(s));toast('تم حفظ المعلومات!');
+  localStorage.setItem('admin-settings',JSON.stringify(s));
+  setDoc(doc(db,'settings','main'), s).then(()=>toast('تم حفظ المعلومات! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
 }
 function saveSocials(){
   const sc={};
