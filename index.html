@@ -572,12 +572,10 @@ const db = firebase.firestore();
 async function loadFromFirebase(collectionName, fallback, renderFn) {
   try {
     db.collection(collectionName).orderBy("order","asc").onSnapshot((snapshot) => {
-      if (!snapshot.empty) {
-        const data = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-        renderFn(data);
-      } else {
-        renderFn(fallback);
-      }
+      const data = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+      renderFn(data.length > 0 ? data : []);
+    }, (err) => {
+      renderFn(fallback);
     });
   } catch(e) {
     renderFn(fallback);
