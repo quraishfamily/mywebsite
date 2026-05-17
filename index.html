@@ -660,11 +660,25 @@ const RSS_FEED = 'https://feeds.libsyn.com/565035/rss';
 
 async function fetchPodcastFromRSS() {
   try {
-    const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(RSS_FEED);
-    const res = await fetch(proxy);
-    const data = await res.json();
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(data.contents, 'text/xml');
+    // Try multiple proxies in order
+    const proxies = [
+      'https://corsproxy.io/?' + encodeURIComponent(RSS_FEED),
+      'https://api.allorigins.win/get?url=' + encodeURIComponent(RSS_FEED),
+      'https://cors-anywhere.herokuapp.com/' + RSS_FEED,
+    ];
+    let xml = null;
+    for (const proxyUrl of proxies) {
+      try {
+        const res = await fetch(proxyUrl);
+        const text = proxyUrl.includes('allorigins') 
+          ? (await res.json()).contents 
+          : await res.text();
+        const parser = new DOMParser();
+        const parsed = parser.parseFromString(text, 'text/xml');
+        if (parsed.querySelector('item')) { xml = parsed; break; }
+      } catch(e) { continue; }
+    }
+    if (!xml) throw new Error('All proxies failed');
     const items = Array.from(xml.querySelectorAll('item')).slice(0,5);
     const episodes = items.map((item, i) => {
       const title = item.querySelector('title')?.textContent || '';
