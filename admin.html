@@ -99,6 +99,25 @@ tr:hover td{background:rgba(201,168,76,.03);}
   .stats-grid{grid-template-columns:1fr 1fr;}
   .form-grid{grid-template-columns:1fr;}
 }
+
+input[type="datetime-local"]{
+  background:var(--dark3);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:.7rem 1rem;
+  color:var(--text);
+  font-family:'Tajawal',sans-serif;
+  font-size:.88rem;
+  outline:none;
+  transition:border-color .3s;
+  color-scheme: dark;
+  width:100%;
+}
+input[type="datetime-local"]:focus{border-color:var(--gold);}
+input[type="datetime-local"]::-webkit-calendar-picker-indicator{
+  filter: invert(0.8) sepia(1) saturate(2) hue-rotate(5deg);
+  cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -196,22 +215,29 @@ tr:hover td{background:rgba(201,168,76,.03);}
     <!-- PODCAST -->
     <div class="page" id="page-podcast">
       <div class="page-header">
-        <div class="page-title">حلقات بودكاست صباحو</div>
-        <div class="page-sub">إدارة آخر الحلقات المعروضة في الموقع</div>
+        <div class="page-title">بودكاست صباحو</div>
+        <div class="page-sub">الحلقات تُحدَّث تلقائياً من RSS Feed</div>
       </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">إضافة حلقة</span></div>
+        <div class="card-header"><span class="card-title">إعداد RSS Feed</span></div>
+        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1.2rem;">الموقع يجلب آخر ٥ حلقات تلقائياً من Libsyn. لا حاجة لإضافة الحلقات يدوياً — كل ما تنشر حلقة جديدة تظهر في الموقع مباشرة.</p>
         <div class="form-grid">
-          <div class="fg"><label>رقم الحلقة</label><input type="text" id="pod-ep" placeholder="الحلقة ٢١٠"></div>
-          <div class="fg"><label>عنوان الحلقة</label><input type="text" id="pod-title" placeholder="عنوان الحلقة"></div>
-          <div class="fg"><label>المدة</label><input type="text" id="pod-dur" placeholder="٣٠ دقيقة"></div>
-          <div class="fg"><label>التاريخ</label><input type="text" id="pod-date" placeholder="الأسبوع الماضي"></div>
+          <div class="fg fg-full">
+            <label>رابط RSS Feed الحالي</label>
+            <input type="text" id="rss-url" value="https://feeds.libsyn.com/565035/rss" style="direction:ltr;text-align:left;">
+          </div>
         </div>
-        <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="addPodcast()">إضافة</button></div>
+        <div class="form-actions">
+          <button class="btn btn-primary btn-sm" onclick="saveRSS()">حفظ الرابط</button>
+          <button class="btn btn-outline btn-sm" onclick="window.open('https://feeds.libsyn.com/565035/rss','_blank')">معاينة RSS</button>
+        </div>
       </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">الحلقات المضافة</span></div>
-        <div id="podcast-table"></div>
+        <div class="card-header"><span class="card-title">آخر الحلقات المنشورة</span></div>
+        <div id="podcast-table"><p style="color:var(--text-muted);font-size:.85rem;">اضغط "تحديث" لعرض آخر الحلقات</p></div>
+        <div style="margin-top:1rem;">
+          <button class="btn btn-outline btn-sm" onclick="previewPodcast()">🔄 تحديث وعرض الحلقات</button>
+        </div>
       </div>
     </div>
 
@@ -370,7 +396,7 @@ tr:hover td{background:rgba(201,168,76,.03);}
     <div class="form-grid">
       <div class="fg"><label>العنوان</label><input type="text" id="nm-title" placeholder="عنوان الخبر"></div>
       <div class="fg"><label>التصنيف</label><select id="nm-cat"><option>أخبار</option><option>دورات</option><option>إنجازات</option><option>فعاليات</option></select></div>
-      <div class="fg"><label>التاريخ</label><input type="text" id="nm-date" placeholder="15 يناير"></div>
+      <div class="fg"><label>التاريخ والوقت</label><input type="datetime-local" id="nm-date"></div>
       <div class="fg"><label>الأيقونة (رمز)</label><input type="text" id="nm-icon" placeholder="🎙️"></div>
       <div class="fg fg-full"><label>ملخص الخبر</label><textarea id="nm-body" placeholder="اكتب نص الخبر..."></textarea></div>
     </div>
@@ -602,7 +628,7 @@ function openNewsModal(id=''){
     if(!n)return;
     document.getElementById('nm-title').value=n.title||'';
     document.getElementById('nm-cat').value=n.category||'أخبار';
-    document.getElementById('nm-date').value=n.date||'';
+    document.getElementById('nm-date').value=n.dateRaw||'';
     document.getElementById('nm-icon').value=n.icon||'';
     document.getElementById('nm-body').value=n.body||n.excerpt||'';
     document.getElementById('news-modal-title').textContent='تعديل الخبر';
@@ -616,11 +642,14 @@ function openNewsModal(id=''){
 function editNews(id){openNewsModal(id);}
 function saveNews(){
   const id=document.getElementById('nm-edit-id').value;
+  const rawDate = document.getElementById('nm-date').value;
+  const formattedDate = rawDate ? formatDateAr(rawDate) : '';
   const data={
     id:id||'n'+Date.now(),
     title:document.getElementById('nm-title').value,
     category:document.getElementById('nm-cat').value,
-    date:document.getElementById('nm-date').value,
+    date:formattedDate,
+    dateRaw:rawDate,
     icon:document.getElementById('nm-icon').value,
     body:document.getElementById('nm-body').value,
   };
@@ -832,6 +861,57 @@ function resetAll(){
   });
 }
 
+
+// ═══════════════════════════════════════
+// DATE FORMATTER (Arabic)
+// ═══════════════════════════════════════
+function formatDateAr(datetimeStr) {
+  if (!datetimeStr) return '';
+  const d = new Date(datetimeStr);
+  const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const day = d.getDate();
+  const month = months[d.getMonth()];
+  const year = d.getFullYear();
+  const hours = String(d.getHours()).padStart(2,'0');
+  const mins = String(d.getMinutes()).padStart(2,'0');
+  return `${day} ${month} ${year} — ${hours}:${mins}`;
+}
+
+function saveRSS(){
+  const url = document.getElementById('rss-url').value.trim();
+  if(!url){toast('أدخل رابط RSS',true);return;}
+  localStorage.setItem('rss-feed', url);
+  toast('تم حفظ رابط RSS! ✓');
+}
+
+async function previewPodcast(){
+  const url = localStorage.getItem('rss-feed') || 'https://feeds.libsyn.com/565035/rss';
+  const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+  document.getElementById('podcast-table').innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  try {
+    const res = await fetch(proxy);
+    const data = await res.json();
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(data.contents, 'text/xml');
+    const items = Array.from(xml.querySelectorAll('item')).slice(0,5);
+    if(!items.length){document.getElementById('podcast-table').innerHTML='<p style="color:var(--text-muted);">لا توجد حلقات</p>';return;}
+    const rows = items.map((item,i)=>{
+      const title = item.querySelector('title')?.textContent||'';
+      const pubDate = item.querySelector('pubDate')?.textContent||'';
+      const dur = item.querySelector('duration')?.textContent||'';
+      const d = pubDate ? new Date(pubDate) : null;
+      const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+      const dateAr = d ? d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear() : '';
+      let durText = dur;
+      if(/^\d+$/.test(dur)){durText=Math.floor(parseInt(dur)/60)+' دقيقة';}
+      return `<tr><td>${i+1}</td><td>${title}</td><td>${durText}</td><td>${dateAr}</td></tr>`;
+    }).join('');
+    document.getElementById('podcast-table').innerHTML=`<table><thead><tr><th>#</th><th>العنوان</th><th>المدة</th><th>التاريخ</th></tr></thead><tbody>${rows}</tbody></table>`;
+    toast('تم تحميل الحلقات! ✓');
+  } catch(e){
+    document.getElementById('podcast-table').innerHTML='<p style="color:var(--red);">فشل التحميل، تحقق من رابط RSS</p>';
+  }
+}
 // ═══════════════════════════════════════
 // EXPOSE FUNCTIONS TO GLOBAL SCOPE (required for type="module")
 // ═══════════════════════════════════════
@@ -859,6 +939,9 @@ window.saveSettings = saveSettings;
 window.saveSocials = saveSocials;
 window.changePw = changePw;
 window.resetAll = resetAll;
+window.formatDateAr = formatDateAr;
+window.saveRSS = saveRSS;
+window.previewPodcast = previewPodcast;
 window.deleteCmt = deleteCmt;
 
 </script>
