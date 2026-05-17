@@ -221,6 +221,50 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
   .f-row{grid-template-columns:1fr;}
   .yt-input{width:100%;}
 }
+
+.ticker-bar{
+  position:fixed;top:0;right:0;left:0;z-index:901;
+  background:var(--gold);
+  height:36px;
+  display:flex;align-items:center;
+  overflow:hidden;
+}
+.ticker-label{
+  background:var(--black);color:var(--gold);
+  font-size:.72rem;font-weight:700;letter-spacing:2px;
+  padding:0 1.2rem;height:100%;display:flex;align-items:center;
+  flex-shrink:0;white-space:nowrap;
+  border-left:2px solid rgba(0,0,0,.2);
+}
+.ticker-track{
+  display:flex;align-items:center;
+  animation:ticker 30s linear infinite;
+  white-space:nowrap;
+}
+.ticker-track:hover{animation-play-state:paused;}
+@keyframes ticker{
+  0%{transform:translateX(-50%);}
+  100%{transform:translateX(0%);}
+}
+.ticker-item{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-size:.75rem;font-weight:700;color:var(--black);
+  padding:0 2rem;cursor:pointer;
+  text-decoration:none;
+}
+.ticker-item:hover{opacity:.75;}
+.ticker-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--black);opacity:.4;
+  flex-shrink:0;
+}
+.ticker-type{
+  font-size:.65rem;opacity:.6;margin-left:.2rem;
+}
+
+/* push content below ticker */
+nav{top:36px !important;}
+.hero{padding-top:calc(8rem + 36px) !important;}
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -230,6 +274,15 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
 <div class="cursor-ring" id="cursorRing"></div>
 <div class="scroll-bar" id="scrollBar"></div>
 <div class="toast" id="toast"></div>
+
+
+<!-- TICKER BAR -->
+<div class="ticker-bar" id="tickerBar">
+  <div class="ticker-label">🔔 المستجدات</div>
+  <div class="ticker-track" id="tickerTrack">
+    <span class="ticker-item">جارٍ التحميل...</span>
+  </div>
+</div>
 
 <nav>
   <div class="nav-logo">أحمد قريش</div>
@@ -934,10 +987,59 @@ async function loadSettings() {
     console.log('Settings load failed:', e);
   }
 }
+
+// ═══════════════════════════════════════
+// TICKER BAR
+// ═══════════════════════════════════════
+async function loadTicker(){
+  try {
+    const items = [];
+
+    // Load latest news
+    const newsSnap = await db.collection('news').orderBy('order','asc').limit(5).get();
+    newsSnap.docs.forEach(d=>{
+      const n = d.data();
+      if(n.title) items.push({type:'خبر', text:n.title, href:'#news'});
+    });
+
+    // Load latest courses
+    const coursesSnap = await db.collection('courses').orderBy('order','asc').limit(5).get();
+    coursesSnap.docs.forEach(d=>{
+      const c = d.data();
+      if(c.title) items.push({type:'دورة', text:c.title+' — '+c.price, href:'#courses'});
+    });
+
+    if(items.length === 0) {
+      document.getElementById('tickerBar').style.display='none';
+      return;
+    }
+
+    // Duplicate items for seamless loop
+    const all = [...items, ...items];
+    const html_items = all.map(item=>
+      `<a class="ticker-item" href="${item.href}">
+        <span class="ticker-type">${item.type}:</span>
+        ${item.text}
+        <span class="ticker-dot"></span>
+      </a>`
+    ).join('');
+
+    document.getElementById('tickerTrack').innerHTML = html_items;
+
+    // Adjust animation speed based on content length
+    const totalWidth = items.length * 300;
+    const speed = Math.max(20, items.length * 6);
+    document.getElementById('tickerTrack').style.animationDuration = speed + 's';
+
+  } catch(e) {
+    document.getElementById('tickerBar').style.display='none';
+  }
+}
 // ═══════════════════════════════════════
 // INIT — load from Firebase, fallback to defaults
 // ═══════════════════════════════════════
 loadSettings();
+loadTicker();
 loadFromFirebase('news', defaultNews, renderNews);
 fetchPodcastFromRSS();
 loadFromFirebase('interviews', defaultInterviews, renderInterviews);
