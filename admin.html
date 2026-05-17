@@ -121,6 +121,44 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+// Proxy functions - delegate to real implementations once loaded
+var _fns = {};
+function _call(name, args) {
+  if (window[name]) { window[name].apply(null, args); }
+  else { console.warn(name + ' not yet loaded'); }
+}
+function doLogin(){_call('doLogin',[])}
+function logout(){_call('logout',[])}
+function showPage(p){_call('showPage',[p])}
+function openModal(t,ti){_call('openModal',[t,ti])}
+function closeModal(t){_call('closeModal',[t])}
+function openNewsModal(id){_call('openNewsModal',[id])}
+function editNews(id){_call('editNews',[id])}
+function saveNews(){_call('saveNews',[])}
+function deleteNews(id){_call('deleteNews',[id])}
+function openCourseModal(id){_call('openCourseModal',[id])}
+function editCourse(id){_call('editCourse',[id])}
+function saveCourse(){_call('saveCourse',[])}
+function deleteCourse(id){_call('deleteCourse',[id])}
+function addWork(){_call('addWork',[])}
+function deleteWork(id){_call('deleteWork',[id])}
+function saveYT(){_call('saveYT',[])}
+function addPodcast(){_call('addPodcast',[])}
+function deletePodcast(i){_call('deletePodcast',[i])}
+function addInterview(){_call('addInterview',[])}
+function deleteInterview(i){_call('deleteInterview',[i])}
+function saveSettings(){_call('saveSettings',[])}
+function saveSocials(){_call('saveSocials',[])}
+function changePw(){_call('changePw',[])}
+function resetAll(){_call('resetAll',[])}
+function deleteCmt(nid,i){_call('deleteCmt',[nid,i])}
+function saveRSS(){_call('saveRSS',[])}
+function previewPodcast(){_call('previewPodcast',[])}
+function closeConfirm(){_call('closeConfirm',[])}
+</script>
+
 </head>
 <body>
 
