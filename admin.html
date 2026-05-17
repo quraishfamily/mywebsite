@@ -843,7 +843,8 @@ function saveSettings(){
 function saveSocials(){
   const sc={};
   ['tw','ig','yt','li','sn'].forEach(k=>sc[k]=document.getElementById('sc-'+k).value);
-  localStorage.setItem('admin-socials',JSON.stringify(sc));toast('تم حفظ روابط التواصل!');
+  localStorage.setItem('admin-socials',JSON.stringify(sc));
+  setDoc(doc(db,'settings','socials'), sc).then(()=>toast('تم حفظ روابط التواصل! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
 }
 function changePw(){
   const old=document.getElementById('pw-old').value;
