@@ -253,6 +253,7 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
 .reveal.visible{opacity:1;transform:none;}
 @media(max-width:900px){
   nav{padding:1rem 1.5rem;}
+  .mobile-menu{padding-top:80px;}
   .nav-links{gap:.8rem;font-size:.78rem;}
   section,.consulting-section{padding:4rem 1.5rem;}
   .hero{padding:6rem 1.5rem 3rem;}
@@ -400,6 +401,59 @@ nav{top:36px !important;}
 }
 .testimonial-name{font-weight:700;font-size:.88rem;}
 .testimonial-role{font-size:.75rem;color:var(--text-muted);}
+
+/* HAMBURGER MENU */
+.hamburger{
+  display:none;
+  flex-direction:column;gap:5px;cursor:pointer;
+  padding:.4rem;background:none;border:none;z-index:1000;
+}
+.hamburger span{
+  display:block;width:24px;height:2px;
+  background:var(--text);border-radius:2px;
+  transition:all .3s;
+}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.hamburger.open span:nth-child(2){opacity:0;transform:translateX(-8px);}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+.mobile-menu{
+  position:fixed;top:0;right:0;left:0;bottom:0;
+  background:rgba(10,10,10,0.98);
+  backdrop-filter:blur(20px);
+  z-index:850;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:0;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s;
+}
+.mobile-menu.open{opacity:1;pointer-events:all;}
+.mobile-menu a{
+  font-family:'Cairo',sans-serif;
+  font-size:1.6rem;font-weight:700;
+  color:var(--text-muted);text-decoration:none;
+  padding:.8rem 2rem;
+  transition:all .3s;
+  border-bottom:1px solid rgba(201,168,76,0.08);
+  width:100%;text-align:center;
+}
+.mobile-menu a:hover,.mobile-menu a:active{color:var(--gold);}
+.mobile-menu .mobile-social{
+  display:flex;gap:1rem;margin-top:2rem;
+}
+.mobile-menu .mobile-social a{
+  width:42px;height:42px;border:1px solid var(--border);
+  border-radius:50%;font-size:.9rem;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-muted);
+}
+.mobile-menu .mobile-social a:hover{border-color:var(--gold);color:var(--gold);}
+
+@media(max-width:900px){
+  .hamburger{display:flex;}
+  .nav-links{display:none;}
+}
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -433,7 +487,29 @@ nav{top:36px !important;}
     <li><a href="#consulting">الاستشارات</a></li>
     <li><a href="#contact">تواصل</a></li>
   </ul>
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="القائمة">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#about" onclick="closeMenu()">نبذة</a>
+  <a href="#books" onclick="closeMenu()">كتبي</a>
+  <a href="#podcast" onclick="closeMenu()">صباحو</a>
+  <a href="#news" onclick="closeMenu()">الأخبار</a>
+  <a href="#interviews" onclick="closeMenu()">مقابلات</a>
+  <a href="#works" onclick="closeMenu()">الأعمال</a>
+  <a href="#courses" onclick="closeMenu()">الدورات</a>
+  <a href="#consulting" onclick="closeMenu()">الاستشارات</a>
+  <a href="#contact" onclick="closeMenu()">تواصل</a>
+  <div class="mobile-social">
+    <a id="mob-tw" href="#" title="تويتر">𝕏</a>
+    <a id="mob-ig" href="#" title="انستقرام">◈</a>
+    <a id="mob-yt" href="#" title="يوتيوب">▶</a>
+    <a id="mob-sn" href="#" title="سناب">👻</a>
+  </div>
+</div>
 
 <div class="social-sidebar">
   <a id="sc-tw" href="#" title="تويتر">𝕏</a>
@@ -1161,7 +1237,7 @@ async function loadSettings() {
       ['tw','ig','yt','sn'].forEach(k => {
         const url = sc[k];
         if (!url) return;
-        ['sc-'+k, 'ct-'+k, 'ft-'+k].forEach(id => {
+        ['sc-'+k, 'ct-'+k, 'ft-'+k, 'mob-'+k].forEach(id => {
           const el = document.getElementById(id);
           if (el) el.href = url;
         });
@@ -1182,6 +1258,24 @@ async function loadSettings() {
 }
 
 
+
+// ═══════════════════════════════════════
+// MOBILE MENU
+// ═══════════════════════════════════════
+function toggleMenu(){
+  const menu = document.getElementById('mobileMenu');
+  const btn = document.getElementById('hamburger');
+  menu.classList.toggle('open');
+  btn.classList.toggle('open');
+  document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+}
+function closeMenu(){
+  document.getElementById('mobileMenu').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Close menu on escape key
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMenu(); });
 // ═══════════════════════════════════════
 // TESTIMONIALS
 // ═══════════════════════════════════════
@@ -1282,6 +1376,8 @@ window.shareTw = shareTw;
 window.shareWa = shareWa;
 window.shareCopy = shareCopy;
 window.loadYT = loadYT;
+window.toggleMenu = toggleMenu;
+window.closeMenu = closeMenu;
 window.sendMsg = sendMsg;
 window.submitForm = submitForm;
 
