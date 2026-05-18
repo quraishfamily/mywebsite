@@ -220,8 +220,20 @@ section{padding:6rem 3rem;}
 @media(max-width:500px){.works-grid{grid-template-columns:1fr;}}
 .work-card{background:var(--dark2);border:1px solid var(--border);border-radius:4px;overflow:hidden;transition:border-color .3s;}
 .work-card:hover{border-color:var(--gold-dim);}
-.work-embed{position:relative;padding-bottom:56.25%;height:0;}
+.work-embed{position:relative;padding-bottom:56.25%;height:0;cursor:pointer;overflow:hidden;}
 .work-embed iframe{position:absolute;top:0;right:0;width:100%;height:100%;border:none;}
+.work-thumb{position:absolute;top:0;right:0;width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+.work-card:hover .work-thumb{transform:scale(1.04);}
+.work-play-btn{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:56px;height:56px;border-radius:50%;
+  background:rgba(201,168,76,0.9);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;color:var(--black);
+  transition:all .3s;pointer-events:none;
+  box-shadow:0 4px 20px rgba(0,0,0,0.5);
+}
+.work-card:hover .work-play-btn{background:var(--gold-light);transform:translate(-50%,-50%) scale(1.1);}
 .work-info{padding:.9rem;}
 .work-info h4{font-size:.86rem;font-weight:700;margin-bottom:.2rem;}
 .work-info p{font-size:.74rem;color:var(--text-muted);}
@@ -1375,11 +1387,16 @@ function renderWorksPage(){
   const start = worksPage * WORKS_PER_PAGE;
   const pageWorks = worksData.slice(start, start + WORKS_PER_PAGE);
 
-  document.getElementById('worksGrid').innerHTML = pageWorks.map(w=>`
-    <div class="work-card reveal">
-      <div class="work-embed"><iframe src="https://www.youtube.com/embed/${w.vid||w.videoId}" allowfullscreen loading="lazy"></iframe></div>
+  document.getElementById('worksGrid').innerHTML = pageWorks.map(w=>{
+    const vid = w.vid||w.videoId||'';
+    return `<div class="work-card reveal">
+      <div class="work-embed" onclick="playWork(this,'${vid}')">
+        <img class="work-thumb" src="https://img.youtube.com/vi/${vid}/hqdefault.jpg" alt="${w.title}" loading="lazy">
+        <div class="work-play-btn">▶</div>
+      </div>
       <div class="work-info"><h4>${w.title}</h4><p>${w.desc||''}</p></div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   // Build nav
   const dots = Array.from({length:totalPages},(_,i)=>
@@ -1709,6 +1726,10 @@ function renderTestimonials(items) {
   const speed = Math.max(20, items.length * 8);
   track.style.animationDuration = speed + 's';
 }
+
+function playWork(el, vid){
+  el.innerHTML = `<iframe src="https://www.youtube.com/embed/${vid}?autoplay=1" allowfullscreen allow="autoplay"></iframe>`;
+}
 // ═══════════════════════════════════════
 // TICKER BAR
 // ═══════════════════════════════════════
@@ -1783,6 +1804,7 @@ window.toggleMenu = toggleMenu;
 window.toggleTheme = toggleTheme;
 window.submitVO = submitVO;
 window.nextWorksPage = nextWorksPage;
+window.playWork = playWork;
 window.prevWorksPage = prevWorksPage;
 window.goWorksPage = goWorksPage;
 window.updateCount = updateCount;
