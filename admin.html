@@ -1377,7 +1377,7 @@ function openQuoteModal(id){
     document.getElementById('quote-client-email').value = quoteRequestData.email||'';
     document.getElementById('quote-client-name').textContent = 'للعميل: '+(quoteRequestData.name||'—')+' — '+(quoteRequestData.email||'');
     document.getElementById('q-price').value = '';
-    document.getElementById('q-includes').value = '- تعليق صوتي احترافي\n- مراجعة واحدة مجانية\n- ملف صوتي WAV/MP3 بجودة عالية';
+    document.getElementById('q-includes').value = ['- تعليق صوتي احترافي','- مراجعة واحدة مجانية','- ملف صوتي بجودة عالية'].join('\n');
     document.getElementById('q-notes').value = '';
     openModal('quoteModal');
   });
