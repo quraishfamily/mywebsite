@@ -635,6 +635,47 @@ nav{top:36px !important;}
   transition:opacity .2s;
 }
 .read-more-btn:hover{opacity:.7;}
+
+/* NEWSLETTER */
+.newsletter-section{
+  background:linear-gradient(135deg,var(--dark2) 0%,var(--dark) 100%);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:4rem 3rem;
+}
+.newsletter-inner{
+  max-width:700px;margin:0 auto;text-align:center;
+}
+.newsletter-inner .sec-label{justify-content:center;display:flex;}
+.newsletter-inner h2{
+  font-family:'Cairo',sans-serif;font-size:clamp(1.5rem,3vw,2rem);
+  font-weight:900;margin-bottom:.7rem;
+}
+.newsletter-inner p{
+  font-size:.92rem;color:var(--text-muted);
+  line-height:1.8;margin-bottom:2rem;
+}
+.newsletter-form{
+  display:flex;gap:.8rem;max-width:500px;margin:0 auto;
+}
+.newsletter-input{
+  flex:1;background:var(--dark3);
+  border:1px solid var(--border);border-radius:4px;
+  padding:.8rem 1.2rem;color:var(--text);
+  font-family:'Tajawal',sans-serif;font-size:.9rem;
+  outline:none;transition:border-color .3s;
+}
+.newsletter-input:focus{border-color:var(--gold);}
+.newsletter-stats{
+  display:flex;gap:2rem;justify-content:center;
+  margin-top:1.5rem;flex-wrap:wrap;
+}
+.newsletter-stat{font-size:.8rem;color:var(--text-muted);}
+.newsletter-stat b{color:var(--gold);}
+@media(max-width:600px){
+  .newsletter-form{flex-direction:column;}
+  .newsletter-section{padding:3rem 1.5rem;}
+}
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -1039,6 +1080,23 @@ nav{top:36px !important;}
         <div class="fg"><label>الرسالة</label><textarea placeholder="اكتب رسالتك هنا..." required></textarea></div>
         <button type="submit" class="btn btn-primary">إرسال الرسالة</button>
       </form>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter-section">
+  <div class="newsletter-inner reveal">
+    <div class="sec-label">ابقَ على اطلاع</div>
+    <h2>اشترك في النشرة البريدية</h2>
+    <p>كن أول من يعلم بالدورات التدريبية وورش العمل القادمة.<br>لا رسائل مزعجة — فقط محتوى يستحق وقتك.</p>
+    <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+      <input type="email" class="newsletter-input" id="nl-email" placeholder="بريدك الإلكتروني" required>
+      <button type="submit" class="btn btn-primary" style="white-space:nowrap;">اشترك الآن</button>
+    </form>
+    <div class="newsletter-stats">
+      <div class="newsletter-stat">📧 <b id="nl-count">—</b> مشترك</div>
+      <div class="newsletter-stat">✅ يمكنك إلغاء الاشتراك في أي وقت</div>
     </div>
   </div>
 </section>
@@ -1675,6 +1733,51 @@ async function submitVO(e){
   });
 }
 
+
+// NEWSLETTER
+async function subscribeNewsletter(e){
+  e.preventDefault();
+  const email = document.getElementById('nl-email').value.trim();
+  if(!email) return;
+
+  const btn = e.target.querySelector('button');
+  btn.textContent = 'جارٍ الاشتراك...';
+  btn.disabled = true;
+
+  try {
+    // Check if already subscribed
+    const existing = await db.collection('newsletter').where('email','==',email).get();
+    if(!existing.empty){
+      toast('أنت مشترك بالفعل في النشرة البريدية!');
+      btn.textContent = 'اشترك الآن';
+      btn.disabled = false;
+      return;
+    }
+    // Add subscriber
+    await db.collection('newsletter').add({
+      email,
+      time: new Date().toLocaleString('ar-SA'),
+      timestamp: Date.now(),
+      active: true
+    });
+    toast('تم الاشتراك بنجاح! ✓');
+    document.getElementById('nl-email').value = '';
+    loadNewsletterCount();
+  } catch(err){
+    toast('حدث خطأ، حاول مجدداً');
+  }
+  btn.textContent = 'اشترك الآن';
+  btn.disabled = false;
+}
+
+async function loadNewsletterCount(){
+  try {
+    const snap = await db.collection('newsletter').where('active','==',true).get();
+    const el = document.getElementById('nl-count');
+    if(el) el.textContent = snap.size;
+  } catch(e){}
+}
+
 // MOBILE MENU
 // ═══════════════════════════════════════
 function toggleMenu(){
@@ -1795,6 +1898,7 @@ async function loadTicker(){
 // ═══════════════════════════════════════
 loadSettings();
 loadTicker();
+loadNewsletterCount();
 loadFromFirebase('news', defaultNews, renderNews);
 fetchPodcastFromRSS();
 loadFromFirebase('interviews', defaultInterviews, renderInterviews);
@@ -1816,6 +1920,7 @@ window.loadYT = loadYT;
 window.toggleMenu = toggleMenu;
 window.toggleTheme = toggleTheme;
 window.submitVO = submitVO;
+window.subscribeNewsletter = subscribeNewsletter;
 window.nextWorksPage = nextWorksPage;
 window.playWork = playWork;
 window.prevWorksPage = prevWorksPage;
