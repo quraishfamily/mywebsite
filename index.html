@@ -1259,11 +1259,11 @@ const defaultWorks=[
 
 function renderNews(news=null){
   if(!news)news=JSON.parse(localStorage.getItem('admin-news')||'null')||defaultNews;
-  // Sort by date: newest first (rightmost in RTL grid)
+  // Sort by date: oldest first (rightmost in RTL grid)
   news = [...news].sort((a,b) => {
     const ta = a.timestamp || (a.dateRaw ? new Date(a.dateRaw).getTime() : 0);
     const tb = b.timestamp || (b.dateRaw ? new Date(b.dateRaw).getTime() : 0);
-    return tb - ta;
+    return ta - tb;
   });
   document.getElementById('newsGrid').innerHTML=news.map(n=>`
     <div class="news-card reveal">
