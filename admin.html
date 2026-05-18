@@ -168,6 +168,8 @@ function saveRSS(){_call('saveRSS',[])}
 function previewPodcast(){_call('previewPodcast',[])}
 function closeConfirm(){_call('closeConfirm',[])}
 function saveBooks(){_call('saveBooks',[])}
+function addTestimonial(){_call('addTestimonial',[])}
+function deleteTestimonial(id){_call('deleteTestimonial',[id])}
 function deleteDoc(a,b,c,d){_call('deleteDoc',[a,b,c,d])}
 function markSeen(t){_call('markSeen',[t])}
 function updateBadges(){_call('updateBadges',[])}
@@ -208,6 +210,7 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
       <div class="nav-item" onclick="showPage('consulting')"><span class="nav-icon">💼</span>طلبات الاستشارة<span class="nav-badge" id="badge-consulting" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('messages')"><span class="nav-icon">✉</span>الرسائل<span class="nav-badge" id="badge-msgs" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('comments')"><span class="nav-icon">💬</span>التعليقات</div>
+      <div class="nav-item" onclick="showPage('testimonials')"><span class="nav-icon">⭐</span>شهادات المتدربين</div>
       <div class="nav-item" onclick="showPage('settings')"><span class="nav-icon">⚙</span>الإعدادات</div>
     </div>
     <div class="sidebar-bottom">
@@ -267,6 +270,36 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
       </div>
     </div>
 
+
+    <!-- TESTIMONIALS -->
+    <div class="page" id="page-testimonials">
+      <div class="page-header">
+        <div class="page-title">شهادات المتدربين</div>
+        <div class="page-sub">تظهر في الموقع تلقائياً عند إضافة أول شهادة</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">إضافة شهادة</span></div>
+        <div class="form-grid">
+          <div class="fg"><label>اسم المتدرب</label><input type="text" id="tm-name" placeholder="محمد العمري"></div>
+          <div class="fg"><label>المسمى / التخصص</label><input type="text" id="tm-role" placeholder="مذيع — قناة روتانا"></div>
+          <div class="fg"><label>الرمز التعبيري (Avatar)</label><input type="text" id="tm-avatar" placeholder="👤"></div>
+          <div class="fg">
+            <label>التقييم</label>
+            <select id="tm-stars">
+              <option value="5">★★★★★ — ممتاز</option>
+              <option value="4">★★★★ — جيد جداً</option>
+              <option value="3">★★★ — جيد</option>
+            </select>
+          </div>
+          <div class="fg fg-full"><label>نص الشهادة</label><textarea id="tm-text" placeholder="اكتب ما قاله المتدرب..."></textarea></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="addTestimonial()">إضافة</button></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">الشهادات المضافة</span></div>
+        <div id="testimonials-table"></div>
+      </div>
+    </div>
     <!-- PODCAST -->
     <div class="page" id="page-podcast">
       <div class="page-header">
@@ -678,6 +711,7 @@ function renderPage(id){
   if(id==='dashboard')renderDashboard();
   else if(id==='news')renderNewsTable();
   else if(id==='courses')renderCoursesTable();
+  else if(id==='testimonials')renderTestimonialsTable();
   else if(id==='podcast'){renderPodcastTable();}  
   else if(id==='interviews')renderInterviewsTable();
   else if(id==='works')renderWorksTable();
@@ -1115,6 +1149,61 @@ function extractVideoId(url) {
   return url.trim();
 }
 
+
+// ═══════════════════════════════════════
+// TESTIMONIALS FUNCTIONS
+// ═══════════════════════════════════════
+function renderTestimonialsTable(){
+  document.getElementById('testimonials-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('testimonials').orderBy('order','asc').get().then(snap=>{
+    if(snap.empty){
+      document.getElementById('testimonials-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد شهادات بعد.</p>';
+      return;
+    }
+    const rows=snap.docs.map((d,i)=>{
+      const t=d.data();
+      return `<tr>
+        <td>${t.avatar||'👤'}</td>
+        <td><b>${t.name}</b><br><span style="font-size:.75rem;color:var(--text-muted);">${t.role||''}</span></td>
+        <td>${'★'.repeat(t.stars||5)}</td>
+        <td style="font-size:.8rem;max-width:200px;">${t.text}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteTestimonial('${d.id}')">حذف</button></td>
+      </tr>`;
+    }).join('');
+    document.getElementById('testimonials-table').innerHTML=`<table><thead><tr><th></th><th>المتدرب</th><th>التقييم</th><th>الشهادة</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  }).catch(()=>{
+    document.getElementById('testimonials-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';
+  });
+}
+
+async function addTestimonial(){
+  const name=document.getElementById('tm-name').value.trim();
+  const text=document.getElementById('tm-text').value.trim();
+  if(!name||!text){toast('أدخل الاسم والنص',true);return;}
+  const snap=await db.collection('testimonials').get();
+  const data={
+    id:'tm_'+Date.now(),
+    name,
+    role:document.getElementById('tm-role').value,
+    avatar:document.getElementById('tm-avatar').value||'👤',
+    stars:parseInt(document.getElementById('tm-stars').value),
+    text,
+    order:snap.size
+  };
+  await db.collection('testimonials').doc(data.id).set(data);
+  ['tm-name','tm-role','tm-avatar','tm-text'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('tm-stars').value='5';
+  renderTestimonialsTable();
+  toast('تمت إضافة الشهادة! ✓');
+}
+
+function deleteTestimonial(id){
+  confirm_action(()=>{
+    db.collection('testimonials').doc(id).delete()
+      .then(()=>{renderTestimonialsTable();toast('تم الحذف ✓');})
+      .catch(()=>toast('فشل الحذف',true));
+  });
+}
 // ═══════════════════════════════════════
 // PODCAST FUNCTIONS
 // ═══════════════════════════════════════
@@ -1337,6 +1426,8 @@ window._real_saveSocials = saveSocials;
 window._real_changePw = changePw;
 window._real_resetAll = resetAll;
 window._real_saveBooks = saveBooks;
+window._real_addTestimonial = addTestimonial;
+window._real_deleteTestimonial = deleteTestimonial;
 window._real_deleteDoc = deleteDoc;
 window._real_markSeen = markSeen;
 window._real_updateBadges = updateBadges;
