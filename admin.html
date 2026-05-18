@@ -134,69 +134,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
-<script>
-// Proxy functions - wait for real implementations to load
-function _call(name, args) {
-  var tries = 0;
-  function attempt() {
-    var fn = window['_real_' + name];
-    if (fn) {
-      fn.apply(null, args);
-    } else if (tries++ < 50) {
-      setTimeout(attempt, 200);
-    } else {
-      console.warn(name + ' never loaded');
-    }
-  }
-  attempt();
-}
-function doLogin(){_call('doLogin',[])}
-function logout(){_call('logout',[])}
-function showPage(p){_call('showPage',[p])}
-function openModal(t,ti){_call('openModal',[t,ti])}
-function closeModal(t){_call('closeModal',[t])}
-function openNewsModal(id){_call('openNewsModal',[id])}
-function editNews(id){_call('editNews',[id])}
-function saveNews(){_call('saveNews',[])}
-function deleteNews(id){_call('deleteNews',[id])}
-function openCourseModal(id){_call('openCourseModal',[id])}
-function editCourse(id){_call('editCourse',[id])}
-function saveCourse(){_call('saveCourse',[])}
-function deleteCourse(id){_call('deleteCourse',[id])}
-function addWork(){_call('addWork',[])}
-function deleteWork(id){_call('deleteWork',[id])}
-function saveYT(){_call('saveYT',[])}
-function addPodcast(){_call('addPodcast',[])}
-function deletePodcast(i){_call('deletePodcast',[i])}
-function addInterview(){_call('addInterview',[])}
-function deleteInterview(i){_call('deleteInterview',[i])}
-function deleteInterviewById(id){_call('deleteInterviewById',[id])}
-function saveSettings(){_call('saveSettings',[])}
-function saveSocials(){_call('saveSocials',[])}
-function changePw(){_call('changePw',[])}
-function resetAll(){_call('resetAll',[])}
-function deleteCmt(nid,i){_call('deleteCmt',[nid,i])}
-function saveRSS(){_call('saveRSS',[])}
-function previewPodcast(){_call('previewPodcast',[])}
-function closeConfirm(){_call('closeConfirm',[])}
-function saveBooks(){_call('saveBooks',[])}
-function addTestimonial(){_call('addTestimonial',[])}
-function sendNewsletter(){_call('sendNewsletter',[])}
-function loadNewsletterSubscribers(){_call('loadNewsletterSubscribers',[])}
-function exportEmails(){_call('exportEmails',[])}
-function exportVOPDF(){_call('exportVOPDF',[])}
-function openQuoteModal(id){_call('openQuoteModal',[id])}
-function sendQuote(){_call('sendQuote',[])}
-function downloadQuotePDF(){_call('downloadQuotePDF',[])}
-function toggleSubscriber(id,s){_call('toggleSubscriber',[id,s])}
-function renderVOTable(){_call('renderVOTable',[])}
-function viewVO(id){_call('viewVO',[id])}
-function deleteTestimonial(id){_call('deleteTestimonial',[id])}
-function deleteDoc(a,b,c,d){_call('deleteDoc',[a,b,c,d])}
-function markSeen(t){_call('markSeen',[t])}
-function updateBadges(){_call('updateBadges',[])}
-function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
-</script>
 
 </head>
 <body>
@@ -209,7 +146,7 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
     <div class="login-form">
       <input type="email" class="inp" id="loginUser" placeholder="البريد الإلكتروني">
       <input type="password" class="inp" id="loginPass" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')doLogin()">
-      <button class="btn btn-primary" id="loginBtn">دخول</button>
+      <button class="btn btn-primary" onclick="doLogin()">دخول</button>
       <div class="login-err" id="loginErr">بيانات خاطئة، حاول مجدداً</div>
     </div>
   </div>
@@ -657,7 +594,7 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
 // ═══════════════════════════════════════
 // Firebase loaded via CDN scripts in <head>
 
-const firebaseConfig = {
+var firebaseConfig = {
   apiKey: "AIzaSyBCheHz_5vWYWJdnTpaYstOVKUgvR5tCPQ",
   authDomain: "ahmed-quraish.firebaseapp.com",
   projectId: "ahmed-quraish",
@@ -666,9 +603,9 @@ const firebaseConfig = {
   appId: "1:777596990140:web:8f336a1f2336a450a416b9"
 };
 
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
+var app = firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+var auth = firebase.auth();
 
 // Helper: save entire array to Firebase collection
 async function saveCollection(colName, items) {
@@ -735,11 +672,7 @@ auth.onAuthStateChanged(user => {
 });
 
 document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-// Also bind login button via addEventListener for reliability
-document.addEventListener('DOMContentLoaded', function(){
-  var btn = document.getElementById('loginBtn');
-  if(btn) btn.addEventListener('click', function(){ doLogin(); });
-});
+
 
 // TOAST
 function toast(msg,err=false){
@@ -1937,59 +1870,6 @@ function markSeen(type){
 // ═══════════════════════════════════════
 // EXPOSE FUNCTIONS TO GLOBAL SCOPE (required for type="module")
 // ═══════════════════════════════════════
-window._real_showPage = showPage;
-window._real_doLogin = doLogin;
-window._real_logout = logout;
-window._real_openModal = openModal;
-window._real_closeModal = closeModal;
-window._real_openNewsModal = openNewsModal;
-window._real_editNews = editNews;
-window._real_saveNews = saveNews;
-window._real_deleteNews = deleteNews;
-window._real_openCourseModal = openCourseModal;
-window._real_editCourse = editCourse;
-window._real_saveCourse = saveCourse;
-window._real_deleteCourse = deleteCourse;
-window._real_addWork = addWork;
-window._real_deleteWork = deleteWork;
-window._real_saveYT = saveYT;
-window._real_addPodcast = addPodcast;
-window._real_deletePodcast = deletePodcast;
-window._real_addInterview = addInterview;
-window._real_deleteInterview = deleteInterview;
-window._real_saveSettings = saveSettings;
-window._real_saveSocials = saveSocials;
-window._real_changePw = changePw;
-window._real_resetAll = resetAll;
-window._real_saveBooks = saveBooks;
-window._real_addTestimonial = addTestimonial;
-window._real_deleteInterviewById = deleteInterviewById;
-window._real_sendNewsletter = sendNewsletter;
-window._real_loadNewsletterSubscribers = loadNewsletterSubscribers;
-window._real_exportEmails = exportEmails;
-window._real_exportVOPDF = exportVOPDF;
-window._real_openQuoteModal = openQuoteModal;
-window._real_sendQuote = sendQuote;
-window._real_downloadQuotePDF = downloadQuotePDF;
-window._real_toggleSubscriber = toggleSubscriber;
-window._real_renderVOTable = renderVOTable;
-window._real_viewVO = viewVO;
-window._real_deleteTestimonial = deleteTestimonial;
-window._real_deleteDoc = deleteDoc;
-window._real_markSeen = markSeen;
-window._real_updateBadges = updateBadges;
-window._real_handleImageUpload = handleImageUpload;
-window._real_formatDateAr = formatDateAr;
-window._real_saveRSS = saveRSS;
-window._real_previewPodcast = previewPodcast;
-window._real_addPodcast = addPodcast;
-window._real_deletePodcast = deletePodcast;
-window._real_renderPodcastTable = renderPodcastTable;
-window._real_addInterview = addInterview;
-window._real_deleteInterview = deleteInterview;
-window._real_renderInterviewsTable = renderInterviewsTable;
-window._real_confirm_action = confirm_action;
-window._real_deleteCmt = deleteCmt;
 
 </script>
 
