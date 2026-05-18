@@ -989,13 +989,20 @@ const EJS_TEMPLATE_REG = 't2l4rkn';
 // ═══════════════════════════════════════
 async function loadFromFirebase(collectionName, fallback, renderFn) {
   try {
+    // Try with orderBy first, fallback to simple get if index missing
     db.collection(collectionName).orderBy("order","asc").onSnapshot((snapshot) => {
       const data = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
       renderFn(data.length > 0 ? data : []);
     }, (err) => {
-      renderFn(fallback);
+      console.log(collectionName + ' orderBy failed, trying without:', err.code);
+      // Fallback: get without orderBy
+      db.collection(collectionName).get().then(snap => {
+        const data = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderFn(data.length > 0 ? data : []);
+      }).catch(() => renderFn(fallback));
     });
   } catch(e) {
+    console.log('loadFromFirebase error:', e);
     renderFn(fallback);
   }
 }
