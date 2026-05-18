@@ -928,8 +928,11 @@ function sendMsg(e){
     from_email: data.email,
     subject: data.subject,
     message: data.msg,
+    phone: '—',
+    course: '—',
+    notes: '—',
     time: data.time
-  }).catch(()=>{});
+  }).catch((err)=>{ console.log('EmailJS error:', err); });
   toast('تم إرسال رسالتك! ✓');
   form.reset();
 }
