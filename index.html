@@ -1403,7 +1403,11 @@ function renderNews(news=null){
       </div>
     </div>`).join('');
   news.forEach(n=>{initStars(n.id);renderCmts(n.id);});
-  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+  document.querySelectorAll('#newsGrid .reveal').forEach(el=>{
+    obs.observe(el);
+    // Force visible after short delay in case already in viewport
+    setTimeout(()=>el.classList.add('visible'), 100);
+  });
 }
 
 function renderPodcast(eps=null){
