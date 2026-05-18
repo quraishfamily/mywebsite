@@ -1291,19 +1291,36 @@ const RSS_FEED = 'https://feeds.libsyn.com/565035/rss';
 
 async function fetchPodcastFromRSS() {
   try {
-    // Try multiple proxies in order
     const proxies = [
-      'https://corsproxy.io/?' + encodeURIComponent(RSS_FEED),
-      'https://api.allorigins.win/get?url=' + encodeURIComponent(RSS_FEED),
-      'https://cors-anywhere.herokuapp.com/' + RSS_FEED,
+      { url: 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(RSS_FEED), type: 'rss2json' },
+      { url: 'https://corsproxy.io/?' + encodeURIComponent(RSS_FEED), type: 'raw' },
+      { url: 'https://api.allorigins.win/get?url=' + encodeURIComponent(RSS_FEED), type: 'allorigins' },
     ];
+    
+    // Try rss2json first (most reliable, no CORS issues)
+    try {
+      const res = await fetch(proxies[0].url);
+      const data = await res.json();
+      if(data.status === 'ok' && data.items && data.items.length > 0){
+        const episodes = data.items.slice(0,5).map((item,i) => {
+          const d = item.pubDate ? new Date(item.pubDate) : null;
+          const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+          const dateAr = d ? d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear() : '';
+          const dur = item.enclosure && item.enclosure.duration ? 
+            (parseInt(item.enclosure.duration) > 100 ? Math.floor(parseInt(item.enclosure.duration)/60)+' دقيقة' : item.enclosure.duration+' دقيقة') : '';
+          return { ep: 'حلقة', title: item.title, dur, date: dateAr, link: item.link||item.enclosure?.link||'#' };
+        });
+        renderPodcast(episodes);
+        return;
+      }
+    } catch(e) { console.log('rss2json failed:', e); }
+
+    // Fallback to raw proxies
     let xml = null;
-    for (const proxyUrl of proxies) {
+    for (const proxy of proxies.slice(1)) {
       try {
-        const res = await fetch(proxyUrl);
-        const text = proxyUrl.includes('allorigins') 
-          ? (await res.json()).contents 
-          : await res.text();
+        const res = await fetch(proxy.url);
+        const text = proxy.type === 'allorigins' ? (await res.json()).contents : await res.text();
         const parser = new DOMParser();
         const parsed = parser.parseFromString(text, 'text/xml');
         if (parsed.querySelector('item')) { xml = parsed; break; }
