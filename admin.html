@@ -1297,9 +1297,9 @@ ${r.script}
 let currentVORequests = [];
 
 async function exportVOPDF(){
-  const snap = await db.collection('voiceover_requests').orderBy('timestamp','desc').get().catch(async()=>{
-    return await db.collection('voiceover_requests').get();
-  });
+  console.log('exportVOPDF called');
+  const snap = await db.collection('voiceover_requests').get();
+  console.log('snap size:', snap.size);
   if(snap.empty){toast('لا توجد طلبات للتصدير',true);return;}
   
   const { jsPDF } = window.jspdf;
