@@ -1007,17 +1007,26 @@ function deleteCourse(id){
 
 // WORKS
 function renderWorksTable(){
-  const works=getWorks();
-  document.getElementById('works-table').innerHTML=works.length
-    ?`<table><thead><tr><th>العنوان</th><th>Video ID</th><th>الوصف</th><th>إجراءات</th></tr></thead>
-      <tbody>${works.map(w=>`<tr>
-        <td>${w.title}</td><td style="direction:ltr;text-align:left;">${w.vid||w.videoId||''}</td><td>${w.desc||''}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteWork('${w.id}')">حذف</button></td>
-      </tr>`).join('')}</tbody></table>`
-    :'<p style="color:var(--text-muted);font-size:.85rem;">لا توجد أعمال مضافة</p>';
-  const cfg=JSON.parse(localStorage.getItem('yt-config')||'{}');
-  if(cfg.channel)document.getElementById('yt-channel').value=cfg.channel;
-  if(cfg.api)document.getElementById('yt-api').value=cfg.api;
+  document.getElementById('works-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('works').get().then(snap=>{
+    if(snap.empty){
+      document.getElementById('works-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد أعمال مضافة</p>';
+    } else {
+      const works=snap.docs.map(d=>({id:d.id,...d.data()}));
+      document.getElementById('works-table').innerHTML=`<table><thead><tr><th>العنوان</th><th>Video ID</th><th>الوصف</th><th>إجراءات</th></tr></thead>
+        <tbody>${works.map(w=>`<tr>
+          <td>${w.title}</td>
+          <td style="direction:ltr;text-align:left;font-size:.75rem;">${w.vid||w.videoId||''}</td>
+          <td>${w.desc||''}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteWork('${w.id}')">حذف</button></td>
+        </tr>`).join('')}</tbody></table>`;
+    }
+    const cfg=JSON.parse(localStorage.getItem('yt-config')||'{}');
+    if(cfg.channel)document.getElementById('yt-channel').value=cfg.channel;
+    if(cfg.api)document.getElementById('yt-api').value=cfg.api;
+  }).catch(()=>{
+    document.getElementById('works-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';
+  });
 }
 function addWork(){
   const title=document.getElementById('wk-title').value.trim();
@@ -1031,7 +1040,11 @@ function addWork(){
   ['wk-title','wk-vid','wk-desc'].forEach(x=>document.getElementById(x).value='');
 }
 function deleteWork(id){
-  confirm_action(()=>{saveWorksData(getWorks().filter(w=>w.id!==id));renderWorksTable();toast('تم الحذف');});
+  confirm_action(()=>{
+    db.collection('works').doc(id).delete()
+      .then(()=>{toast('تم الحذف ✓');renderWorksTable();})
+      .catch(()=>toast('فشل الحذف',true));
+  });
 }
 function saveYT(){
   const ch=document.getElementById('yt-channel').value;
