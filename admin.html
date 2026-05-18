@@ -1443,78 +1443,56 @@ function downloadQuotePDF(){
   var includes = document.getElementById('q-includes').value;
   var notes = document.getElementById('q-notes').value;
   if(!price){toast('أدخل السعر أولاً',true);return;}
-
-  var { jsPDF } = window.jspdf;
-  var doc = new jsPDF({unit:'mm',format:'a4'});
-
+  var clientName = quoteRequestData ? quoteRequestData.name : 'Client';
+  var projectType = quoteRequestData ? quoteRequestData.type : '';
+  var clientEmail = quoteRequestData ? quoteRequestData.email : '';
+  var date = new Date().toLocaleDateString();
+  var doc = new window.jspdf.jsPDF({unit:'mm',format:'a4'});
   doc.setFillColor(201,168,76);
   doc.rect(0,0,210,35,'F');
   doc.setTextColor(10,10,10);
-  doc.setFontSize(20);
+  doc.setFontSize(18);
   doc.setFont('helvetica','bold');
-  doc.text('AHMED QURAISH', 105, 15, {align:'center'});
-  doc.setFontSize(10);
+  doc.text('AHMED QURAISH', 105, 14, {align:'center'});
+  doc.setFontSize(9);
   doc.setFont('helvetica','normal');
-  doc.text('Voice Over Artist & Trainer', 105, 23, {align:'center'});
-  doc.text('quraishvoice.me  |  +966565909049', 105, 30, {align:'center'});
-
+  doc.text('Voice Over Artist & Trainer  |  quraishvoice.me  |  +966565909049', 105, 22, {align:'center'});
+  doc.text('VOICE OVER QUOTATION', 105, 30, {align:'center'});
   doc.setTextColor(50,50,50);
-  doc.setFontSize(16);
-  doc.setFont('helvetica','bold');
-  doc.text('VOICE OVER QUOTATION', 105, 50, {align:'center'});
-
   doc.setFontSize(10);
-  doc.setFont('helvetica','normal');
-  var clientName = quoteRequestData ? quoteRequestData.name : '';
-  var clientEmail = quoteRequestData ? quoteRequestData.email : '';
-  var projectType = quoteRequestData ? quoteRequestData.type : '';
-  doc.text('Client: '+clientName, 20, 65);
-  doc.text('Email: '+clientEmail, 20, 72);
-  doc.text('Project: '+projectType, 20, 79);
-  doc.text('Date: '+new Date().toLocaleDateString(), 150, 65);
-
+  doc.text('Client: ' + clientName, 20, 48);
+  doc.text('Email: ' + clientEmail, 20, 55);
+  doc.text('Project: ' + projectType, 20, 62);
+  doc.text('Date: ' + date, 150, 48);
   doc.setDrawColor(201,168,76);
   doc.setLineWidth(0.5);
-  doc.line(20, 88, 190, 88);
-
-  doc.setFillColor(250,247,240);
-  doc.rect(20, 95, 170, 25, 'F');
+  doc.line(20, 70, 190, 70);
+  doc.setFillColor(255,250,240);
+  doc.rect(20,75,170,22,'F');
   doc.setDrawColor(201,168,76);
-  doc.rect(20, 95, 170, 25, 'S');
+  doc.rect(20,75,170,22,'S');
   doc.setFontSize(14);
   doc.setFont('helvetica','bold');
-  doc.setTextColor(201,168,76);
-  doc.text('Total: SAR '+price, 105, 111, {align:'center'});
-
+  doc.setTextColor(180,130,20);
+  doc.text('Total: SAR ' + price, 105, 89, {align:'center'});
   doc.setTextColor(50,50,50);
   doc.setFontSize(10);
   doc.setFont('helvetica','normal');
-  doc.text('Delivery: '+delivery, 105, 130, {align:'center'});
-
+  doc.text('Delivery: ' + delivery, 105, 108, {align:'center'});
   doc.setFont('helvetica','bold');
-  doc.text('Includes:', 20, 145);
+  doc.text('This quote includes:', 20, 122);
   doc.setFont('helvetica','normal');
-  var lines = includes.split('
-');
-  lines.forEach(function(line,i){ doc.text(line, 25, 153+(i*7)); });
-
-  if(notes){
-    var ny = 153+(lines.length*7)+10;
-    doc.setFont('helvetica','bold');
-    doc.text('Notes:', 20, ny);
-    doc.setFont('helvetica','normal');
-    doc.text(notes, 20, ny+7, {maxWidth:170});
-  }
-
+  var includeLines = includes.replace(/\n/g,' | ').split(' | ');
+  var y = 130;
+  includeLines.forEach(function(l){ doc.text(l, 25, y); y += 7; });
+  if(notes){ doc.setFont('helvetica','bold'); doc.text('Notes:', 20, y+5); doc.setFont('helvetica','normal'); doc.text(notes, 20, y+12, {maxWidth:170}); }
   doc.setFillColor(240,240,240);
   doc.rect(0,272,210,25,'F');
   doc.setFontSize(8);
-  doc.setTextColor(100,100,100);
-  doc.text('Valid for 7 days  |  quraishvoice.me  |  +966565909049', 105, 284, {align:'center'});
-
-  var fname = (quoteRequestData ? quoteRequestData.name : 'client').replace(/ /g,'_');
-  doc.save('quote_'+fname+'_'+new Date().toISOString().slice(0,10)+'.pdf');
-  toast('تم تحميل PDF! ✓');
+  doc.setTextColor(120,120,120);
+  doc.text('Valid for 7 days from issue date  |  Ahmed Quraish Voice Over  |  quraishvoice.me', 105, 282, {align:'center'});
+  doc.save('quote_' + clientName.replace(/ /g,'_') + '_' + date.replace(/\//g,'-') + '.pdf');
+  toast('تم تحميل PDF!');
 }
 
 </script>
