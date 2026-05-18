@@ -801,19 +801,22 @@ function renderPage(id){
 }
 
 function renderDashboard(){
-  const news=getNews(),courses=getCourses(),regs=getRegs(),msgs=getMsgs();
-  document.getElementById('count-news').textContent=news.length;
-  const ivs=JSON.parse(localStorage.getItem('admin-interviews')||'[]');
-  const pods=JSON.parse(localStorage.getItem('admin-podcast')||'[]');
-  document.getElementById('count-courses').textContent=courses.length;
-  document.getElementById('count-regs').textContent=regs.length;
-  document.getElementById('count-msgs').textContent=msgs.length;
-  const latest=regs.slice(-5).reverse();
-  document.getElementById('dash-regs-table').innerHTML=latest.length
-    ?`<table><thead><tr><th>الاسم</th><th>الدورة</th><th>الجوال</th><th>الحالة</th></tr></thead><tbody>
-      ${latest.map(r=>`<tr><td>${r.name||'—'}</td><td>${r.course||'—'}</td><td>${r.phone||'—'}</td><td><span class="badge badge-gold">جديد</span></td></tr>`).join('')}
-      </tbody></table>`
-    :'<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem 0;">لا توجد تسجيلات بعد</p>';
+  // Load all counts from Firebase
+  db.collection('news').get().then(s=>document.getElementById('count-news').textContent=s.size).catch(()=>{});
+  db.collection('courses').get().then(s=>document.getElementById('count-courses').textContent=s.size).catch(()=>{});
+  db.collection('voiceover_requests').get().then(s=>{const el=document.getElementById('count-vo');if(el)el.textContent=s.size;}).catch(()=>{});
+  db.collection('registrations').get().then(s=>document.getElementById('count-regs').textContent=s.size).catch(()=>{});
+  db.collection('messages').get().then(s=>document.getElementById('count-msgs').textContent=s.size).catch(()=>{});
+
+  // Latest registrations from Firebase
+  db.collection('registrations').get().then(snap=>{
+    const latest = snap.docs.slice(-5).reverse().map(d=>d.data());
+    document.getElementById('dash-regs-table').innerHTML=latest.length
+      ?`<table><thead><tr><th>الاسم</th><th>الدورة</th><th>الجوال</th><th>الحالة</th></tr></thead><tbody>
+        ${latest.map(r=>`<tr><td>${r.name||'—'}</td><td>${r.course||'—'}</td><td>${r.phone||'—'}</td><td><span class="badge badge-gold">جديد</span></td></tr>`).join('')}
+        </tbody></table>`
+      :'<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem 0;">لا توجد تسجيلات بعد</p>';
+  }).catch(()=>{});
 }
 
 // NEWS
