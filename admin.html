@@ -87,6 +87,7 @@ tr:hover td{background:rgba(201,168,76,.03);}
 .modal-close:hover{border-color:var(--red);color:var(--red);}
 .modal h3{font-family:'Cairo',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;}
 /* CONFIRM */
+.subtitle{font-size:.85rem;color:var(--text-muted);margin-bottom:.5rem;}
 .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:3000;display:none;align-items:center;justify-content:center;}
 .confirm-overlay.open{display:flex;}
 .confirm-box{background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:2rem;width:340px;text-align:center;}
@@ -128,6 +129,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
 }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -174,6 +176,10 @@ function addTestimonial(){_call('addTestimonial',[])}
 function sendNewsletter(){_call('sendNewsletter',[])}
 function loadNewsletterSubscribers(){_call('loadNewsletterSubscribers',[])}
 function exportEmails(){_call('exportEmails',[])}
+function exportVOPDF(){_call('exportVOPDF',[])}
+function openQuoteModal(id){_call('openQuoteModal',[id])}
+function sendQuote(){_call('sendQuote',[])}
+function downloadQuotePDF(){_call('downloadQuotePDF',[])}
 function toggleSubscriber(id,s){_call('toggleSubscriber',[id,s])}
 function renderVOTable(){_call('renderVOTable',[])}
 function viewVO(id){_call('viewVO',[id])}
@@ -362,6 +368,10 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
         <div class="page-sub">طلبات تسعيرة التعليق الصوتي الواردة من الموقع</div>
       </div>
       <div class="card">
+        <div class="card-header">
+          <span class="card-title">الطلبات الواردة</span>
+          <button class="btn btn-outline btn-sm" onclick="exportVOPDF()">📄 تصدير PDF</button>
+        </div>
         <div id="vo-table"></div>
       </div>
     </div>
@@ -1334,6 +1344,235 @@ ${r.script}
   });
 }
 
+
+// ═══════════════════════════════════════
+// VOICEOVER EXPORT & QUOTE
+// ═══════════════════════════════════════
+let currentVORequests = [];
+
+async function exportVOPDF(){
+  const snap = await db.collection('voiceover_requests').orderBy('timestamp','desc').get().catch(async()=>{
+    return await db.collection('voiceover_requests').get();
+  });
+  if(snap.empty){toast('لا توجد طلبات للتصدير',true);return;}
+  
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+  
+  // Header
+  doc.setFillColor(201,168,76);
+  doc.rect(0,0,297,20,'F');
+  doc.setTextColor(10,10,10);
+  doc.setFontSize(14);
+  doc.text('Ahmed Quraish — Voiceover Requests', 148, 12, {align:'center'});
+  
+  doc.setTextColor(50,50,50);
+  doc.setFontSize(9);
+  
+  const headers = ['#','Name','Phone','Email','Type','Deadline','Date'];
+  const colWidths = [10,40,30,55,35,30,30];
+  let x = 10, y = 30;
+  
+  // Table header
+  doc.setFillColor(240,240,240);
+  doc.rect(10, y-5, 277, 8, 'F');
+  doc.setFont('helvetica','bold');
+  headers.forEach((h,i)=>{
+    doc.text(h, x+2, y);
+    x += colWidths[i];
+  });
+  
+  y += 8;
+  doc.setFont('helvetica','normal');
+  
+  snap.docs.forEach((d,idx)=>{
+    const r = d.data();
+    if(y > 185){ doc.addPage(); y = 20; }
+    if(idx%2===0){ doc.setFillColor(250,250,250); doc.rect(10,y-5,277,8,'F'); }
+    x = 10;
+    const row = [
+      String(idx+1),
+      (r.name||'—').substring(0,20),
+      r.phone||'—',
+      (r.email||'—').substring(0,28),
+      (r.type||'—').substring(0,18),
+      r.deadline||'—',
+      r.time||'—'
+    ];
+    row.forEach((cell,i)=>{
+      doc.text(String(cell), x+2, y);
+      x += colWidths[i];
+    });
+    y += 8;
+  });
+  
+  doc.setFontSize(8);
+  doc.setTextColor(150,150,150);
+  doc.text('Generated: '+new Date().toLocaleDateString(), 148, 200, {align:'center'});
+  
+  doc.save('voiceover_requests_'+new Date().toISOString().slice(0,10)+'.pdf');
+  toast('تم تصدير PDF بنجاح! ✓');
+}
+
+let quoteRequestData = null;
+
+function openQuoteModal(id){
+  db.collection('voiceover_requests').doc(id).get().then(d=>{
+    if(!d.exists){toast('لم يُعثر على الطلب',true);return;}
+    quoteRequestData = {id:d.id,...d.data()};
+    document.getElementById('quote-request-id').value = id;
+    document.getElementById('quote-client-email').value = quoteRequestData.email||'';
+    document.getElementById('quote-client-name').textContent = 'للعميل: '+(quoteRequestData.name||'—')+' — '+(quoteRequestData.email||'');
+    document.getElementById('q-price').value = '';
+    document.getElementById('q-includes').value = '- تعليق صوتي احترافي\n- مراجعة واحدة مجانية\n- ملف صوتي WAV/MP3 بجودة عالية';
+    document.getElementById('q-notes').value = '';
+    openModal('quoteModal');
+  });
+}
+
+async function sendQuote(){
+  const price = document.getElementById('q-price').value;
+  const delivery = document.getElementById('q-delivery').value;
+  const includes = document.getElementById('q-includes').value;
+  const notes = document.getElementById('q-notes').value;
+  const email = document.getElementById('quote-client-email').value;
+  const name = quoteRequestData?.name||'';
+  
+  if(!price){toast('أدخل السعر',true);return;}
+  if(!email){toast('لا يوجد بريد إلكتروني للعميل',true);return;}
+  
+  const message = `عزيزي ${name}،
+
+شكراً لتواصلك مع أحمد قريش للتعليق الصوتي.
+
+━━━━━━━━━━━━━━━━━━━━
+💰 التسعيرة: ${price} ريال سعودي
+⏱ مدة التسليم: ${delivery}
+
+✅ يشمل السعر:
+${includes}
+
+${notes ? '📝 ملاحظات:
+'+notes : ''}
+━━━━━━━━━━━━━━━━━━━━
+
+للموافقة أو الاستفسار، تواصل معنا عبر:
+📧 البريد الإلكتروني
+📱 واتساب: +966565909049
+
+مع تحياتي،
+أحمد قريش
+`;
+
+  try {
+    await emailjs.send('service_6g3odwb', 'bozx1s3', {
+      from_name: 'أحمد قريش',
+      from_email: email,
+      subject: 'تسعيرة التعليق الصوتي — ' + (quoteRequestData?.type||''),
+      message,
+      phone: '—', course: '—', notes: '—',
+      time: new Date().toLocaleString('ar-SA')
+    }, {publicKey: 'QnIPBoSRBkpNWiNt4'});
+    
+    // Log quote in Firebase
+    await db.collection('voiceover_requests').doc(quoteRequestData.id).update({
+      quote_sent: true,
+      quote_price: price,
+      quote_time: new Date().toLocaleString('ar-SA')
+    });
+    
+    closeModal('quoteModal');
+    toast('تم إرسال التسعيرة للعميل! ✓');
+    renderVOTable();
+  } catch(e){
+    toast('فشل الإرسال: '+e.message, true);
+  }
+}
+
+function downloadQuotePDF(){
+  const price = document.getElementById('q-price').value;
+  const delivery = document.getElementById('q-delivery').value;
+  const includes = document.getElementById('q-includes').value;
+  const notes = document.getElementById('q-notes').value;
+  if(!price){toast('أدخل السعر أولاً',true);return;}
+  
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm',format:'a4'});
+  
+  // Gold header
+  doc.setFillColor(201,168,76);
+  doc.rect(0,0,210,35,'F');
+  doc.setTextColor(10,10,10);
+  doc.setFontSize(20);
+  doc.setFont('helvetica','bold');
+  doc.text('AHMED QURAISH', 105, 15, {align:'center'});
+  doc.setFontSize(10);
+  doc.setFont('helvetica','normal');
+  doc.text('Voice Over Artist & Trainer', 105, 23, {align:'center'});
+  doc.text('quraishvoice.me  |  +966565909049', 105, 30, {align:'center'});
+  
+  // Quote title
+  doc.setTextColor(50,50,50);
+  doc.setFontSize(16);
+  doc.setFont('helvetica','bold');
+  doc.text('VOICE OVER QUOTATION', 105, 50, {align:'center'});
+  
+  // Client info
+  doc.setFontSize(10);
+  doc.setFont('helvetica','normal');
+  doc.text('Client: '+(quoteRequestData?.name||'—'), 20, 65);
+  doc.text('Email: '+(quoteRequestData?.email||'—'), 20, 72);
+  doc.text('Project Type: '+(quoteRequestData?.type||'—'), 20, 79);
+  doc.text('Date: '+new Date().toLocaleDateString(), 150, 65);
+  
+  // Divider
+  doc.setDrawColor(201,168,76);
+  doc.setLineWidth(0.5);
+  doc.line(20, 88, 190, 88);
+  
+  // Price box
+  doc.setFillColor(250,247,240);
+  doc.rect(20, 95, 170, 25, 'F');
+  doc.setDrawColor(201,168,76);
+  doc.rect(20, 95, 170, 25, 'S');
+  doc.setFontSize(14);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(201,168,76);
+  doc.text('Total: SAR '+price, 105, 111, {align:'center'});
+  
+  // Delivery
+  doc.setTextColor(50,50,50);
+  doc.setFontSize(10);
+  doc.setFont('helvetica','normal');
+  doc.text('Delivery Time: '+delivery, 105, 130, {align:'center'});
+  
+  // Includes
+  doc.setFont('helvetica','bold');
+  doc.text('This quote includes:', 20, 145);
+  doc.setFont('helvetica','normal');
+  const lines = includes.split('\n');
+  lines.forEach((line,i)=>doc.text(line, 25, 153+(i*7)));
+  
+  // Notes
+  if(notes){
+    const notesY = 153+(lines.length*7)+10;
+    doc.setFont('helvetica','bold');
+    doc.text('Notes:', 20, notesY);
+    doc.setFont('helvetica','normal');
+    doc.text(notes, 20, notesY+7, {maxWidth:170});
+  }
+  
+  // Footer
+  doc.setFillColor(240,240,240);
+  doc.rect(0,272,210,25,'F');
+  doc.setFontSize(8);
+  doc.setTextColor(100,100,100);
+  doc.text('This quotation is valid for 7 days from the date of issue.', 105, 280, {align:'center'});
+  doc.text('Ahmed Quraish Voice Over  |  quraishvoice.me  |  +966565909049', 105, 287, {align:'center'});
+  
+  doc.save('quote_'+(quoteRequestData?.name||'client').replace(/ /g,'_')+'_'+new Date().toISOString().slice(0,10)+'.pdf');
+  toast('تم تحميل PDF! ✓');
+}
 // ═══════════════════════════════════════
 // NEWSLETTER FUNCTIONS
 // ═══════════════════════════════════════
@@ -1715,6 +1954,10 @@ window._real_deleteInterviewById = deleteInterviewById;
 window._real_sendNewsletter = sendNewsletter;
 window._real_loadNewsletterSubscribers = loadNewsletterSubscribers;
 window._real_exportEmails = exportEmails;
+window._real_exportVOPDF = exportVOPDF;
+window._real_openQuoteModal = openQuoteModal;
+window._real_sendQuote = sendQuote;
+window._real_downloadQuotePDF = downloadQuotePDF;
 window._real_toggleSubscriber = toggleSubscriber;
 window._real_renderVOTable = renderVOTable;
 window._real_viewVO = viewVO;
@@ -1736,5 +1979,39 @@ window._real_confirm_action = confirm_action;
 window._real_deleteCmt = deleteCmt;
 
 </script>
+
+<!-- QUOTE MODAL -->
+<div class="modal-overlay" id="quoteModal">
+  <div class="modal" style="max-width:600px;">
+    <button class="modal-close" onclick="closeModal('quoteModal')">✕</button>
+    <h3>💰 إرسال تسعيرة</h3>
+    <p class="subtitle" id="quote-client-name">للعميل: —</p>
+    <input type="hidden" id="quote-request-id">
+    <input type="hidden" id="quote-client-email">
+    <div class="form-grid" style="margin-top:1rem;">
+      <div class="fg"><label>سعر التعليق الصوتي (ريال)</label><input type="number" id="q-price" placeholder="500"></div>
+      <div class="fg"><label>مدة التسليم</label>
+        <select id="q-delivery">
+          <option>٣ أيام عمل</option>
+          <option>٥ أيام عمل</option>
+          <option>أسبوع</option>
+          <option>حسب الاتفاق</option>
+        </select>
+      </div>
+      <div class="fg fg-full"><label>ما يشمله السعر</label>
+        <textarea id="q-includes" style="min-height:80px;" placeholder="- تعليق صوتي احترافي&#10;- مراجعة واحدة مجانية&#10;- ملف صوتي بجودة عالية"></textarea>
+      </div>
+      <div class="fg fg-full"><label>ملاحظات للعميل (اختياري)</label>
+        <textarea id="q-notes" style="min-height:60px;" placeholder="أي معلومات إضافية للعميل..."></textarea>
+      </div>
+    </div>
+    <div class="form-actions" style="margin-top:1rem;">
+      <button class="btn btn-primary btn-sm" onclick="sendQuote()">📧 إرسال التسعيرة بالبريد</button>
+      <button class="btn btn-outline btn-sm" onclick="downloadQuotePDF()">📄 تحميل PDF</button>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('quoteModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
