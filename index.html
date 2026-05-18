@@ -623,7 +623,7 @@ const db = firebase.firestore();
 // ═══════════════════════════════════════
 // EMAILJS
 // ═══════════════════════════════════════
-emailjs.init('QnIPBoSRBkpNWiNt4');
+// EmailJS v4 — publicKey passed directly in send()
 const EJS_SERVICE = 'service_6g3odwb';
 const EJS_TEMPLATE_MSG = 'bozx1s3';
 const EJS_TEMPLATE_REG = 't2l4rkn';
@@ -923,7 +923,7 @@ function sendMsg(e){
   // Save to Firebase
   db.collection('messages').add(data).catch(()=>{});
   // Send email notification
-  emailjs.send(EJS_SERVICE, EJS_TEMPLATE_MSG, {
+  const emailParams = {
     from_name: data.name,
     from_email: data.email,
     subject: data.subject,
@@ -932,8 +932,11 @@ function sendMsg(e){
     course: '—',
     notes: '—',
     time: data.time
-  }).catch((err)=>{ console.log('EmailJS error:', err); });
-  toast('تم إرسال رسالتك! ✓');
+  };
+  console.log('Sending email with params:', emailParams);
+  emailjs.send(EJS_SERVICE, EJS_TEMPLATE_MSG, emailParams, {publicKey: 'QnIPBoSRBkpNWiNt4'})
+    .then(res => { console.log('EmailJS success:', res); toast('تم إرسال رسالتك! ✓'); })
+    .catch(err => { console.log('EmailJS error:', JSON.stringify(err)); toast('تم حفظ رسالتك ✓'); });
   form.reset();
 }
 function submitForm(e,t){
@@ -961,7 +964,7 @@ function submitForm(e,t){
       notes: data.notes,
       time,
       subject: 'طلب تسجيل جديد — ' + data.course
-    }).catch(()=>{});
+    }, {publicKey: 'QnIPBoSRBkpNWiNt4'}).catch(err=>console.log('EJS err:',err));
     closeModal(t);
     toast('تم استلام طلب التسجيل! ✓');
   } else {
@@ -982,7 +985,7 @@ function submitForm(e,t){
       notes: 'المستوى: ' + data.level + '\nالهدف: ' + data.goal,
       time,
       subject: 'طلب استشارة جديد — ' + data.name
-    }).catch(()=>{});
+    }, {publicKey: 'QnIPBoSRBkpNWiNt4'}).catch(err=>console.log('EJS err:',err));
     closeModal(t);
     toast('تم استلام طلب الحجز! ✓');
   }
