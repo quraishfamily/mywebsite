@@ -135,21 +135,20 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <script>
-// Proxy functions - delegate to real implementations once loaded
-var _fns = {};
+// Proxy functions - wait for real implementations to load
 function _call(name, args) {
-  var fn = window['_real_' + name];
-  if (fn) {
-    fn.apply(null, args);
-  } else {
-    // Retry up to 20 times with 100ms delay
-    var tries = 0;
-    var interval = setInterval(function(){
-      var f = window['_real_' + name];
-      if (f) { clearInterval(interval); f.apply(null, args); }
-      else if (++tries > 20) { clearInterval(interval); console.warn(name + ' failed to load'); }
-    }, 100);
+  var tries = 0;
+  function attempt() {
+    var fn = window['_real_' + name];
+    if (fn) {
+      fn.apply(null, args);
+    } else if (tries++ < 50) {
+      setTimeout(attempt, 200);
+    } else {
+      console.warn(name + ' never loaded');
+    }
   }
+  attempt();
 }
 function doLogin(){_call('doLogin',[])}
 function logout(){_call('logout',[])}
@@ -210,7 +209,7 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
     <div class="login-form">
       <input type="email" class="inp" id="loginUser" placeholder="البريد الإلكتروني">
       <input type="password" class="inp" id="loginPass" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')doLogin()">
-      <button class="btn btn-primary" onclick="doLogin()">دخول</button>
+      <button class="btn btn-primary" id="loginBtn">دخول</button>
       <div class="login-err" id="loginErr">بيانات خاطئة، حاول مجدداً</div>
     </div>
   </div>
@@ -736,6 +735,11 @@ auth.onAuthStateChanged(user => {
 });
 
 document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+// Also bind login button via addEventListener for reliability
+document.addEventListener('DOMContentLoaded', function(){
+  var btn = document.getElementById('loginBtn');
+  if(btn) btn.addEventListener('click', function(){ doLogin(); });
+});
 
 // TOAST
 function toast(msg,err=false){
