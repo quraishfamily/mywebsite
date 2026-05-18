@@ -571,6 +571,25 @@ nav{top:36px !important;}
 [data-theme="light"] .scroll-bar{background:linear-gradient(90deg,var(--gold),var(--gold-light));}
 [data-theme="light"] .cmt-input{background:var(--dark3);}
 [data-theme="light"] .fg input,[data-theme="light"] .fg textarea{background:var(--dark3);}
+
+/* VOICEOVER REQUEST */
+.vo-section{background:var(--dark);}
+.vo-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:4rem;align-items:start;}
+.vo-info h3{font-size:1.1rem;font-weight:700;margin-bottom:1rem;}
+.vo-info p{font-size:.88rem;color:var(--text-muted);line-height:1.9;margin-bottom:1.5rem;}
+.vo-features{display:flex;flex-direction:column;gap:.7rem;margin-bottom:1.5rem;}
+.vo-feat{display:flex;align-items:center;gap:.7rem;font-size:.87rem;}
+.vo-feat::before{content:'✦';color:var(--gold);font-size:.65rem;flex-shrink:0;}
+.vo-note{
+  background:rgba(201,168,76,.08);border:1px solid var(--border);
+  border-radius:4px;padding:1rem 1.2rem;
+  font-size:.82rem;color:var(--text-muted);line-height:1.7;
+}
+.vo-note b{color:var(--gold);}
+.vo-form{background:var(--dark2);border:1px solid var(--border);border-radius:6px;padding:2rem;}
+.vo-form h3{font-family:'Cairo',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:1.5rem;}
+.char-count{font-size:.72rem;color:var(--text-muted);text-align:left;margin-top:.3rem;}
+@media(max-width:900px){.vo-grid{grid-template-columns:1fr;}}
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -614,6 +633,7 @@ nav{top:36px !important;}
     <li><a href="#interviews">مقابلات</a></li>
     <li><a href="#works">الأعمال</a></li>
     <li><a href="#courses">الدورات</a></li>
+    <li><a href="#voiceover">تعليق صوتي</a></li>
     <li><a href="#consulting">الاستشارات</a></li>
     <li><a href="#contact">تواصل</a></li>
   </ul>
@@ -631,6 +651,7 @@ nav{top:36px !important;}
   <a href="#interviews" onclick="closeMenu()">مقابلات</a>
   <a href="#works" onclick="closeMenu()">الأعمال</a>
   <a href="#courses" onclick="closeMenu()">الدورات</a>
+  <a href="#voiceover" onclick="closeMenu()">تعليق صوتي</a>
   <a href="#consulting" onclick="closeMenu()">الاستشارات</a>
   <a href="#contact" onclick="closeMenu()">تواصل</a>
   <div class="mobile-social">
@@ -854,6 +875,88 @@ nav{top:36px !important;}
   </div>
 </section>
 
+<!-- VOICEOVER REQUEST -->
+<section id="voiceover" class="vo-section">
+  <div class="container">
+    <div class="reveal">
+      <div class="sec-label">خدمة احترافية</div>
+      <h2 class="sec-title">طلب تسعيرة تعليق صوتي</h2>
+      <div class="sec-line"></div>
+    </div>
+    <div class="vo-grid">
+      <div class="reveal">
+        <div class="vo-info">
+          <h3>ماذا نحتاج منك؟</h3>
+          <p>لتقديم تسعيرة دقيقة، نحتاج بعض المعلومات عن مشروعك. كلما كانت التفاصيل أوضح، كانت التسعيرة أدق وأسرع.</p>
+        </div>
+        <div class="vo-features">
+          <div class="vo-feat">وصف واضح لطبيعة المشروع (إعلان، وثائقي، تدريبي...)</div>
+          <div class="vo-feat">السكريبت الكامل أو نموذج منه للتسعير</div>
+          <div class="vo-feat">الوقت المطلوب للتسليم</div>
+          <div class="vo-feat">أي متطلبات خاصة بالصوت أو الأسلوب</div>
+        </div>
+        <div class="vo-note">
+          ⏱ <b>وقت التسليم المعتاد:</b> بين <b>٣ إلى ٥ أيام عمل</b> من تأكيد الطلب.<br>
+          في حال الاستعجال، يمكن التنسيق مسبقاً لتسليم أسرع وفق الإمكانية.
+        </div>
+      </div>
+      <div class="reveal">
+        <form class="vo-form" onsubmit="submitVO(event)">
+          <h3>🎙️ أرسل طلبك الآن</h3>
+          <div class="contact-form" style="display:flex;flex-direction:column;gap:.9rem;">
+            <div class="f-row">
+              <div class="fg"><label>الاسم الكامل *</label><input type="text" id="vo-name" placeholder="اسمك الكريم" required></div>
+              <div class="fg"><label>البريد الإلكتروني *</label><input type="email" id="vo-email" placeholder="email@example.com" required></div>
+            </div>
+            <div class="fg"><label>رقم الجوال *</label><input type="tel" id="vo-phone" placeholder="+966 5X XXX XXXX" required></div>
+            <div class="fg">
+              <label>نوع المشروع *</label>
+              <select id="vo-type" required>
+                <option value="">اختر نوع المشروع...</option>
+                <option>إعلان تجاري</option>
+                <option>فيلم وثائقي</option>
+                <option>محتوى تدريبي / تعليمي</option>
+                <option>دوبلاج</option>
+                <option>بودكاست</option>
+                <option>IVR / مركز اتصال</option>
+                <option>محتوى رقمي / يوتيوب</option>
+                <option>أخرى</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>شرح المشروع والمتطلبات *</label>
+              <textarea id="vo-desc" placeholder="اشرح طبيعة المشروع، الأسلوب المطلوب، الجمهور المستهدف، وأي تفاصيل تساعد في التسعير..." style="min-height:100px;" required oninput="updateCount('vo-desc','vo-desc-count',500)"></textarea>
+              <div class="char-count"><span id="vo-desc-count">0</span> / 500</div>
+            </div>
+            <div class="fg">
+              <label>السكريبت (أو نموذج منه) *</label>
+              <textarea id="vo-script" placeholder="ضع السكريبت هنا أو نموذجاً منه لتقدير الوقت والتسعير بدقة..." style="min-height:120px;" required oninput="updateCount('vo-script','vo-script-count',2000)"></textarea>
+              <div class="char-count"><span id="vo-script-count">0</span> / 2000</div>
+            </div>
+            <div class="fg">
+              <label>الوقت المطلوب للتسليم</label>
+              <select id="vo-deadline">
+                <option value="">اختر...</option>
+                <option>٣ - ٥ أيام عمل (المعتاد)</option>
+                <option>أسبوع</option>
+                <option>أسبوعان</option>
+                <option>لا يوجد موعد محدد</option>
+                <option>عاجل (أقل من ٣ أيام) — يخضع للتوافر</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>ملاحظات إضافية</label>
+              <textarea id="vo-notes" placeholder="أي تفاصيل أخرى تود إضافتها..." style="min-height:70px;"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;font-size:1rem;">إرسال الطلب</button>
+            <p style="font-size:.75rem;color:var(--text-muted);text-align:center;">سيتم التواصل معك خلال ٢٤ ساعة لمناقشة التفاصيل والتسعيرة</p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- CONTACT -->
 <section id="contact" class="contact-section">
   <div class="container">
@@ -906,6 +1009,7 @@ nav{top:36px !important;}
       <li><a href="#news">الأخبار</a></li>
       <li><a href="#interviews">مقابلات</a></li>
       <li><a href="#courses">الدورات</a></li>
+      <li><a href="#voiceover">تعليق صوتي</a></li>
       <li><a href="admin.html">الأدمن</a></li>
     </ul>
     <div class="social-row">
@@ -1438,6 +1542,48 @@ window.addEventListener('scroll', () => {
   if(btn) btn.classList.toggle('visible', window.scrollY > 400);
 });
 
+
+// VOICEOVER REQUEST
+function updateCount(textareaId, countId, max){
+  const len = document.getElementById(textareaId).value.length;
+  const el = document.getElementById(countId);
+  if(el){ el.textContent = len; el.style.color = len > max*0.9 ? 'var(--gold)' : ''; }
+}
+
+async function submitVO(e){
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('vo-name').value,
+    email: document.getElementById('vo-email').value,
+    phone: document.getElementById('vo-phone').value,
+    type: document.getElementById('vo-type').value,
+    desc: document.getElementById('vo-desc').value,
+    script: document.getElementById('vo-script').value,
+    deadline: document.getElementById('vo-deadline').value,
+    notes: document.getElementById('vo-notes').value,
+    time: new Date().toLocaleString('ar-SA')
+  };
+  // Save to Firebase
+  db.collection('voiceover_requests').add(data).catch(()=>{});
+  // Send email
+  emailjs.send(EJS_SERVICE, EJS_TEMPLATE_MSG, {
+    from_name: data.name,
+    from_email: data.email,
+    subject: 'طلب تسعيرة تعليق صوتي — ' + data.type,
+    message: 'النوع: ' + data.type + '\nالجوال: ' + data.phone + '\nالموعد: ' + data.deadline + '\n\nالوصف:\n' + data.desc + '\n\nالسكريبت:\n' + data.script + '\n\nملاحظات: ' + data.notes,
+    phone: data.phone,
+    course: data.type,
+    notes: data.notes,
+    time: data.time
+  }, {publicKey: 'QnIPBoSRBkpNWiNt4'}).catch(()=>{});
+  
+  toast('تم إرسال طلبك! سنتواصل معك خلال ٢٤ ساعة ✓');
+  e.target.reset();
+  ['vo-desc-count','vo-script-count'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.textContent='0';
+  });
+}
+
 // MOBILE MENU
 // ═══════════════════════════════════════
 function toggleMenu(){
@@ -1556,6 +1702,8 @@ window.shareCopy = shareCopy;
 window.loadYT = loadYT;
 window.toggleMenu = toggleMenu;
 window.toggleTheme = toggleTheme;
+window.submitVO = submitVO;
+window.updateCount = updateCount;
 window.closeMenu = closeMenu;
 window.sendMsg = sendMsg;
 window.submitForm = submitForm;
