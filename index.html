@@ -1259,11 +1259,11 @@ const defaultWorks=[
 
 function renderNews(news=null){
   if(!news)news=JSON.parse(localStorage.getItem('admin-news')||'null')||defaultNews;
-  // Sort by date descending (newest first)
+  // Sort by date: newest first (rightmost in RTL grid)
   news = [...news].sort((a,b) => {
-    const ta = b.timestamp || (b.dateRaw ? new Date(b.dateRaw).getTime() : 0);
-    const tb = a.timestamp || (a.dateRaw ? new Date(a.dateRaw).getTime() : 0);
-    return ta - tb;
+    const ta = a.timestamp || (a.dateRaw ? new Date(a.dateRaw).getTime() : 0);
+    const tb = b.timestamp || (b.dateRaw ? new Date(b.dateRaw).getTime() : 0);
+    return tb - ta;
   });
   document.getElementById('newsGrid').innerHTML=news.map(n=>`
     <div class="news-card reveal">
