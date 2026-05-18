@@ -354,6 +354,52 @@ nav{top:36px !important;}
   50%{box-shadow:0 4px 28px rgba(37,211,102,0.7),0 0 0 8px rgba(37,211,102,0.1);}
   100%{box-shadow:0 4px 20px rgba(37,211,102,0.4);}
 }
+
+/* TESTIMONIALS */
+.testimonials-section{background:var(--dark);display:none;}
+.testimonials-section.visible{display:block;}
+.testimonials-track-wrap{overflow:hidden;position:relative;}
+.testimonials-track-wrap::before,.testimonials-track-wrap::after{
+  content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;
+}
+.testimonials-track-wrap::before{right:0;background:linear-gradient(to left,var(--dark),transparent);}
+.testimonials-track-wrap::after{left:0;background:linear-gradient(to right,var(--dark),transparent);}
+.testimonials-track{
+  display:flex;gap:1.5rem;
+  animation:slide-testimonials 30s linear infinite;
+  width:max-content;
+}
+.testimonials-track:hover{animation-play-state:paused;}
+@keyframes slide-testimonials{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-50%);}
+}
+.testimonial-card{
+  background:var(--dark2);border:1px solid var(--border);border-radius:6px;
+  padding:1.8rem;width:320px;flex-shrink:0;
+  position:relative;
+}
+.testimonial-card::before{
+  content:'"';
+  position:absolute;top:.8rem;right:1.2rem;
+  font-size:4rem;color:var(--gold);opacity:.2;
+  font-family:'Cairo',sans-serif;line-height:1;
+}
+.testimonial-stars{display:flex;gap:3px;margin-bottom:.8rem;}
+.testimonial-stars span{color:var(--gold);font-size:.9rem;}
+.testimonial-text{
+  font-size:.88rem;color:var(--text-muted);line-height:1.8;
+  margin-bottom:1.2rem;
+}
+.testimonial-author{display:flex;align-items:center;gap:.8rem;}
+.testimonial-avatar{
+  width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold-dim),var(--dark3));
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;flex-shrink:0;border:1px solid var(--border);
+}
+.testimonial-name{font-weight:700;font-size:.88rem;}
+.testimonial-role{font-size:.75rem;color:var(--text-muted);}
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -556,6 +602,21 @@ nav{top:36px !important;}
       <div class="sec-line"></div>
     </div>
     <div class="courses-grid" id="coursesGrid"></div>
+  </div>
+</section>
+
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" class="testimonials-section">
+  <div class="container">
+    <div class="reveal" style="text-align:center;margin-bottom:3rem;">
+      <div class="sec-label" style="justify-content:center;display:flex;">آراء المتدربين</div>
+      <h2 class="sec-title">ماذا قالوا عن التجربة</h2>
+      <div class="sec-line" style="margin:0 auto 0;"></div>
+    </div>
+  </div>
+  <div class="testimonials-track-wrap">
+    <div class="testimonials-track" id="testimonialsTrack"></div>
   </div>
 </section>
 
@@ -1120,6 +1181,37 @@ async function loadSettings() {
   }
 }
 
+
+// ═══════════════════════════════════════
+// TESTIMONIALS
+// ═══════════════════════════════════════
+function renderTestimonials(items) {
+  const section = document.querySelector('.testimonials-section');
+  if (!items || items.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  // Duplicate for seamless loop
+  const all = [...items, ...items];
+  const track = document.getElementById('testimonialsTrack');
+  track.innerHTML = all.map(t => `
+    <div class="testimonial-card">
+      <div class="testimonial-stars">${'<span>★</span>'.repeat(t.stars||5)}</div>
+      <p class="testimonial-text">${t.text}</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">${t.avatar||'👤'}</div>
+        <div>
+          <div class="testimonial-name">${t.name}</div>
+          <div class="testimonial-role">${t.role||''}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  // Adjust speed
+  const speed = Math.max(20, items.length * 8);
+  track.style.animationDuration = speed + 's';
+}
 // ═══════════════════════════════════════
 // TICKER BAR
 // ═══════════════════════════════════════
@@ -1177,6 +1269,7 @@ fetchPodcastFromRSS();
 loadFromFirebase('interviews', defaultInterviews, renderInterviews);
 loadFromFirebase('works', defaultWorks, renderWorks);
 loadFromFirebase('courses', defaultCourses, renderCourses);
+loadFromFirebase('testimonials', [], renderTestimonials);
 
 // ═══════════════════════════════════════
 // EXPOSE FUNCTIONS TO GLOBAL SCOPE
