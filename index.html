@@ -590,6 +590,15 @@ nav{top:36px !important;}
 .vo-form h3{font-family:'Cairo',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:1.5rem;}
 .char-count{font-size:.72rem;color:var(--text-muted);text-align:left;margin-top:.3rem;}
 @media(max-width:900px){.vo-grid{grid-template-columns:1fr;}}
+
+.read-more-btn{
+  display:inline-block;
+  font-size:.78rem;color:var(--gold);
+  text-decoration:none;font-weight:700;
+  margin-bottom:.8rem;
+  transition:opacity .2s;
+}
+.read-more-btn:hover{opacity:.7;}
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -1259,7 +1268,8 @@ function renderNews(news=null){
       <div class="news-body">
         <div class="news-cat">${n.cat||n.category||'خبر'}</div>
         <h3>${n.title}</h3>
-        <p>${n.body||n.excerpt||''}</p>
+        <p>${(n.body||n.excerpt||'').substring(0,120)}${(n.body||n.excerpt||'').length>120?'...':''}</p>
+        ${(n.body||n.excerpt||'').length>120 ? `<a href="news.html?id=${n.id}" class="read-more-btn">اقرأ المزيد ←</a>` : ''}
         <div class="news-footer">
           <div style="display:flex;align-items:center;gap:.4rem;">
             <div class="stars" id="stars-${n.id}">${[1,2,3,4,5].map(()=>'<span class="star">★</span>').join('')}</div>
