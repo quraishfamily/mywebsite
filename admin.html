@@ -169,6 +169,8 @@ function previewPodcast(){_call('previewPodcast',[])}
 function closeConfirm(){_call('closeConfirm',[])}
 function saveBooks(){_call('saveBooks',[])}
 function addTestimonial(){_call('addTestimonial',[])}
+function renderVOTable(){_call('renderVOTable',[])}
+function viewVO(id){_call('viewVO',[id])}
 function deleteTestimonial(id){_call('deleteTestimonial',[id])}
 function deleteDoc(a,b,c,d){_call('deleteDoc',[a,b,c,d])}
 function markSeen(t){_call('markSeen',[t])}
@@ -206,6 +208,7 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
       <div class="nav-item" onclick="showPage('podcast')"><span class="nav-icon">🎧</span>حلقات صباحو</div>
       <div class="nav-item" onclick="showPage('interviews')"><span class="nav-icon">🎬</span>المقابلات</div>
       <div class="nav-item" onclick="showPage('works')"><span class="nav-icon">🎙️</span>الأعمال الصوتية</div>
+      <div class="nav-item" onclick="showPage('voiceover')"><span class="nav-icon">🎙️</span>طلبات التعليق الصوتي<span class="nav-badge" id="badge-vo" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('regs')"><span class="nav-icon">📋</span>التسجيلات<span class="nav-badge" id="badge-regs" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('consulting')"><span class="nav-icon">💼</span>طلبات الاستشارة<span class="nav-badge" id="badge-consulting" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('messages')"><span class="nav-icon">✉</span>الرسائل<span class="nav-badge" id="badge-msgs" style="display:none">0</span></div>
@@ -231,6 +234,7 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-num" id="count-news">0</div><div class="stat-label">أخبار منشورة</div></div>
         <div class="stat-card"><div class="stat-num" id="count-courses">0</div><div class="stat-label">دورات متاحة</div></div>
+        <div class="stat-card"><div class="stat-num" id="count-vo">0</div><div class="stat-label">طلبات تعليق صوتي</div></div>
         <div class="stat-card"><div class="stat-num" id="count-regs">0</div><div class="stat-label">طلبات تسجيل</div></div>
         <div class="stat-card"><div class="stat-num" id="count-msgs">0</div><div class="stat-label">رسائل واردة</div></div>
       </div>
@@ -298,6 +302,16 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
       <div class="card">
         <div class="card-header"><span class="card-title">الشهادات المضافة</span></div>
         <div id="testimonials-table"></div>
+      </div>
+    </div>
+    <!-- VOICEOVER REQUESTS -->
+    <div class="page" id="page-voiceover">
+      <div class="page-header">
+        <div class="page-title">طلبات التعليق الصوتي</div>
+        <div class="page-sub">طلبات تسعيرة التعليق الصوتي الواردة من الموقع</div>
+      </div>
+      <div class="card">
+        <div id="vo-table"></div>
       </div>
     </div>
     <!-- PODCAST -->
@@ -711,6 +725,7 @@ function renderPage(id){
   if(id==='dashboard')renderDashboard();
   else if(id==='news')renderNewsTable();
   else if(id==='courses')renderCoursesTable();
+  else if(id==='voiceover'){renderVOTable();markSeen('voiceover');}
   else if(id==='testimonials')renderTestimonialsTable();
   else if(id==='podcast'){renderPodcastTable();}  
   else if(id==='interviews')renderInterviewsTable();
@@ -1150,6 +1165,55 @@ function extractVideoId(url) {
 }
 
 
+
+function renderVOTable(){
+  document.getElementById('vo-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('voiceover_requests').orderBy('time','desc').get().then(snap=>{
+    if(snap.empty){
+      document.getElementById('vo-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد طلبات بعد.</p>';
+      return;
+    }
+    const rows=snap.docs.map(d=>{
+      const r=d.data();
+      return `<tr>
+        <td><b>${r.name||'—'}</b></td>
+        <td>${r.phone||'—'}</td>
+        <td>${r.email||'—'}</td>
+        <td><span class="badge badge-gold">${r.type||'—'}</span></td>
+        <td>${r.deadline||'—'}</td>
+        <td style="font-size:.75rem;max-width:180px;color:var(--text-muted);">${(r.desc||'').substring(0,80)}...</td>
+        <td style="font-size:.72rem;color:var(--text-muted);">${r.time||'—'}</td>
+        <td>
+          <button class="btn btn-outline btn-sm" style="margin-left:.3rem;" onclick="viewVO('${d.id}')">عرض</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteDoc('voiceover_requests','${d.id}','vo-table',renderVOTable)">حذف</button>
+        </td>
+      </tr>`;
+    }).join('');
+    document.getElementById('vo-table').innerHTML=`<table><thead><tr><th>الاسم</th><th>الجوال</th><th>البريد</th><th>النوع</th><th>الموعد</th><th>الوصف</th><th>الوقت</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  }).catch(()=>{
+    document.getElementById('vo-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';
+  });
+}
+
+function viewVO(id){
+  db.collection('voiceover_requests').doc(id).get().then(d=>{
+    const r=d.data();
+    const info = `الاسم: ${r.name}
+الجوال: ${r.phone}
+البريد: ${r.email}
+النوع: ${r.type}
+الموعد: ${r.deadline}
+
+الوصف:
+${r.desc}
+
+السكريبت:
+${r.script}
+
+ملاحظات: ${r.notes||'—'}`;
+    alert(info);
+  });
+}
 // ═══════════════════════════════════════
 // TESTIMONIALS FUNCTIONS
 // ═══════════════════════════════════════
@@ -1378,6 +1442,13 @@ function updateBadges(){
     if(badge){ badge.textContent=unseen; badge.style.display=unseen>0?'inline-flex':'none'; }
   }).catch(()=>{});
 
+  db.collection('voiceover_requests').get().then(snap=>{
+    const count=snap.size;
+    const unseen=Math.max(0,count-(parseInt(localStorage.getItem('seen-voiceover')||'0')));
+    const badge=document.getElementById('badge-vo');
+    if(badge){badge.textContent=unseen;badge.style.display=unseen>0?'inline-flex':'none';}
+  }).catch(()=>{});
+
   db.collection('messages').get().then(snap=>{
     const count = snap.size;
     const unseen = Math.max(0, count - lastSeen.msgs);
@@ -1388,13 +1459,13 @@ function updateBadges(){
 
 // Mark as seen when user opens the page
 function markSeen(type){
-  const colMap = {regs:'registrations', consulting:'consulting', messages:'messages'};
+  const colMap = {regs:'registrations', consulting:'consulting', messages:'messages', voiceover:'voiceover_requests'};
   const col = colMap[type];
   if(!col) return;
   db.collection(col).get().then(snap=>{
-    const key = type==='messages'?'seen-msgs':'seen-'+type;
+    const key = type==='messages'?'seen-msgs':(type==='voiceover'?'seen-voiceover':'seen-'+type);
     localStorage.setItem(key, snap.size);
-    const badge = document.getElementById('badge-'+(type==='messages'?'msgs':type));
+    const badge = document.getElementById('badge-'+(type==='messages'?'msgs':(type==='voiceover'?'vo':type)));
     if(badge){ badge.style.display='none'; }
   }).catch(()=>{});
 }
@@ -1427,6 +1498,8 @@ window._real_changePw = changePw;
 window._real_resetAll = resetAll;
 window._real_saveBooks = saveBooks;
 window._real_addTestimonial = addTestimonial;
+window._real_renderVOTable = renderVOTable;
+window._real_viewVO = viewVO;
 window._real_deleteTestimonial = deleteTestimonial;
 window._real_deleteDoc = deleteDoc;
 window._real_markSeen = markSeen;
