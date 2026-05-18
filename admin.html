@@ -814,6 +814,7 @@ function saveNews(){
     category:document.getElementById('nm-cat').value,
     date:formattedDate,
     dateRaw:rawDate,
+    timestamp: rawDate ? new Date(rawDate).getTime() : Date.now(),
     icon:document.getElementById('nm-icon').value,
     img:document.getElementById('nm-img').value,
     img2:document.getElementById('nm-img2').value,
