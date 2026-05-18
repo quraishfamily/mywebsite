@@ -1298,612 +1298,68 @@ let currentVORequests = [];
 
 async function exportVOPDF(){
   console.log('exportVOPDF called');
-  const snap = await db.collection('voiceover_requests').get();
-  console.log('snap size:', snap.size);
-  if(snap.empty){toast('لا توجد طلبات للتصدير',true);return;}
-  
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
-  
-  // Header
-  doc.setFillColor(201,168,76);
-  doc.rect(0,0,297,20,'F');
-  doc.setTextColor(10,10,10);
-  doc.setFontSize(14);
-  doc.text('Ahmed Quraish — Voiceover Requests', 148, 12, {align:'center'});
-  
-  doc.setTextColor(50,50,50);
-  doc.setFontSize(9);
-  
-  const headers = ['#','Name','Phone','Email','Type','Deadline','Date'];
-  const colWidths = [10,40,30,55,35,30,30];
-  let x = 10, y = 30;
-  
-  // Table header
-  doc.setFillColor(240,240,240);
-  doc.rect(10, y-5, 277, 8, 'F');
-  doc.setFont('helvetica','bold');
-  headers.forEach((h,i)=>{
-    doc.text(h, x+2, y);
-    x += colWidths[i];
-  });
-  
-  y += 8;
-  doc.setFont('helvetica','normal');
-  
-  snap.docs.forEach((d,idx)=>{
-    const r = d.data();
-    if(y > 185){ doc.addPage(); y = 20; }
-    if(idx%2===0){ doc.setFillColor(250,250,250); doc.rect(10,y-5,277,8,'F'); }
-    x = 10;
-    const row = [
-      String(idx+1),
-      (r.name||'—').substring(0,20),
-      r.phone||'—',
-      (r.email||'—').substring(0,28),
-      (r.type||'—').substring(0,18),
-      r.deadline||'—',
-      r.time||'—'
-    ];
-    row.forEach((cell,i)=>{
-      doc.text(String(cell), x+2, y);
+  try {
+    const snap = await db.collection('voiceover_requests').get();
+    console.log('snap size:', snap.size);
+    if(snap.empty){toast('لا توجد طلبات للتصدير',true);return;}
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    
+    // Header
+    doc.setFillColor(201,168,76);
+    doc.rect(0,0,297,20,'F');
+    doc.setTextColor(10,10,10);
+    doc.setFontSize(14);
+    doc.text('Ahmed Quraish - Voiceover Requests', 148, 12, {align:'center'});
+    
+    // Table headers
+    doc.setTextColor(50,50,50);
+    doc.setFontSize(9);
+    const headers = ['#','Name','Phone','Email','Type','Deadline','Date'];
+    const colWidths = [10,40,30,55,35,30,30];
+    let x = 10;
+    let y = 30;
+    
+    doc.setFillColor(240,240,240);
+    doc.rect(10, y-5, 277, 8, 'F');
+    doc.setFont('helvetica','bold');
+    headers.forEach(function(h,i){
+      doc.text(h, x+2, y);
       x += colWidths[i];
     });
-    y += 8;
-  });
-  
-  doc.setFontSize(8);
-  doc.setTextColor(150,150,150);
-  doc.text('Generated: '+new Date().toLocaleDateString(), 148, 200, {align:'center'});
-  
-  doc.save('voiceover_requests_'+new Date().toISOString().slice(0,10)+'.pdf');
-  toast('تم تصدير PDF بنجاح! ✓');
-}
-
-let quoteRequestData = null;
-
-function openQuoteModal(id){
-  db.collection('voiceover_requests').doc(id).get().then(d=>{
-    if(!d.exists){toast('لم يُعثر على الطلب',true);return;}
-    quoteRequestData = {id:d.id,...d.data()};
-    document.getElementById('quote-request-id').value = id;
-    document.getElementById('quote-client-email').value = quoteRequestData.email||'';
-    document.getElementById('quote-client-name').textContent = 'للعميل: '+(quoteRequestData.name||'—')+' — '+(quoteRequestData.email||'');
-    document.getElementById('q-price').value = '';
-    document.getElementById('q-includes').value = '- تعليق صوتي احترافي\n- مراجعة واحدة مجانية\n- ملف صوتي WAV/MP3 بجودة عالية';
-    document.getElementById('q-notes').value = '';
-    openModal('quoteModal');
-  });
-}
-
-async function sendQuote(){
-  const price = document.getElementById('q-price').value;
-  const delivery = document.getElementById('q-delivery').value;
-  const includes = document.getElementById('q-includes').value;
-  const notes = document.getElementById('q-notes').value;
-  const email = document.getElementById('quote-client-email').value;
-  const name = quoteRequestData?.name||'';
-  
-  if(!price){toast('أدخل السعر',true);return;}
-  if(!email){toast('لا يوجد بريد إلكتروني للعميل',true);return;}
-  
-  const message = `عزيزي ${name}،
-
-شكراً لتواصلك مع أحمد قريش للتعليق الصوتي.
-
-━━━━━━━━━━━━━━━━━━━━
-💰 التسعيرة: ${price} ريال سعودي
-⏱ مدة التسليم: ${delivery}
-
-✅ يشمل السعر:
-${includes}
-
-${notes ? `📝 ملاحظات:\n${notes}` : ''}
-━━━━━━━━━━━━━━━━━━━━
-
-للموافقة أو الاستفسار، تواصل معنا عبر:
-📧 البريد الإلكتروني
-📱 واتساب: +966565909049
-
-مع تحياتي،
-أحمد قريش
-`;
-
-  try {
-    await emailjs.send('service_6g3odwb', 'bozx1s3', {
-      from_name: 'أحمد قريش',
-      from_email: email,
-      subject: 'تسعيرة التعليق الصوتي — ' + (quoteRequestData?.type||''),
-      message,
-      phone: '—', course: '—', notes: '—',
-      time: new Date().toLocaleString('ar-SA')
-    }, {publicKey: 'QnIPBoSRBkpNWiNt4'});
     
-    // Log quote in Firebase
-    await db.collection('voiceover_requests').doc(quoteRequestData.id).update({
-      quote_sent: true,
-      quote_price: price,
-      quote_time: new Date().toLocaleString('ar-SA')
+    y += 8;
+    doc.setFont('helvetica','normal');
+    
+    snap.docs.forEach(function(d, idx){
+      var r = d.data();
+      if(y > 185){ doc.addPage(); y = 20; }
+      if(idx % 2 === 0){ doc.setFillColor(250,250,250); doc.rect(10,y-5,277,8,'F'); }
+      x = 10;
+      var row = [
+        String(idx+1),
+        (r.name||'').substring(0,20),
+        r.phone||'',
+        (r.email||'').substring(0,28),
+        (r.type||'').substring(0,18),
+        r.deadline||'',
+        r.time||''
+      ];
+      row.forEach(function(cell,i){
+        doc.text(String(cell), x+2, y);
+        x += colWidths[i];
+      });
+      y += 8;
     });
     
-    closeModal('quoteModal');
-    toast('تم إرسال التسعيرة للعميل! ✓');
-    renderVOTable();
+    doc.setFontSize(8);
+    doc.setTextColor(150,150,150);
+    doc.text('Generated: '+new Date().toLocaleDateString(), 148, 200, {align:'center'});
+    doc.save('voiceover_requests_'+new Date().toISOString().slice(0,10)+'.pdf');
+    toast('تم تصدير PDF بنجاح! ✓');
   } catch(e){
-    toast('فشل الإرسال: '+e.message, true);
+    console.log('exportVOPDF error:', e);
+    toast('فشل التصدير: '+e.message, true);
   }
 }
-
-function downloadQuotePDF(){
-  const price = document.getElementById('q-price').value;
-  const delivery = document.getElementById('q-delivery').value;
-  const includes = document.getElementById('q-includes').value;
-  const notes = document.getElementById('q-notes').value;
-  if(!price){toast('أدخل السعر أولاً',true);return;}
-  
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({unit:'mm',format:'a4'});
-  
-  // Gold header
-  doc.setFillColor(201,168,76);
-  doc.rect(0,0,210,35,'F');
-  doc.setTextColor(10,10,10);
-  doc.setFontSize(20);
-  doc.setFont('helvetica','bold');
-  doc.text('AHMED QURAISH', 105, 15, {align:'center'});
-  doc.setFontSize(10);
-  doc.setFont('helvetica','normal');
-  doc.text('Voice Over Artist & Trainer', 105, 23, {align:'center'});
-  doc.text('quraishvoice.me  |  +966565909049', 105, 30, {align:'center'});
-  
-  // Quote title
-  doc.setTextColor(50,50,50);
-  doc.setFontSize(16);
-  doc.setFont('helvetica','bold');
-  doc.text('VOICE OVER QUOTATION', 105, 50, {align:'center'});
-  
-  // Client info
-  doc.setFontSize(10);
-  doc.setFont('helvetica','normal');
-  doc.text('Client: '+(quoteRequestData?.name||'—'), 20, 65);
-  doc.text('Email: '+(quoteRequestData?.email||'—'), 20, 72);
-  doc.text('Project Type: '+(quoteRequestData?.type||'—'), 20, 79);
-  doc.text('Date: '+new Date().toLocaleDateString(), 150, 65);
-  
-  // Divider
-  doc.setDrawColor(201,168,76);
-  doc.setLineWidth(0.5);
-  doc.line(20, 88, 190, 88);
-  
-  // Price box
-  doc.setFillColor(250,247,240);
-  doc.rect(20, 95, 170, 25, 'F');
-  doc.setDrawColor(201,168,76);
-  doc.rect(20, 95, 170, 25, 'S');
-  doc.setFontSize(14);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(201,168,76);
-  doc.text('Total: SAR '+price, 105, 111, {align:'center'});
-  
-  // Delivery
-  doc.setTextColor(50,50,50);
-  doc.setFontSize(10);
-  doc.setFont('helvetica','normal');
-  doc.text('Delivery Time: '+delivery, 105, 130, {align:'center'});
-  
-  // Includes
-  doc.setFont('helvetica','bold');
-  doc.text('This quote includes:', 20, 145);
-  doc.setFont('helvetica','normal');
-  const lines = includes.split('\n');
-  lines.forEach((line,i)=>doc.text(line, 25, 153+(i*7)));
-  
-  // Notes
-  if(notes){
-    const notesY = 153+(lines.length*7)+10;
-    doc.setFont('helvetica','bold');
-    doc.text('Notes:', 20, notesY);
-    doc.setFont('helvetica','normal');
-    doc.text(notes, 20, notesY+7, {maxWidth:170});
-  }
-  
-  // Footer
-  doc.setFillColor(240,240,240);
-  doc.rect(0,272,210,25,'F');
-  doc.setFontSize(8);
-  doc.setTextColor(100,100,100);
-  doc.text('This quotation is valid for 7 days from the date of issue.', 105, 280, {align:'center'});
-  doc.text('Ahmed Quraish Voice Over  |  quraishvoice.me  |  +966565909049', 105, 287, {align:'center'});
-  
-  doc.save('quote_'+(quoteRequestData?.name||'client').replace(/ /g,'_')+'_'+new Date().toISOString().slice(0,10)+'.pdf');
-  toast('تم تحميل PDF! ✓');
-}
-// ═══════════════════════════════════════
-// NEWSLETTER FUNCTIONS
-// ═══════════════════════════════════════
-async function loadNewsletterSubscribers(){
-  document.getElementById('nl-subscribers-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
-  try {
-    const snap = await db.collection('newsletter').orderBy('timestamp','desc').get();
-    const total = snap.size;
-    const active = snap.docs.filter(d=>d.data().active!==false).length;
-    const unsub = total - active;
-    document.getElementById('nl-total').textContent = total;
-    document.getElementById('nl-active').textContent = active;
-    document.getElementById('nl-unsub').textContent = unsub;
-
-    if(snap.empty){
-      document.getElementById('nl-subscribers-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد اشتراكات بعد.</p>';
-      return;
-    }
-    const rows = snap.docs.map(d=>{
-      const s = d.data();
-      const status = s.active!==false;
-      return `<tr>
-        <td>${s.email}</td>
-        <td><span class="badge ${status?'badge-green':'badge-red'}">${status?'نشط':'ملغي'}</span></td>
-        <td style="font-size:.75rem;color:var(--text-muted);">${s.time||'—'}</td>
-        <td>
-          <button class="btn btn-outline btn-sm" style="margin-left:.3rem;" onclick="toggleSubscriber('${d.id}',${status})">${status?'إلغاء':'إعادة'}</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteDoc('newsletter','${d.id}','nl-subscribers-table',loadNewsletterSubscribers)">حذف</button>
-        </td>
-      </tr>`;
-    }).join('');
-    document.getElementById('nl-subscribers-table').innerHTML=`<table><thead><tr><th>البريد الإلكتروني</th><th>الحالة</th><th>تاريخ الاشتراك</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
-  } catch(e){
-    document.getElementById('nl-subscribers-table').innerHTML='<p style="color:var(--red);">فشل التحميل — تحقق من Firestore index</p>';
-  }
-}
-
-async function toggleSubscriber(id, currentStatus){
-  await db.collection('newsletter').doc(id).update({active: !currentStatus});
-  loadNewsletterSubscribers();
-  toast(currentStatus ? 'تم إلغاء الاشتراك' : 'تم إعادة الاشتراك');
-}
-
-async function sendNewsletter(){
-  const subject = document.getElementById('nl-subject').value.trim();
-  const body = document.getElementById('nl-body').value.trim();
-  if(!subject||!body){toast('أدخل العنوان والمحتوى',true);return;}
-
-  const snap = await db.collection('newsletter').where('active','==',true).get();
-  const emails = snap.docs.map(d=>d.data().email);
-  if(!emails.length){toast('لا يوجد مشتركون نشطون',true);return;}
-
-  const progress = document.getElementById('nl-send-progress');
-  progress.innerHTML = `<p style="color:var(--text-muted);font-size:.85rem;">جارٍ الإرسال لـ ${emails.length} مشترك...</p>`;
-
-  let sent = 0, failed = 0;
-  for(const email of emails){
-    try {
-      await emailjs.send('service_6g3odwb', 'bozx1s3', {
-        from_name: 'أحمد قريش',
-        from_email: email,
-        subject: subject,
-        message: body,
-        phone: '—', course: '—', notes: document.getElementById('nl-link').value||'—', time: new Date().toLocaleString('ar-SA')
-      }, {publicKey: 'QnIPBoSRBkpNWiNt4'});
-      sent++;
-    } catch(e){ failed++; }
-    progress.innerHTML = `<p style="color:var(--text-muted);font-size:.85rem;">تم الإرسال: <b style="color:var(--green);">${sent}</b> | فشل: <b style="color:var(--red);">${failed}</b> | المتبقي: ${emails.length-sent-failed}</p>`;
-    await new Promise(r=>setTimeout(r,300)); // Rate limit
-  }
-  toast(`تم الإرسال لـ ${sent} مشترك ✓`);
-  // Log send history
-  db.collection('newsletter_history').add({subject, sent, failed, time: new Date().toLocaleString('ar-SA')});
-}
-
-function exportEmails(){
-  db.collection('newsletter').where('active','==',true).get().then(snap=>{
-    const emails = snap.docs.map(d=>d.data().email).join('\n');
-    const blob = new Blob([emails],{type:'text/csv'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'subscribers.csv';
-    a.click();
-    toast('تم تصدير القائمة!');
-  });
-}
-// ═══════════════════════════════════════
-// TESTIMONIALS FUNCTIONS
-// ═══════════════════════════════════════
-function renderTestimonialsTable(){
-  document.getElementById('testimonials-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
-  db.collection('testimonials').orderBy('order','asc').get().then(snap=>{
-    if(snap.empty){
-      document.getElementById('testimonials-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد شهادات بعد.</p>';
-      return;
-    }
-    const rows=snap.docs.map((d,i)=>{
-      const t=d.data();
-      return `<tr>
-        <td>${t.avatar||'👤'}</td>
-        <td><b>${t.name}</b><br><span style="font-size:.75rem;color:var(--text-muted);">${t.role||''}</span></td>
-        <td>${'★'.repeat(t.stars||5)}</td>
-        <td style="font-size:.8rem;max-width:200px;">${t.text}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteTestimonial('${d.id}')">حذف</button></td>
-      </tr>`;
-    }).join('');
-    document.getElementById('testimonials-table').innerHTML=`<table><thead><tr><th></th><th>المتدرب</th><th>التقييم</th><th>الشهادة</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
-  }).catch(()=>{
-    document.getElementById('testimonials-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';
-  });
-}
-
-async function addTestimonial(){
-  const name=document.getElementById('tm-name').value.trim();
-  const text=document.getElementById('tm-text').value.trim();
-  if(!name||!text){toast('أدخل الاسم والنص',true);return;}
-  const snap=await db.collection('testimonials').get();
-  const data={
-    id:'tm_'+Date.now(),
-    name,
-    role:document.getElementById('tm-role').value,
-    avatar:document.getElementById('tm-avatar').value||'👤',
-    stars:parseInt(document.getElementById('tm-stars').value),
-    text,
-    order:snap.size
-  };
-  await db.collection('testimonials').doc(data.id).set(data);
-  ['tm-name','tm-role','tm-avatar','tm-text'].forEach(x=>document.getElementById(x).value='');
-  document.getElementById('tm-stars').value='5';
-  renderTestimonialsTable();
-  toast('تمت إضافة الشهادة! ✓');
-}
-
-function deleteTestimonial(id){
-  confirm_action(()=>{
-    db.collection('testimonials').doc(id).delete()
-      .then(()=>{renderTestimonialsTable();toast('تم الحذف ✓');})
-      .catch(()=>toast('فشل الحذف',true));
-  });
-}
-// ═══════════════════════════════════════
-// PODCAST FUNCTIONS
-// ═══════════════════════════════════════
-function renderPodcastTable(){
-  const eps=JSON.parse(localStorage.getItem('admin-podcast')||'null')||[];
-  document.getElementById('podcast-table').innerHTML=eps.length
-    ?`<table><thead><tr><th>#</th><th>رقم الحلقة</th><th>العنوان</th><th>المدة</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
-      <tbody>${eps.map((e,i)=>`<tr>
-        <td>${i+1}</td>
-        <td>${e.ep||''}</td>
-        <td>${e.title}</td>
-        <td>${e.dur||''}</td>
-        <td>${e.date||''}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="deletePodcast(${i})">حذف</button></td>
-      </tr>`).join('')}</tbody></table>`
-    :'<p style="color:var(--text-muted);font-size:.85rem;">لا توجد حلقات مضافة يدوياً</p>';
-}
-
-function addPodcast(){
-  const ep=document.getElementById('pod-ep').value.trim();
-  const title=document.getElementById('pod-title').value.trim();
-  if(!title){toast('أدخل عنوان الحلقة',true);return;}
-  const rawPodDate=document.getElementById('pod-date').value;
-  const eps=JSON.parse(localStorage.getItem('admin-podcast')||'null')||[];
-  const newEp={id:'pod_'+Date.now(),ep,title,
-    dur:document.getElementById('pod-dur').value,
-    date:rawPodDate?formatDateAr(rawPodDate):'',
-    dateRaw:rawPodDate};
-  eps.unshift(newEp);
-  const trimmed=eps.slice(0,5);
-  localStorage.setItem('admin-podcast',JSON.stringify(trimmed));
-  saveCollection('podcast',trimmed)
-    .then(()=>toast('تمت إضافة الحلقة! ✓'))
-    .catch(()=>toast('حُفظ محلياً فقط'));
-  ['pod-ep','pod-title','pod-dur','pod-date'].forEach(x=>document.getElementById(x).value='');
-  renderPodcastTable();
-}
-
-function deletePodcast(idx){
-  confirm_action(()=>{
-    const eps=JSON.parse(localStorage.getItem('admin-podcast')||'null')||[];
-    eps.splice(idx,1);
-    localStorage.setItem('admin-podcast',JSON.stringify(eps));
-    saveCollection('podcast',eps).catch(()=>{});
-    renderPodcastTable();
-    toast('تم الحذف');
-  });
-}
-
-// ═══════════════════════════════════════
-// INTERVIEW FUNCTIONS
-// ═══════════════════════════════════════
-function renderInterviewsTable(){
-  document.getElementById('interviews-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
-  db.collection('interviews').get().then(snap=>{
-    if(snap.empty){
-      document.getElementById('interviews-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد مقابلات مضافة</p>';
-      return;
-    }
-    const ivs=snap.docs.map(d=>({id:d.id,...d.data()}));
-    document.getElementById('interviews-table').innerHTML=`<table><thead><tr><th>العنوان</th><th>الجهة</th><th>Video ID</th><th>إجراءات</th></tr></thead>
-      <tbody>${ivs.map(iv=>`<tr>
-        <td>${iv.title}</td>
-        <td>${iv.channel||'—'}</td>
-        <td style="direction:ltr;text-align:left;font-size:.75rem;">${iv.vid||''}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteInterviewById('${iv.id}')">حذف</button></td>
-      </tr>`).join('')}</tbody></table>`;
-  }).catch(()=>{
-    document.getElementById('interviews-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';
-  });
-}
-
-function addInterview(){
-  const title=document.getElementById('iv-title').value.trim();
-  const rawVid=document.getElementById('iv-vid').value.trim();
-  if(!title||!rawVid){toast('أدخل العنوان والرابط',true);return;}
-  const vid=extractVideoId(rawVid);
-  const ivs=JSON.parse(localStorage.getItem('admin-interviews')||'null')||[];
-  const newIv={id:'i'+Date.now(),title,
-    channel:document.getElementById('iv-channel').value,
-    vid:extractVideoId(vid)};
-  ivs.push(newIv);
-  localStorage.setItem('admin-interviews',JSON.stringify(ivs));
-  saveCollection('interviews',ivs)
-    .then(()=>toast('تمت إضافة المقابلة! ✓'))
-    .catch(()=>toast('حُفظ محلياً فقط'));
-  ['iv-title','iv-channel','iv-vid'].forEach(x=>document.getElementById(x).value='');
-  renderInterviewsTable();
-}
-
-function deleteInterview(idx){
-  confirm_action(()=>{
-    const ivs=JSON.parse(localStorage.getItem('admin-interviews')||'null')||[];
-    ivs.splice(idx,1);
-    localStorage.setItem('admin-interviews',JSON.stringify(ivs));
-    saveCollection('interviews',ivs).catch(()=>{});
-    renderInterviewsTable();
-    toast('تم الحذف');
-  });
-}
-
-
-function saveBooks(){
-  const b = {
-    book1: document.getElementById('book1-url').value.trim(),
-    book2: document.getElementById('book2-url').value.trim(),
-  };
-  localStorage.setItem('admin-books', JSON.stringify(b));
-  db.collection('settings').doc('books').set(b)
-    .then(()=>toast('تم حفظ روابط الكتب! ✓'))
-    .catch(()=>toast('حُفظ محلياً فقط'));
-}
-
-// ═══════════════════════════════════════
-// IMAGE UPLOAD — Cloudinary
-// ═══════════════════════════════════════
-const CLOUDINARY_CLOUD = 'dhnzsilai';
-const CLOUDINARY_PRESET = 'ahmed_site_unsigned';
-
-async function uploadImageToCloudinary(file) {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', CLOUDINARY_PRESET);
-  formData.append('cloud_name', CLOUDINARY_CLOUD);
-  const res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', {
-    method: 'POST',
-    body: formData
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.secure_url;
-}
-
-function handleImageUpload(inputId, previewId, hiddenId) {
-  const input = document.getElementById(inputId);
-  const file = input.files[0];
-  if (!file) return;
-  const preview = document.getElementById(previewId);
-  preview.innerHTML = '<span style="color:var(--text-muted);font-size:.75rem;">جارٍ الرفع...</span>';
-  uploadImageToCloudinary(file).then(url => {
-    document.getElementById(hiddenId).value = url;
-    preview.innerHTML = '<img src="'+url+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">';
-    toast('تم رفع الصورة! ✓');
-  }).catch(e => {
-    preview.innerHTML = '';
-    toast('فشل رفع الصورة — تأكد من إعداد Unsigned Preset', true);
-  });
-}
-
-function deleteDoc(colName, docId, tableId, reloadFn){
-  confirm_action(()=>{
-    db.collection(colName).doc(docId).delete()
-      .then(()=>{ toast('تم الحذف ✓'); reloadFn(); })
-      .catch(()=>toast('فشل الحذف', true));
-  });
-}
-
-// ═══════════════════════════════════════
-// NOTIFICATION BADGES
-// ═══════════════════════════════════════
-function updateBadges(){
-  const lastSeen = {
-    regs: parseInt(localStorage.getItem('seen-regs')||'0'),
-    consulting: parseInt(localStorage.getItem('seen-consulting')||'0'),
-    msgs: parseInt(localStorage.getItem('seen-msgs')||'0'),
-  };
-
-  db.collection('registrations').get().then(snap=>{
-    const count = snap.size;
-    const unseen = Math.max(0, count - lastSeen.regs);
-    const badge = document.getElementById('badge-regs');
-    if(badge){ badge.textContent=unseen; badge.style.display=unseen>0?'inline-flex':'none'; }
-  }).catch(()=>{});
-
-  db.collection('consulting').get().then(snap=>{
-    const count = snap.size;
-    const unseen = Math.max(0, count - lastSeen.consulting);
-    const badge = document.getElementById('badge-consulting');
-    if(badge){ badge.textContent=unseen; badge.style.display=unseen>0?'inline-flex':'none'; }
-  }).catch(()=>{});
-
-  db.collection('voiceover_requests').get().then(snap=>{
-    const count=snap.size;
-    const unseen=Math.max(0,count-(parseInt(localStorage.getItem('seen-voiceover')||'0')));
-    const badge=document.getElementById('badge-vo');
-    if(badge){badge.textContent=unseen;badge.style.display=unseen>0?'inline-flex':'none';}
-  }).catch(()=>{});
-
-  db.collection('messages').get().then(snap=>{
-    const count = snap.size;
-    const unseen = Math.max(0, count - lastSeen.msgs);
-    const badge = document.getElementById('badge-msgs');
-    if(badge){ badge.textContent=unseen; badge.style.display=unseen>0?'inline-flex':'none'; }
-  }).catch(()=>{});
-}
-
-// Mark as seen when user opens the page
-function markSeen(type){
-  const colMap = {regs:'registrations', consulting:'consulting', messages:'messages', voiceover:'voiceover_requests'};
-  const col = colMap[type];
-  if(!col) return;
-  db.collection(col).get().then(snap=>{
-    const key = type==='messages'?'seen-msgs':(type==='voiceover'?'seen-voiceover':'seen-'+type);
-    localStorage.setItem(key, snap.size);
-    const badge = document.getElementById('badge-'+(type==='messages'?'msgs':(type==='voiceover'?'vo':type)));
-    if(badge){ badge.style.display='none'; }
-  }).catch(()=>{});
-}
-// ═══════════════════════════════════════
-// EXPOSE FUNCTIONS TO GLOBAL SCOPE (required for type="module")
-// ═══════════════════════════════════════
-
-</script>
-
-<!-- QUOTE MODAL -->
-<div class="modal-overlay" id="quoteModal">
-  <div class="modal" style="max-width:600px;">
-    <button class="modal-close" onclick="closeModal('quoteModal')">✕</button>
-    <h3>💰 إرسال تسعيرة</h3>
-    <p class="subtitle" id="quote-client-name">للعميل: —</p>
-    <input type="hidden" id="quote-request-id">
-    <input type="hidden" id="quote-client-email">
-    <div class="form-grid" style="margin-top:1rem;">
-      <div class="fg"><label>سعر التعليق الصوتي (ريال)</label><input type="number" id="q-price" placeholder="500"></div>
-      <div class="fg"><label>مدة التسليم</label>
-        <select id="q-delivery">
-          <option>٣ أيام عمل</option>
-          <option>٥ أيام عمل</option>
-          <option>أسبوع</option>
-          <option>حسب الاتفاق</option>
-        </select>
-      </div>
-      <div class="fg fg-full"><label>ما يشمله السعر</label>
-        <textarea id="q-includes" style="min-height:80px;" placeholder="- تعليق صوتي احترافي&#10;- مراجعة واحدة مجانية&#10;- ملف صوتي بجودة عالية"></textarea>
-      </div>
-      <div class="fg fg-full"><label>ملاحظات للعميل (اختياري)</label>
-        <textarea id="q-notes" style="min-height:60px;" placeholder="أي معلومات إضافية للعميل..."></textarea>
-      </div>
-    </div>
-    <div class="form-actions" style="margin-top:1rem;">
-      <button class="btn btn-primary btn-sm" onclick="sendQuote()">📧 إرسال التسعيرة بالبريد</button>
-      <button class="btn btn-outline btn-sm" onclick="downloadQuotePDF()">📄 تحميل PDF</button>
-      <button class="btn btn-outline btn-sm" onclick="closeModal('quoteModal')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-</body>
-</html>
