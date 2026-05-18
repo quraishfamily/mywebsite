@@ -817,18 +817,28 @@ function renderDashboard(){
 
 // NEWS
 function renderNewsTable(){
-  const news=getNews();
-  document.getElementById('news-table').innerHTML=`<table>
-    <thead><tr><th>الخبر</th><th>التصنيف</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
-    <tbody>${news.map(n=>`<tr>
-      <td>${n.icon||''} ${n.title}</td>
-      <td><span class="badge badge-gold">${n.category}</span></td>
-      <td>${n.date||'—'}</td>
-      <td>
-        <button class="btn btn-outline btn-sm" style="margin-left:.4rem;" onclick="editNews('${n.id}')">تعديل</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteNews('${n.id}')">حذف</button>
-      </td>
-    </tr>`).join('')}</tbody></table>`;
+  document.getElementById('news-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('news').get().then(snap=>{
+    if(snap.empty){
+      document.getElementById('news-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد أخبار بعد.</p>';
+      return;
+    }
+    const news = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+    document.getElementById('news-table').innerHTML=`<table>
+      <thead><tr><th>الخبر</th><th>التصنيف</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+      <tbody>${news.map(n=>`<tr>
+        <td>${n.icon||''} ${n.title}</td>
+        <td><span class="badge badge-gold">${n.category||n.cat||'خبر'}</span></td>
+        <td>${n.date||'—'}</td>
+        <td>
+          <button class="btn btn-outline btn-sm" style="margin-left:.4rem;" onclick="editNews('${n.id}')">تعديل</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteNews('${n.id}')">حذف</button>
+        </td>
+      </tr>`).join('')}</tbody></table>`;
+  }).catch(()=>{
+    document.getElementById('news-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';
+  });
 }
 function openNewsModal(id=''){
   document.getElementById('nm-edit-id').value=id;
@@ -854,7 +864,15 @@ function openNewsModal(id=''){
   }
   openModal('newsModal');
 }
-function editNews(id){openNewsModal(id);}
+function editNews(id){
+  db.collection('news').doc(id).get().then(d=>{
+    if(!d.exists){toast('لم يُعثر على الخبر',true);return;}
+    const n={id:d.id,...d.data()};
+    // Store temporarily for modal
+    window._editingNews = n;
+    openNewsModal(id);
+  });
+}
 function saveNews(){
   const id=document.getElementById('nm-edit-id').value;
   const rawDate = document.getElementById('nm-date').value;
@@ -878,39 +896,48 @@ function saveNews(){
   if(newsPreview && newsPreview.innerHTML.includes('جارٍ الرفع')){
     toast('انتظر حتى ينتهي رفع الصورة...',true);return;
   }
-  let news=getNews();
-  if(id)news=news.map(n=>n.id===id?data:n);
-  else news.push(data);
-  saveNewsData(news);
-  saveCollection('news', news).then(()=>toast('تم حفظ الخبر! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
-  closeModal('newsModal');renderNewsTable();
+  if(id){
+    db.collection('news').doc(id).set(data)
+      .then(()=>{toast('تم حفظ الخبر! ✓');closeModal('newsModal');renderNewsTable();})
+      .catch(()=>toast('فشل الحفظ',true));
+  } else {
+    db.collection('news').doc(data.id).set(data)
+      .then(()=>{toast('تم إضافة الخبر! ✓');closeModal('newsModal');renderNewsTable();})
+      .catch(()=>toast('فشل الحفظ',true));
+  }
 }
 function deleteNews(id){
   confirm_action(()=>{
-    const updated = getNews().filter(n=>n.id!==id);
-    saveNewsData(updated);
-    saveCollection('news', updated)
-      .then(()=>toast('تم الحذف ✓'))
-      .catch(()=>toast('تم الحذف محلياً فقط'));
-    renderNewsTable();
+    db.collection('news').doc(id).delete()
+      .then(()=>{toast('تم الحذف ✓');renderNewsTable();})
+      .catch(()=>toast('فشل الحذف',true));
   });
 }
 
 // COURSES
 function renderCoursesTable(){
-  const courses=getCourses();
-  document.getElementById('courses-table').innerHTML=`<table>
-    <thead><tr><th>الدورة</th><th>السعر</th><th>المدة</th><th>المستوى</th><th>إجراءات</th></tr></thead>
-    <tbody>${courses.map(c=>`<tr>
-      <td>${c.icon||''} ${c.title}</td>
-      <td style="color:var(--gold);font-weight:700;">${c.price}</td>
-      <td>${c.dur||c.duration}</td>
-      <td><span class="badge badge-green">${c.lvl||c.level}</span></td>
-      <td>
-        <button class="btn btn-outline btn-sm" style="margin-left:.4rem;" onclick="editCourse('${c.id}')">تعديل</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteCourse('${c.id}')">حذف</button>
-      </td>
-    </tr>`).join('')}</tbody></table>`;
+  document.getElementById('courses-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('courses').get().then(snap=>{
+    if(snap.empty){
+      document.getElementById('courses-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد دورات بعد.</p>';
+      return;
+    }
+    const courses = snap.docs.map(d=>({id:d.id,...d.data()}));
+    document.getElementById('courses-table').innerHTML=`<table>
+      <thead><tr><th>الدورة</th><th>السعر</th><th>المدة</th><th>المستوى</th><th>إجراءات</th></tr></thead>
+      <tbody>${courses.map(c=>`<tr>
+        <td>${c.icon||''} ${c.title}</td>
+        <td style="color:var(--gold);font-weight:700;">${c.price}</td>
+        <td>${c.dur||c.duration||'—'}</td>
+        <td><span class="badge badge-green">${c.lvl||c.level||'—'}</span></td>
+        <td>
+          <button class="btn btn-outline btn-sm" style="margin-left:.4rem;" onclick="editCourse('${c.id}')">تعديل</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteCourse('${c.id}')">حذف</button>
+        </td>
+      </tr>`).join('')}</tbody></table>`;
+  }).catch(()=>{
+    document.getElementById('courses-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';
+  });
 }
 function openCourseModal(id=''){
   document.getElementById('cm-edit-id').value=id;
@@ -933,7 +960,13 @@ function openCourseModal(id=''){
   }
   openModal('courseModal');
 }
-function editCourse(id){openCourseModal(id);}
+function editCourse(id){
+  db.collection('courses').doc(id).get().then(d=>{
+    if(!d.exists){toast('لم يُعثر على الدورة',true);return;}
+    window._editingCourse = {id:d.id,...d.data()};
+    openCourseModal(id);
+  });
+}
 function saveCourse(){
   const id=document.getElementById('cm-edit-id').value;
   const data={
@@ -953,12 +986,15 @@ function saveCourse(){
   if(coursePreview && coursePreview.innerHTML.includes('جارٍ الرفع')){
     toast('انتظر حتى ينتهي رفع الصورة...',true);return;
   }
-  let courses=getCourses();
-  if(id)courses=courses.map(c=>c.id===id?data:c);
-  else courses.push(data);
-  saveCoursesData(courses);
-  saveCollection('courses', courses).then(()=>toast('تم حفظ الدورة! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
-  closeModal('courseModal');renderCoursesTable();
+  if(id){
+    db.collection('courses').doc(id).set(data)
+      .then(()=>{toast('تم حفظ الدورة! ✓');closeModal('courseModal');renderCoursesTable();})
+      .catch(()=>toast('فشل الحفظ',true));
+  } else {
+    db.collection('courses').doc(data.id).set(data)
+      .then(()=>{toast('تم إضافة الدورة! ✓');closeModal('courseModal');renderCoursesTable();})
+      .catch(()=>toast('فشل الحفظ',true));
+  }
 }
 function deleteCourse(id){
   confirm_action(()=>{
