@@ -515,6 +515,18 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
         <input type="hidden" id="nm-img">
         <div id="nm-img-preview"></div>
       </div>
+      <div class="fg fg-full"><label>صورة داخل الخبر — الأولى (اختياري)</label>
+        <input type="file" id="nm-img2-file" accept="image/*" onchange="handleImageUpload('nm-img2-file','nm-img2-preview','nm-img2')" style="background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem;color:var(--text);width:100%;cursor:pointer;">
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;">📐 المقاس المثالي: <b style="color:var(--gold);">800 × 500 px</b> — بحد أقصى 2MB</div>
+        <input type="hidden" id="nm-img2">
+        <div id="nm-img2-preview"></div>
+      </div>
+      <div class="fg fg-full"><label>صورة داخل الخبر — الثانية (اختياري)</label>
+        <input type="file" id="nm-img3-file" accept="image/*" onchange="handleImageUpload('nm-img3-file','nm-img3-preview','nm-img3')" style="background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem;color:var(--text);width:100%;cursor:pointer;">
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;">📐 المقاس المثالي: <b style="color:var(--gold);">800 × 500 px</b> — بحد أقصى 2MB</div>
+        <input type="hidden" id="nm-img3">
+        <div id="nm-img3-preview"></div>
+      </div>
       <div class="fg fg-full"><label>ملخص الخبر</label><textarea id="nm-body" placeholder="اكتب نص الخبر..."></textarea></div>
     </div>
     <input type="hidden" id="nm-edit-id">
@@ -776,6 +788,10 @@ function openNewsModal(id=''){
     document.getElementById('nm-cat').value=n.category||'أخبار';
     document.getElementById('nm-date').value=n.dateRaw||'';
     document.getElementById('nm-img').value=n.img||'';
+    document.getElementById('nm-img2').value=n.img2||'';
+    document.getElementById('nm-img3').value=n.img3||'';
+    document.getElementById('nm-img2-preview').innerHTML = n.img2 ? '<img src="'+n.img2+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">' : '';
+    document.getElementById('nm-img3-preview').innerHTML = n.img3 ? '<img src="'+n.img3+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">' : '';
     document.getElementById('nm-img-preview').innerHTML = n.img ? '<img src="'+n.img+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">' : '';
     document.getElementById('nm-icon').value=n.icon||'';
     document.getElementById('nm-body').value=n.body||n.excerpt||'';
@@ -800,6 +816,8 @@ function saveNews(){
     dateRaw:rawDate,
     icon:document.getElementById('nm-icon').value,
     img:document.getElementById('nm-img').value,
+    img2:document.getElementById('nm-img2').value,
+    img3:document.getElementById('nm-img3').value,
     body:document.getElementById('nm-body').value,
   };
   if(!data.title){toast('أدخل عنوان الخبر',true);return;}
