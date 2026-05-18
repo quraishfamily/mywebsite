@@ -1426,11 +1426,11 @@ function applyTheme(theme){
   }
   localStorage.setItem('theme', theme);
 }
-// Load saved theme
-(function(){
+// Load saved theme after DOM ready
+document.addEventListener('DOMContentLoaded', function(){
   const saved = localStorage.getItem('theme') || 'dark';
   applyTheme(saved);
-})();
+});
 
 // SCROLL TO TOP BUTTON
 window.addEventListener('scroll', () => {
