@@ -127,6 +127,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   padding:0 5px;margin-right:auto;
 }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -169,6 +170,10 @@ function previewPodcast(){_call('previewPodcast',[])}
 function closeConfirm(){_call('closeConfirm',[])}
 function saveBooks(){_call('saveBooks',[])}
 function addTestimonial(){_call('addTestimonial',[])}
+function sendNewsletter(){_call('sendNewsletter',[])}
+function loadNewsletterSubscribers(){_call('loadNewsletterSubscribers',[])}
+function exportEmails(){_call('exportEmails',[])}
+function toggleSubscriber(id,s){_call('toggleSubscriber',[id,s])}
 function renderVOTable(){_call('renderVOTable',[])}
 function viewVO(id){_call('viewVO',[id])}
 function deleteTestimonial(id){_call('deleteTestimonial',[id])}
@@ -214,6 +219,7 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
       <div class="nav-item" onclick="showPage('messages')"><span class="nav-icon">✉</span>الرسائل<span class="nav-badge" id="badge-msgs" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('comments')"><span class="nav-icon">💬</span>التعليقات</div>
       <div class="nav-item" onclick="showPage('testimonials')"><span class="nav-icon">⭐</span>شهادات المتدربين</div>
+      <div class="nav-item" onclick="showPage('newsletter')"><span class="nav-icon">📧</span>النشرة البريدية<span class="nav-badge" id="badge-nl" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('settings')"><span class="nav-icon">⚙</span>الإعدادات</div>
     </div>
     <div class="sidebar-bottom">
@@ -275,6 +281,50 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
     </div>
 
 
+    <!-- NEWSLETTER -->
+    <div class="page" id="page-newsletter">
+      <div class="page-header">
+        <div class="page-title">النشرة البريدية</div>
+        <div class="page-sub">إدارة المشتركين وإرسال النشرات</div>
+      </div>
+      <!-- STATS -->
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.5rem;">
+        <div class="stat-card"><div class="stat-num" id="nl-total">0</div><div class="stat-label">إجمالي المشتركين</div></div>
+        <div class="stat-card"><div class="stat-num" id="nl-active">0</div><div class="stat-label">مشتركون نشطون</div></div>
+        <div class="stat-card"><div class="stat-num" id="nl-unsub">0</div><div class="stat-label">ألغوا الاشتراك</div></div>
+      </div>
+      <!-- SEND NEWSLETTER -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">إرسال نشرة بريدية</span></div>
+        <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1.2rem;">⚠️ سيتم الإرسال لجميع المشتركين النشطين عبر EmailJS. الخطة المجانية تسمح بـ 200 رسالة شهرياً.</p>
+        <div class="form-grid">
+          <div class="fg"><label>عنوان النشرة</label><input type="text" id="nl-subject" placeholder="دورات وورش عمل جديدة — يناير 2026"></div>
+          <div class="fg"><label>نوع المحتوى</label>
+            <select id="nl-type">
+              <option>دورة تدريبية جديدة</option>
+              <option>ورشة عمل</option>
+              <option>خبر وإعلان</option>
+              <option>نشرة شهرية</option>
+            </select>
+          </div>
+          <div class="fg fg-full"><label>نص النشرة</label><textarea id="nl-body" placeholder="اكتب محتوى النشرة هنا..." style="min-height:140px;"></textarea></div>
+          <div class="fg"><label>رابط (اختياري)</label><input type="url" id="nl-link" placeholder="https://..."></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary btn-sm" onclick="sendNewsletter()">📤 إرسال للمشتركين</button>
+          <button class="btn btn-outline btn-sm" onclick="loadNewsletterSubscribers()">🔄 تحديث القائمة</button>
+        </div>
+        <div id="nl-send-progress" style="margin-top:1rem;"></div>
+      </div>
+      <!-- SUBSCRIBERS LIST -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">قائمة المشتركين</span>
+          <button class="btn btn-outline btn-sm" onclick="exportEmails()">تصدير CSV</button>
+        </div>
+        <div id="nl-subscribers-table"></div>
+      </div>
+    </div>
     <!-- TESTIMONIALS -->
     <div class="page" id="page-testimonials">
       <div class="page-header">
@@ -738,6 +788,7 @@ function renderPage(id){
   else if(id==='news')renderNewsTable();
   else if(id==='courses')renderCoursesTable();
   else if(id==='voiceover'){renderVOTable();markSeen('voiceover');}
+  else if(id==='newsletter'){loadNewsletterSubscribers();}
   else if(id==='testimonials')renderTestimonialsTable();
   else if(id==='podcast'){renderPodcastTable();}  
   else if(id==='interviews')renderInterviewsTable();
@@ -1233,6 +1284,93 @@ ${r.script}
     alert(info);
   });
 }
+
+// ═══════════════════════════════════════
+// NEWSLETTER FUNCTIONS
+// ═══════════════════════════════════════
+async function loadNewsletterSubscribers(){
+  document.getElementById('nl-subscribers-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  try {
+    const snap = await db.collection('newsletter').orderBy('timestamp','desc').get();
+    const total = snap.size;
+    const active = snap.docs.filter(d=>d.data().active!==false).length;
+    const unsub = total - active;
+    document.getElementById('nl-total').textContent = total;
+    document.getElementById('nl-active').textContent = active;
+    document.getElementById('nl-unsub').textContent = unsub;
+
+    if(snap.empty){
+      document.getElementById('nl-subscribers-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد اشتراكات بعد.</p>';
+      return;
+    }
+    const rows = snap.docs.map(d=>{
+      const s = d.data();
+      const status = s.active!==false;
+      return `<tr>
+        <td>${s.email}</td>
+        <td><span class="badge ${status?'badge-green':'badge-red'}">${status?'نشط':'ملغي'}</span></td>
+        <td style="font-size:.75rem;color:var(--text-muted);">${s.time||'—'}</td>
+        <td>
+          <button class="btn btn-outline btn-sm" style="margin-left:.3rem;" onclick="toggleSubscriber('${d.id}',${status})">${status?'إلغاء':'إعادة'}</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteDoc('newsletter','${d.id}','nl-subscribers-table',loadNewsletterSubscribers)">حذف</button>
+        </td>
+      </tr>`;
+    }).join('');
+    document.getElementById('nl-subscribers-table').innerHTML=`<table><thead><tr><th>البريد الإلكتروني</th><th>الحالة</th><th>تاريخ الاشتراك</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  } catch(e){
+    document.getElementById('nl-subscribers-table').innerHTML='<p style="color:var(--red);">فشل التحميل — تحقق من Firestore index</p>';
+  }
+}
+
+async function toggleSubscriber(id, currentStatus){
+  await db.collection('newsletter').doc(id).update({active: !currentStatus});
+  loadNewsletterSubscribers();
+  toast(currentStatus ? 'تم إلغاء الاشتراك' : 'تم إعادة الاشتراك');
+}
+
+async function sendNewsletter(){
+  const subject = document.getElementById('nl-subject').value.trim();
+  const body = document.getElementById('nl-body').value.trim();
+  if(!subject||!body){toast('أدخل العنوان والمحتوى',true);return;}
+
+  const snap = await db.collection('newsletter').where('active','==',true).get();
+  const emails = snap.docs.map(d=>d.data().email);
+  if(!emails.length){toast('لا يوجد مشتركون نشطون',true);return;}
+
+  const progress = document.getElementById('nl-send-progress');
+  progress.innerHTML = `<p style="color:var(--text-muted);font-size:.85rem;">جارٍ الإرسال لـ ${emails.length} مشترك...</p>`;
+
+  let sent = 0, failed = 0;
+  for(const email of emails){
+    try {
+      await emailjs.send('service_6g3odwb', 'bozx1s3', {
+        from_name: 'أحمد قريش',
+        from_email: email,
+        subject: subject,
+        message: body,
+        phone: '—', course: '—', notes: document.getElementById('nl-link').value||'—', time: new Date().toLocaleString('ar-SA')
+      }, {publicKey: 'QnIPBoSRBkpNWiNt4'});
+      sent++;
+    } catch(e){ failed++; }
+    progress.innerHTML = `<p style="color:var(--text-muted);font-size:.85rem;">تم الإرسال: <b style="color:var(--green);">${sent}</b> | فشل: <b style="color:var(--red);">${failed}</b> | المتبقي: ${emails.length-sent-failed}</p>`;
+    await new Promise(r=>setTimeout(r,300)); // Rate limit
+  }
+  toast(`تم الإرسال لـ ${sent} مشترك ✓`);
+  // Log send history
+  db.collection('newsletter_history').add({subject, sent, failed, time: new Date().toLocaleString('ar-SA')});
+}
+
+function exportEmails(){
+  db.collection('newsletter').where('active','==',true).get().then(snap=>{
+    const emails = snap.docs.map(d=>d.data().email).join('\n');
+    const blob = new Blob([emails],{type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'subscribers.csv';
+    a.click();
+    toast('تم تصدير القائمة!');
+  });
+}
 // ═══════════════════════════════════════
 // TESTIMONIALS FUNCTIONS
 // ═══════════════════════════════════════
@@ -1517,6 +1655,10 @@ window._real_changePw = changePw;
 window._real_resetAll = resetAll;
 window._real_saveBooks = saveBooks;
 window._real_addTestimonial = addTestimonial;
+window._real_sendNewsletter = sendNewsletter;
+window._real_loadNewsletterSubscribers = loadNewsletterSubscribers;
+window._real_exportEmails = exportEmails;
+window._real_toggleSubscriber = toggleSubscriber;
 window._real_renderVOTable = renderVOTable;
 window._real_viewVO = viewVO;
 window._real_deleteTestimonial = deleteTestimonial;
