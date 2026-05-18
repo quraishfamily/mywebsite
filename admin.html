@@ -998,12 +998,9 @@ function saveCourse(){
 }
 function deleteCourse(id){
   confirm_action(()=>{
-    const updated=getCourses().filter(c=>c.id!==id);
-    saveCoursesData(updated);
-    saveCollection('courses', updated)
-      .then(()=>toast('تم الحذف ✓'))
-      .catch(()=>toast('تم الحذف محلياً فقط'));
-    renderCoursesTable();
+    db.collection('courses').doc(id).delete()
+      .then(()=>{toast('تم الحذف ✓');renderCoursesTable();})
+      .catch(()=>toast('فشل الحذف',true));
   });
 }
 
@@ -1026,12 +1023,11 @@ function addWork(){
   const vid=document.getElementById('wk-vid').value.trim();
   if(!title||!vid){toast('أدخل العنوان ومعرف الفيديو',true);return;}
   const works=getWorks();
-  const newWork={id:'w'+Date.now(),title,vid:extractVideoId(vid),desc:document.getElementById('wk-desc').value};
-  works.push(newWork);
-  saveWorksData(works);
-  saveCollection('works',works).then(()=>toast('تم إضافة العمل! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
+  const newWork={id:'w'+Date.now(),title,vid:extractVideoId(vid),desc:document.getElementById('wk-desc').value,order:Date.now()};
+  db.collection('works').doc(newWork.id).set(newWork)
+    .then(()=>{toast('تم إضافة العمل! ✓');renderWorksTable();})
+    .catch(()=>toast('فشل الحفظ',true));
   ['wk-title','wk-vid','wk-desc'].forEach(x=>document.getElementById(x).value='');
-  renderWorksTable();
 }
 function deleteWork(id){
   confirm_action(()=>{saveWorksData(getWorks().filter(w=>w.id!==id));renderWorksTable();toast('تم الحذف');});
