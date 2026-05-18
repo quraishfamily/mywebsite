@@ -129,6 +129,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <script>
 // Proxy functions - delegate to real implementations once loaded
@@ -182,8 +183,8 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
     <h2>لوحة الإدارة</h2>
     <p>سجّل دخولك للمتابعة</p>
     <div class="login-form">
-      <input type="text" class="inp" id="loginUser" placeholder="اسم المستخدم" value="admin">
-      <input type="password" class="inp" id="loginPass" placeholder="كلمة المرور" value="admin123" onkeydown="if(event.key==='Enter')doLogin()">
+      <input type="email" class="inp" id="loginUser" placeholder="البريد الإلكتروني">
+      <input type="password" class="inp" id="loginPass" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')doLogin()">
       <button class="btn btn-primary" onclick="doLogin()">دخول</button>
       <div class="login-err" id="loginErr">بيانات خاطئة، حاول مجدداً</div>
     </div>
@@ -433,7 +434,7 @@ function handleImageUpload(a,b,c){_call('handleImageUpload',[a,b,c])}
         <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="saveBooks()">حفظ روابط الكتب</button></div>
       </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">تغيير كلمة المرور</span></div>
+        <div class="card-header"><span class="card-title">تغيير كلمة المرور</span><span style="font-size:.75rem;color:var(--text-muted);">تغيير كلمة مرور حساب Firebase</span></div>
         <div class="form-grid">
           <div class="fg"><label>كلمة المرور الحالية</label><input type="password" id="pw-old" placeholder="..."></div>
           <div class="fg"><label>كلمة المرور الجديدة</label><input type="password" id="pw-new" placeholder="..."></div>
@@ -539,6 +540,7 @@ const firebaseConfig = {
 
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
 
 // Helper: save entire array to Firebase collection
 async function saveCollection(colName, items) {
@@ -567,24 +569,43 @@ async function loadCollection(colName) {
   return snap.docs.map(d => ({id: d.id, ...d.data()}));
 }
 
-// AUTH
-const ADMIN_USER='admin', ADMIN_PASS_KEY='admin-pass';
-function getPass(){return localStorage.getItem(ADMIN_PASS_KEY)||'admin123';}
+// AUTH — Firebase Authentication
+function getPass(){return '';} // kept for compatibility
+
 function doLogin(){
-  const u=document.getElementById('loginUser').value;
-  const p=document.getElementById('loginPass').value;
-  if(u===ADMIN_USER&&p===getPass()){
+  const email = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.style.display='none';
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(()=>{
+      document.getElementById('loginScreen').style.display='none';
+      document.getElementById('adminLayout').classList.add('visible');
+      initAdmin();
+    })
+    .catch(err=>{
+      errEl.textContent = 'بيانات خاطئة، حاول مجدداً';
+      errEl.style.display='block';
+      console.log('Auth error:', err.code);
+    });
+}
+
+function logout(){
+  auth.signOut().then(()=>{
+    document.getElementById('adminLayout').classList.remove('visible');
+    document.getElementById('loginScreen').style.display='flex';
+  });
+}
+
+// Auto-login if already signed in
+auth.onAuthStateChanged(user => {
+  if(user){
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('adminLayout').classList.add('visible');
     initAdmin();
-  } else {
-    document.getElementById('loginErr').style.display='block';
   }
-}
-function logout(){
-  document.getElementById('adminLayout').classList.remove('visible');
-  document.getElementById('loginScreen').style.display='flex';
-}
+});
+
 document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
 // TOAST
@@ -999,13 +1020,24 @@ function saveSocials(){
   db.collection('settings').doc('socials').set(sc).then(()=>toast('تم حفظ روابط التواصل! ✓')).catch(()=>toast('حُفظ محلياً فقط'));
 }
 function changePw(){
-  const old=document.getElementById('pw-old').value;
   const nw=document.getElementById('pw-new').value;
-  if(old!==getPass()){toast('كلمة المرور الحالية خاطئة',true);return;}
   if(!nw){toast('أدخل كلمة المرور الجديدة',true);return;}
-  localStorage.setItem(ADMIN_PASS_KEY,nw);
-  document.getElementById('pw-old').value='';document.getElementById('pw-new').value='';
-  toast('تم تغيير كلمة المرور!');
+  const user = auth.currentUser;
+  if(!user){toast('يجب تسجيل الدخول أولاً',true);return;}
+  // Re-authenticate first
+  const old=document.getElementById('pw-old').value;
+  const credential = firebase.auth.EmailAuthProvider.credential(user.email, old);
+  user.reauthenticateWithCredential(credential)
+    .then(()=>user.updatePassword(nw))
+    .then(()=>{
+      document.getElementById('pw-old').value='';
+      document.getElementById('pw-new').value='';
+      toast('تم تغيير كلمة المرور! ✓');
+    })
+    .catch(err=>{
+      if(err.code==='auth/wrong-password') toast('كلمة المرور الحالية خاطئة',true);
+      else toast('فشل التغيير: '+err.message,true);
+    });
 }
 function resetAll(){
   confirm_action(()=>{
