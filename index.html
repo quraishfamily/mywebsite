@@ -1259,6 +1259,8 @@ const defaultWorks=[
 
 function renderNews(news=null){
   if(!news)news=JSON.parse(localStorage.getItem('admin-news')||'null')||defaultNews;
+  // Sort by timestamp descending (newest first)
+  news = [...news].sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
   document.getElementById('newsGrid').innerHTML=news.map(n=>`
     <div class="news-card reveal">
       <div class="news-img" style="${n.img ? 'background-image:url('+n.img+');background-size:cover;background-position:center;' : ''}">
