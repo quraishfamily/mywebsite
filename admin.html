@@ -160,6 +160,7 @@ function addPodcast(){_call('addPodcast',[])}
 function deletePodcast(i){_call('deletePodcast',[i])}
 function addInterview(){_call('addInterview',[])}
 function deleteInterview(i){_call('deleteInterview',[i])}
+function deleteInterviewById(id){_call('deleteInterviewById',[id])}
 function saveSettings(){_call('saveSettings',[])}
 function saveSocials(){_call('saveSocials',[])}
 function changePw(){_call('changePw',[])}
@@ -1510,16 +1511,23 @@ function deletePodcast(idx){
 // INTERVIEW FUNCTIONS
 // ═══════════════════════════════════════
 function renderInterviewsTable(){
-  const ivs=JSON.parse(localStorage.getItem('admin-interviews')||'null')||[];
-  document.getElementById('interviews-table').innerHTML=ivs.length
-    ?`<table><thead><tr><th>العنوان</th><th>الجهة</th><th>Video ID</th><th>إجراءات</th></tr></thead>
-      <tbody>${ivs.map((iv,i)=>`<tr>
+  document.getElementById('interviews-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('interviews').get().then(snap=>{
+    if(snap.empty){
+      document.getElementById('interviews-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد مقابلات مضافة</p>';
+      return;
+    }
+    const ivs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    document.getElementById('interviews-table').innerHTML=`<table><thead><tr><th>العنوان</th><th>الجهة</th><th>Video ID</th><th>إجراءات</th></tr></thead>
+      <tbody>${ivs.map(iv=>`<tr>
         <td>${iv.title}</td>
         <td>${iv.channel||'—'}</td>
         <td style="direction:ltr;text-align:left;font-size:.75rem;">${iv.vid||''}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteInterview(${i})">حذف</button></td>
-      </tr>`).join('')}</tbody></table>`
-    :'<p style="color:var(--text-muted);font-size:.85rem;">لا توجد مقابلات مضافة</p>';
+        <td><button class="btn btn-danger btn-sm" onclick="deleteInterviewById('${iv.id}')">حذف</button></td>
+      </tr>`).join('')}</tbody></table>`;
+  }).catch(()=>{
+    document.getElementById('interviews-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';
+  });
 }
 
 function addInterview(){
@@ -1687,6 +1695,7 @@ window._real_changePw = changePw;
 window._real_resetAll = resetAll;
 window._real_saveBooks = saveBooks;
 window._real_addTestimonial = addTestimonial;
+window._real_deleteInterviewById = deleteInterviewById;
 window._real_sendNewsletter = sendNewsletter;
 window._real_loadNewsletterSubscribers = loadNewsletterSubscribers;
 window._real_exportEmails = exportEmails;
