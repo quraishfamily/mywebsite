@@ -333,13 +333,8 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
 }
 .ticker-track{
   display:flex;align-items:center;
-  animation:ticker 30s linear infinite;
   white-space:nowrap;
-}
-.ticker-track:hover{animation-play-state:paused;}
-@keyframes ticker{
-  0%{transform:translateX(-50%);}
-  100%{transform:translateX(0%);}
+  will-change:transform;
 }
 .ticker-item{
   display:inline-flex;align-items:center;gap:.5rem;
@@ -1733,32 +1728,34 @@ function playWork(el, vid){
 // ═══════════════════════════════════════
 // TICKER BAR
 // ═══════════════════════════════════════
+let tickerRAF = null;
+let tickerPos = 0;
+let tickerPaused = false;
+
 async function loadTicker(){
   try {
     const items = [];
 
-    // Load latest news
-    const newsSnap = await db.collection('news').orderBy('order','asc').limit(5).get();
+    const newsSnap = await db.collection('news').get();
     newsSnap.docs.forEach(d=>{
       const n = d.data();
       if(n.title) items.push({type:'خبر', text:n.title, href:'#news'});
     });
 
-    // Load latest courses
-    const coursesSnap = await db.collection('courses').orderBy('order','asc').limit(5).get();
+    const coursesSnap = await db.collection('courses').get();
     coursesSnap.docs.forEach(d=>{
       const c = d.data();
       if(c.title) items.push({type:'دورة', text:c.title+' — '+c.price, href:'#courses'});
     });
 
-    if(items.length === 0) {
+    if(items.length === 0){
       document.getElementById('tickerBar').style.display='none';
       return;
     }
 
-    // Duplicate items for seamless loop
-    const all = [...items, ...items];
-    const html_items = all.map(item=>
+    // Build items (repeat 3x for seamless loop)
+    const repeated = [...items, ...items, ...items];
+    const html_items = repeated.map(item=>
       `<a class="ticker-item" href="${item.href}">
         <span class="ticker-type">${item.type}:</span>
         ${item.text}
@@ -1766,12 +1763,28 @@ async function loadTicker(){
       </a>`
     ).join('');
 
-    document.getElementById('tickerTrack').innerHTML = html_items;
+    const track = document.getElementById('tickerTrack');
+    track.innerHTML = html_items;
 
-    // Adjust animation speed based on content length
-    const totalWidth = items.length * 300;
-    const speed = Math.max(20, items.length * 6);
-    document.getElementById('tickerTrack').style.animationDuration = speed + 's';
+    // Wait for render then start scrolling
+    requestAnimationFrame(()=>{
+      const singleWidth = track.scrollWidth / 3;
+      tickerPos = 0;
+
+      // Pause on hover
+      track.addEventListener('mouseenter', ()=>{ tickerPaused=true; });
+      track.addEventListener('mouseleave', ()=>{ tickerPaused=false; });
+
+      function tick(){
+        if(!tickerPaused){
+          tickerPos += 0.5; // speed: pixels per frame
+          if(tickerPos >= singleWidth) tickerPos = 0;
+          track.style.transform = `translateX(${tickerPos}px)`;
+        }
+        tickerRAF = requestAnimationFrame(tick);
+      }
+      tick();
+    });
 
   } catch(e) {
     document.getElementById('tickerBar').style.display='none';
