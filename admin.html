@@ -1707,6 +1707,50 @@ function deleteInterviewById(id){
   });
 }
 
+function updateBadges(){
+  var lastSeen = {
+    regs: parseInt(localStorage.getItem('seen-regs')||'0'),
+    consulting: parseInt(localStorage.getItem('seen-consulting')||'0'),
+    msgs: parseInt(localStorage.getItem('seen-msgs')||'0'),
+    voiceover: parseInt(localStorage.getItem('seen-voiceover')||'0')
+  };
+  db.collection('registrations').get().then(function(snap){
+    var unseen=Math.max(0,snap.size-lastSeen.regs);
+    var b=document.getElementById('badge-regs');
+    if(b){b.textContent=unseen;b.style.display=unseen>0?'inline-flex':'none';}
+  }).catch(function(){});
+  db.collection('consulting').get().then(function(snap){
+    var unseen=Math.max(0,snap.size-lastSeen.consulting);
+    var b=document.getElementById('badge-consulting');
+    if(b){b.textContent=unseen;b.style.display=unseen>0?'inline-flex':'none';}
+  }).catch(function(){});
+  db.collection('messages').get().then(function(snap){
+    var unseen=Math.max(0,snap.size-lastSeen.msgs);
+    var b=document.getElementById('badge-msgs');
+    if(b){b.textContent=unseen;b.style.display=unseen>0?'inline-flex':'none';}
+  }).catch(function(){});
+  db.collection('voiceover_requests').get().then(function(snap){
+    var unseen=Math.max(0,snap.size-lastSeen.voiceover);
+    var b=document.getElementById('badge-vo');
+    if(b){b.textContent=unseen;b.style.display=unseen>0?'inline-flex':'none';}
+    var nl=document.getElementById('badge-nl');
+    if(nl&&snap.size>0){nl.textContent=snap.size;nl.style.display='inline-flex';}
+  }).catch(function(){});
+}
+
+function markSeen(type){
+  var colMap={regs:'registrations',consulting:'consulting',messages:'messages',voiceover:'voiceover_requests'};
+  var col=colMap[type];
+  if(!col)return;
+  db.collection(col).get().then(function(snap){
+    var key=type==='messages'?'seen-msgs':(type==='voiceover'?'seen-voiceover':'seen-'+type);
+    localStorage.setItem(key,snap.size);
+    var badgeId=type==='messages'?'badge-msgs':(type==='voiceover'?'badge-vo':'badge-'+type);
+    var b=document.getElementById(badgeId);
+    if(b)b.style.display='none';
+  }).catch(function(){});
+}
+
 </script>
 
 <!-- QUOTE MODAL -->
