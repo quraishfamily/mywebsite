@@ -1751,6 +1751,87 @@ function markSeen(type){
   }).catch(function(){});
 }
 
+// ═══════════════════════════════════════
+// NEWSLETTER FUNCTIONS
+// ═══════════════════════════════════════
+function loadNewsletterSubscribers(){
+  var tbl = document.getElementById('nl-subscribers-table');
+  tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('newsletter').get().then(function(snap){
+    var total = snap.size;
+    var active = snap.docs.filter(function(d){ return d.data().active !== false; }).length;
+    var unsub = total - active;
+    var el1 = document.getElementById('nl-total');
+    var el2 = document.getElementById('nl-active');
+    var el3 = document.getElementById('nl-unsub');
+    if(el1) el1.textContent = total;
+    if(el2) el2.textContent = active;
+    if(el3) el3.textContent = unsub;
+    if(snap.empty){
+      tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">لا توجد اشتراكات بعد.</p>';
+      return;
+    }
+    var rows = '';
+    snap.docs.forEach(function(d){
+      var s = d.data();
+      var status = s.active !== false;
+      var statusBadge = status ? '<span class="badge badge-green">نشط</span>' : '<span class="badge badge-red">ملغي</span>';
+      var toggleBtn = '<button class="btn btn-outline btn-sm" style="margin-left:.3rem;" onclick="toggleSubscriber(''+d.id+'','+status+')">'+( status ? 'إلغاء' : 'إعادة')+'</button>';
+      var delBtn = '<button class="btn btn-danger btn-sm" onclick="deleteDoc('newsletter',''+d.id+'','nl-subscribers-table',loadNewsletterSubscribers)">حذف</button>';
+      rows += '<tr><td>'+(s.email||'-')+'</td><td>'+statusBadge+'</td><td style="font-size:.75rem;color:var(--text-muted);">'+(s.time||'-')+'</td><td>'+toggleBtn+delBtn+'</td></tr>';
+    });
+    tbl.innerHTML = '<table><thead><tr><th>البريد الإلكتروني</th><th>الحالة</th><th>تاريخ الاشتراك</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }).catch(function(e){
+    tbl.innerHTML = '<p style="color:var(--red);">فشل التحميل: '+e.message+'</p>';
+  });
+}
+
+function toggleSubscriber(id, currentStatus){
+  db.collection('newsletter').doc(id).update({active: !currentStatus}).then(function(){
+    loadNewsletterSubscribers();
+    toast(currentStatus ? 'تم إلغاء الاشتراك' : 'تم إعادة الاشتراك');
+  }).catch(function(){ toast('فشل التحديث', true); });
+}
+
+async function sendNewsletter(){
+  var subject = document.getElementById('nl-subject').value.trim();
+  var body = document.getElementById('nl-body').value.trim();
+  if(!subject||!body){toast('أدخل العنوان والمحتوى',true);return;}
+  var snap = await db.collection('newsletter').where('active','==',true).get();
+  var emails = snap.docs.map(function(d){ return d.data().email; });
+  if(!emails.length){toast('لا يوجد مشتركون نشطون',true);return;}
+  var progress = document.getElementById('nl-send-progress');
+  progress.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ الإرسال لـ '+emails.length+' مشترك...</p>';
+  var sent=0, failed=0;
+  for(var i=0;i<emails.length;i++){
+    try {
+      await emailjs.send('service_6g3odwb','bozx1s3',{
+        from_name:'أحمد قريش',from_email:emails[i],
+        subject:subject,message:body,
+        phone:'-',course:'-',notes:'-',
+        time:new Date().toLocaleString('ar-SA')
+      },{publicKey:'QnIPBoSRBkpNWiNt4'});
+      sent++;
+    } catch(e){ failed++; }
+    progress.innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">تم: <b style="color:var(--green);">'+sent+'</b> | فشل: <b style="color:var(--red);">'+failed+'</b></p>';
+    await new Promise(function(r){setTimeout(r,300);});
+  }
+  toast('تم الإرسال لـ '+sent+' مشترك ✓');
+  db.collection('newsletter_history').add({subject:subject,sent:sent,failed:failed,time:new Date().toLocaleString('ar-SA')});
+}
+
+function exportEmails(){
+  db.collection('newsletter').where('active','==',true).get().then(function(snap){
+    var emails = snap.docs.map(function(d){ return d.data().email; }).join('\n');
+    var blob = new Blob([emails],{type:'text/csv'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'subscribers.csv';
+    a.click();
+    toast('تم تصدير القائمة!');
+  });
+}
+
 </script>
 
 <!-- QUOTE MODAL -->
