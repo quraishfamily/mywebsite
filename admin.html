@@ -1311,21 +1311,23 @@ function renderVOTable(){
 }
 
 function viewVO(id){
-  db.collection('voiceover_requests').doc(id).get().then(d=>{
-    const r=d.data();
-    const info = `الاسم: ${r.name}
-الجوال: ${r.phone}
-البريد: ${r.email}
-النوع: ${r.type}
-الموعد: ${r.deadline}
-
-الوصف:
-${r.desc}
-
-السكريبت:
-${r.script}
-
-ملاحظات: ${r.notes||'—'}`;
+  db.collection('voiceover_requests').doc(id).get().then(function(d){
+    var r=d.data();
+    var info = [
+      'الاسم: '+(r.name||'-'),
+      'الجوال: '+(r.phone||'-'),
+      'البريد: '+(r.email||'-'),
+      'النوع: '+(r.type||'-'),
+      'الموعد: '+(r.deadline||'-'),
+      '',
+      'الوصف:',
+      r.desc||'-',
+      '',
+      'السكريبت:',
+      r.script||'-',
+      '',
+      'ملاحظات: '+(r.notes||'-')
+    ].join('\n');
     alert(info);
   });
 }
