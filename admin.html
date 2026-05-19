@@ -1639,6 +1639,40 @@ function downloadQuotePDF(){
   toast('تم تحميل PDF!');
 }
 
+function renderInterviewsTable(){
+  document.getElementById('interviews-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('interviews').get().then(function(snap){
+    if(snap.empty){
+      document.getElementById('interviews-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد مقابلات مضافة</p>';
+      return;
+    }
+    var ivs=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
+    var rows=ivs.map(function(iv){
+      return '<tr><td>'+iv.title+'</td><td>'+(iv.channel||'-')+'</td><td style="direction:ltr;font-size:.75rem;">'+(iv.vid||'')+'</td><td><button class="btn btn-danger btn-sm" onclick="deleteInterviewById(''+iv.id+'')">حذف</button></td></tr>';
+    }).join('');
+    document.getElementById('interviews-table').innerHTML='<table><thead><tr><th>العنوان</th><th>الجهة</th><th>Video ID</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }).catch(function(){document.getElementById('interviews-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';});
+}
+function addInterview(){
+  var title=document.getElementById('iv-title').value.trim();
+  var rawVid=document.getElementById('iv-vid').value.trim();
+  if(!title||!rawVid){toast('أدخل العنوان والرابط',true);return;}
+  var vid=extractVideoId(rawVid);
+  var newIv={id:'i'+Date.now(),title:title,channel:document.getElementById('iv-channel').value,vid:vid,order:Date.now()};
+  db.collection('interviews').doc(newIv.id).set(newIv)
+    .then(function(){toast('تمت إضافة المقابلة! ✓');renderInterviewsTable();})
+    .catch(function(){toast('فشل الحفظ',true);});
+  ['iv-title','iv-channel','iv-vid'].forEach(function(x){document.getElementById(x).value='';});
+}
+function deleteInterview(i){deleteInterviewById(i);}
+function deleteInterviewById(id){
+  confirm_action(function(){
+    db.collection('interviews').doc(id).delete()
+      .then(function(){toast('تم الحذف ✓');renderInterviewsTable();})
+      .catch(function(){toast('فشل الحذف',true);});
+  });
+}
+
 </script>
 
 <!-- QUOTE MODAL -->
@@ -1675,49 +1709,6 @@ function downloadQuotePDF(){
     </div>
   </div>
 </div>
-
-// ═══════════════════════════════════════
-// INTERVIEW FUNCTIONS
-// ═══════════════════════════════════════
-function renderInterviewsTable(){
-  document.getElementById('interviews-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
-  db.collection('interviews').get().then(function(snap){
-    if(snap.empty){
-      document.getElementById('interviews-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد مقابلات مضافة</p>';
-      return;
-    }
-    var ivs = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
-    var rows = ivs.map(function(iv){
-      return '<tr><td>'+iv.title+'</td><td>'+(iv.channel||'—')+'</td><td style="direction:ltr;text-align:left;font-size:.75rem;">'+(iv.vid||'')+'</td><td><button class="btn btn-danger btn-sm" onclick="deleteInterviewById(''+iv.id+'')">حذف</button></td></tr>';
-    }).join('');
-    document.getElementById('interviews-table').innerHTML='<table><thead><tr><th>العنوان</th><th>الجهة</th><th>Video ID</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
-  }).catch(function(){
-    document.getElementById('interviews-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';
-  });
-}
-
-function addInterview(){
-  var title = document.getElementById('iv-title').value.trim();
-  var rawVid = document.getElementById('iv-vid').value.trim();
-  if(!title||!rawVid){toast('أدخل العنوان والرابط',true);return;}
-  var vid = extractVideoId(rawVid);
-  var channel = document.getElementById('iv-channel').value;
-  var newIv = {id:'i'+Date.now(), title:title, channel:channel, vid:vid, order:Date.now()};
-  db.collection('interviews').doc(newIv.id).set(newIv)
-    .then(function(){ toast('تمت إضافة المقابلة! ✓'); renderInterviewsTable(); })
-    .catch(function(){ toast('فشل الحفظ',true); });
-  ['iv-title','iv-channel','iv-vid'].forEach(function(x){ document.getElementById(x).value=''; });
-}
-
-function deleteInterview(i){ deleteInterviewById(i); }
-
-function deleteInterviewById(id){
-  confirm_action(function(){
-    db.collection('interviews').doc(id).delete()
-      .then(function(){ toast('تم الحذف ✓'); renderInterviewsTable(); })
-      .catch(function(){ toast('فشل الحذف',true); });
-  });
-}
 
 </body>
 </html>
