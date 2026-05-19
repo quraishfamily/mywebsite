@@ -1652,19 +1652,40 @@ function downloadQuotePDF(){
   toast('تم تحميل PDF!');
 }
 
+function buildInterviewRow(docId, iv){
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td>'+escHtml(iv.title||'')+'</td>'
+    +'<td>'+escHtml(iv.channel||'-')+'</td>'
+    +'<td style="direction:ltr;font-size:.75rem;">'+escHtml(iv.vid||'')+'</td>'
+    +'<td></td>';
+  var btn = document.createElement('button');
+  btn.className = 'btn btn-danger btn-sm';
+  btn.textContent = 'حذف';
+  btn.addEventListener('click', function(){ deleteInterviewById(docId); });
+  tr.lastElementChild.appendChild(btn);
+  return tr;
+}
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function renderInterviewsTable(){
-  document.getElementById('interviews-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  var tbl = document.getElementById('interviews-table');
+  tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
   db.collection('interviews').get().then(function(snap){
     if(snap.empty){
-      document.getElementById('interviews-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد مقابلات مضافة</p>';
+      tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">لا توجد مقابلات مضافة</p>';
       return;
     }
-    var ivs=snap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
-    var rows=ivs.map(function(iv){
-      return '<tr><td>'+iv.title+'</td><td>'+(iv.channel||'-')+'</td><td style="direction:ltr;font-size:.75rem;">'+(iv.vid||'')+'</td><td><button class="btn btn-danger btn-sm" onclick="deleteInterviewById(''+iv.id+'')">حذف</button></td></tr>';
-    }).join('');
-    document.getElementById('interviews-table').innerHTML='<table><thead><tr><th>العنوان</th><th>الجهة</th><th>Video ID</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
-  }).catch(function(){document.getElementById('interviews-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';});
+    var table = document.createElement('table');
+    table.innerHTML = '<thead><tr><th>العنوان</th><th>الجهة</th><th>Video ID</th><th></th></tr></thead>';
+    var tbody = document.createElement('tbody');
+    snap.docs.forEach(function(d){
+      tbody.appendChild(buildInterviewRow(d.id, d.data()));
+    });
+    table.appendChild(tbody);
+    tbl.innerHTML = '';
+    tbl.appendChild(table);
+  }).catch(function(){
+    tbl.innerHTML = '<p style="color:var(--red);">فشل التحميل</p>';
+  });
 }
 function addInterview(){
   var title=document.getElementById('iv-title').value.trim();
