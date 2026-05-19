@@ -311,11 +311,25 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:2.5rem 
   .news-grid,.int-grid,.works-grid,.courses-grid,.books-grid{grid-template-columns:1fr;}
   
   footer{padding:2rem 1.5rem;}
-  .foot-inner{flex-direction:column;text-align:center;}
-  .foot-links{justify-content:center;}
+  .foot-inner{flex-direction:column;align-items:center;text-align:center;gap:1.2rem;}
+  .foot-links{justify-content:center;flex-wrap:wrap;gap:.8rem;}
+  .foot-links a{font-size:.8rem;}
+  .foot-copy{font-size:.72rem;padding-top:1rem;margin-top:1rem;}
+  .social-row{justify-content:center;}
   .f-row{grid-template-columns:1fr;}
   .yt-input{width:100%;}
+  .newsletter-form{flex-direction:column;}
+  .newsletter-form .btn{width:100%;}
 }
+
+@media(max-width:900px){
+  .ticker-bar{height:30px;font-size:.7rem;}
+  .ticker-label{font-size:.65rem;padding:0 .8rem;}
+  .ticker-item{font-size:.7rem;padding:0 1rem;}
+  nav{top:30px !important;}
+  .hero{padding-top:calc(6rem + 30px) !important;}
+}
+
 
 .ticker-bar{
   position:fixed;top:0;right:0;left:0;z-index:901;
