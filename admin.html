@@ -1260,6 +1260,8 @@ function renderVOTable(){
         <td style="font-size:.72rem;color:var(--text-muted);">${r.time||'—'}</td>
         <td>
           <button class="btn btn-outline btn-sm" style="margin-left:.3rem;" onclick="viewVO('${d.id}')">عرض</button>
+          <button class="btn btn-outline btn-sm" style="margin-left:.3rem;font-size:.72rem;" onclick="exportSingleVO('${d.id}')">📄 PDF</button>
+          <button class="btn btn-primary btn-sm" style="margin-left:.3rem;font-size:.72rem;" onclick="openQuoteModal('${d.id}')">💰 تسعيرة</button>
           <button class="btn btn-danger btn-sm" onclick="deleteDoc('voiceover_requests','${d.id}','vo-table',renderVOTable)">حذف</button>
         </td>
       </tr>`;
