@@ -173,6 +173,15 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 
+  <script>
+  function doLogin(){
+    var tries=0;
+    var t=setInterval(function(){
+      if(window._doLogin){clearInterval(t);window._doLogin();}
+      else if(++tries>100){clearInterval(t);}
+    },100);
+  }
+  </script>
 </head>
 <body>
 
@@ -676,6 +685,7 @@ async function loadCollection(colName) {
 function getPass(){return '';} // kept for compatibility
 
 function doLogin(){
+  window._doLogin=doLogin;
   const email = document.getElementById('loginUser').value.trim();
   const pass = document.getElementById('loginPass').value;
   const errEl = document.getElementById('loginErr');
@@ -710,6 +720,7 @@ auth.onAuthStateChanged(user => {
 });
 
 document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+window._doLogin = doLogin;
 
 
 // TOAST
