@@ -1759,30 +1759,54 @@ function loadNewsletterSubscribers(){
   tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
   db.collection('newsletter').get().then(function(snap){
     var total = snap.size;
-    var active = snap.docs.filter(function(d){ return d.data().active !== false; }).length;
-    var unsub = total - active;
-    var el1 = document.getElementById('nl-total');
-    var el2 = document.getElementById('nl-active');
-    var el3 = document.getElementById('nl-unsub');
+    var activeDocs = snap.docs.filter(function(d){ return d.data().active !== false; });
+    var el1=document.getElementById('nl-total');
+    var el2=document.getElementById('nl-active');
+    var el3=document.getElementById('nl-unsub');
     if(el1) el1.textContent = total;
-    if(el2) el2.textContent = active;
-    if(el3) el3.textContent = unsub;
+    if(el2) el2.textContent = activeDocs.length;
+    if(el3) el3.textContent = total - activeDocs.length;
     if(snap.empty){
       tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">لا توجد اشتراكات بعد.</p>';
       return;
     }
-    var rows = '';
+    var table = document.createElement('table');
+    table.innerHTML = '<thead><tr><th>البريد الإلكتروني</th><th>الحالة</th><th>تاريخ الاشتراك</th><th></th></tr></thead>';
+    var tbody = document.createElement('tbody');
     snap.docs.forEach(function(d){
       var s = d.data();
       var status = s.active !== false;
-      var statusBadge = status ? '<span class="badge badge-green">نشط</span>' : '<span class="badge badge-red">ملغي</span>';
-      var toggleBtn = '<button class="btn btn-outline btn-sm" style="margin-left:.3rem;" onclick="toggleSubscriber(''+d.id+'','+status+')">'+( status ? 'إلغاء' : 'إعادة')+'</button>';
-      var delBtn = '<button class="btn btn-danger btn-sm" onclick="deleteDoc('newsletter',''+d.id+'','nl-subscribers-table',loadNewsletterSubscribers)">حذف</button>';
-      rows += '<tr><td>'+(s.email||'-')+'</td><td>'+statusBadge+'</td><td style="font-size:.75rem;color:var(--text-muted);">'+(s.time||'-')+'</td><td>'+toggleBtn+delBtn+'</td></tr>';
+      var tr = document.createElement('tr');
+      var td1 = document.createElement('td'); td1.textContent = s.email||'-';
+      var td2 = document.createElement('td');
+      var badge = document.createElement('span');
+      badge.className = status ? 'badge badge-green' : 'badge badge-red';
+      badge.textContent = status ? 'نشط' : 'ملغي';
+      td2.appendChild(badge);
+      var td3 = document.createElement('td');
+      td3.style.fontSize = '.75rem'; td3.style.color = 'var(--text-muted)';
+      td3.textContent = s.time||'-';
+      var td4 = document.createElement('td');
+      var btnToggle = document.createElement('button');
+      btnToggle.className = 'btn btn-outline btn-sm';
+      btnToggle.style.marginLeft = '.3rem';
+      btnToggle.textContent = status ? 'إلغاء' : 'إعادة';
+      (function(id, st){ btnToggle.addEventListener('click', function(){ toggleSubscriber(id, st); }); })(d.id, status);
+      var btnDel = document.createElement('button');
+      btnDel.className = 'btn btn-danger btn-sm';
+      btnDel.textContent = 'حذف';
+      (function(id){ btnDel.addEventListener('click', function(){ deleteDoc('newsletter', id, 'nl-subscribers-table', loadNewsletterSubscribers); }); })(d.id);
+      td4.appendChild(btnToggle);
+      td4.appendChild(btnDel);
+      tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4);
+      tbody.appendChild(tr);
     });
-    tbl.innerHTML = '<table><thead><tr><th>البريد الإلكتروني</th><th>الحالة</th><th>تاريخ الاشتراك</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+    table.appendChild(tbody);
+    tbl.innerHTML = '';
+    tbl.appendChild(table);
   }).catch(function(e){
-    tbl.innerHTML = '<p style="color:var(--red);">فشل التحميل: '+e.message+'</p>';
+    tbl.innerHTML = '<p style="color:var(--red);">فشل التحميل</p>';
+    console.log('Newsletter error:', e);
   });
 }
 
