@@ -560,6 +560,18 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       <div class="fg"><label>العنوان</label><input type="text" id="nm-title" placeholder="عنوان الخبر"></div>
       <div class="fg"><label>التصنيف</label><select id="nm-cat"><option>أخبار</option><option>دورات</option><option>إنجازات</option><option>فعاليات</option></select></div>
       <div class="fg"><label>التاريخ والوقت</label><input type="datetime-local" id="nm-date"></div>
+      <div class="fg">
+        <label>حالة الخبر</label>
+        <select id="nm-status" onchange="toggleSchedule()">
+          <option value="published">منشور ✅</option>
+          <option value="draft">مسودة 📝</option>
+          <option value="scheduled">مجدول 📅</option>
+        </select>
+      </div>
+      <div class="fg" id="nm-schedule-wrap" style="display:none;">
+        <label>موعد النشر التلقائي</label>
+        <input type="datetime-local" id="nm-schedule">
+      </div>
       <div class="fg"><label>الأيقونة (رمز)</label><input type="text" id="nm-icon" placeholder="🎙️"></div>
       <div class="fg fg-full">
         <label>صورة الخبر (اختياري)</label>
@@ -857,6 +869,9 @@ function openNewsModal(id=''){
     document.getElementById('nm-title').value=n.title||'';
     document.getElementById('nm-cat').value=n.category||'أخبار';
     document.getElementById('nm-date').value=n.dateRaw||'';
+    document.getElementById('nm-status').value=n.status||'published';
+    document.getElementById('nm-schedule').value=n.scheduledAt||'';
+    document.getElementById('nm-schedule-wrap').style.display=n.status==='scheduled'?'flex':'none';
     document.getElementById('nm-img').value=n.img||'';
     document.getElementById('nm-img2').value=n.img2||'';
     document.getElementById('nm-img3').value=n.img3||'';
@@ -898,6 +913,8 @@ function saveNews(){
     img2:document.getElementById('nm-img2').value,
     img3:document.getElementById('nm-img3').value,
     body:document.getElementById('nm-body').value,
+    status:document.getElementById('nm-status').value,
+    scheduledAt:document.getElementById('nm-schedule').value||'',
   };
   if(!data.title){toast('أدخل عنوان الخبر',true);return;}
   // Check if image is still uploading
@@ -1854,6 +1871,11 @@ function exportEmails(){
     a.click();
     toast('تم تصدير القائمة!');
   });
+}
+
+function toggleSchedule(){
+  var status = document.getElementById('nm-status').value;
+  document.getElementById('nm-schedule-wrap').style.display = status==='scheduled' ? 'flex' : 'none';
 }
 
 </script>
