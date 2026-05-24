@@ -1371,6 +1371,17 @@ const defaultWorks=[
 
 function renderNews(news=null){
   if(!news)news=JSON.parse(localStorage.getItem('admin-news')||'null')||defaultNews;
+  // Filter: only show published or scheduled past due
+  var now = Date.now();
+  news = news.filter(function(n){
+    if(!n.status || n.status === 'published') return true;
+    if(n.status === 'draft') return false;
+    if(n.status === 'scheduled'){
+      var schedTime = n.scheduledAt ? new Date(n.scheduledAt).getTime() : 0;
+      return schedTime <= now;
+    }
+    return true;
+  });
   // Sort by date: oldest first (rightmost in RTL grid)
   news = [...news].sort((a,b) => {
     const ta = a.timestamp || (a.dateRaw ? new Date(a.dateRaw).getTime() : 0);
