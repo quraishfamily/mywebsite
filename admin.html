@@ -1035,7 +1035,9 @@ function openCourseModal(id=''){
     ['cm-title','cm-icon','cm-price','cm-dur','cm-sess','cm-lvl','cm-badge','cm-desc'].forEach(x=>document.getElementById(x).value='');
     document.getElementById('course-modal-title').textContent='إضافة دورة';
   }
+  console.log('calling openModal courseModal');
   openModal('courseModal');
+  console.log('courseModal classes:', document.getElementById('courseModal').className);
 }
 function editCourse(id){
   console.log("editCourse called with id:", id);
