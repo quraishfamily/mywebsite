@@ -1019,7 +1019,7 @@ function openCourseModal(id=''){
   console.log('openCourseModal called, id:', id, '_editingCourse:', window._editingCourse);
   document.getElementById('cm-edit-id').value=id;
   if(id){
-    const c=getCourses().find(x=>x.id===id);if(!c)return;
+    const c = window._editingCourse || {};
     document.getElementById('cm-title').value=c.title||'';
     document.getElementById('cm-icon').value=c.icon||'';
     document.getElementById('cm-price').value=c.price||'';
