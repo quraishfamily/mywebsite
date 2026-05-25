@@ -174,13 +174,61 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
 
 
   <script>
-  function doLogin(){
+  function _wcall(name,args){
     var tries=0;
-    var t=setInterval(function(){
-      if(window._doLogin){clearInterval(t);window._doLogin();}
-      else if(++tries>100){clearInterval(t);}
-    },100);
+    function attempt(){ var fn=window["_real_"+name]; if(fn){ fn.apply(null,args); } else if(tries++<50){ setTimeout(attempt,200); } }
+    attempt();
   }
+  function addInterview(){ _wcall("addInterview", Array.prototype.slice.call(arguments)); }
+  function addPodcast(){ _wcall("addPodcast", Array.prototype.slice.call(arguments)); }
+  function addTestimonial(){ _wcall("addTestimonial", Array.prototype.slice.call(arguments)); }
+  function addWork(){ _wcall("addWork", Array.prototype.slice.call(arguments)); }
+  function changePw(){ _wcall("changePw", Array.prototype.slice.call(arguments)); }
+  function closeConfirm(){ _wcall("closeConfirm", Array.prototype.slice.call(arguments)); }
+  function closeModal(){ _wcall("closeModal", Array.prototype.slice.call(arguments)); }
+  function deleteCourse(){ _wcall("deleteCourse", Array.prototype.slice.call(arguments)); }
+  function deleteDoc(){ _wcall("deleteDoc", Array.prototype.slice.call(arguments)); }
+  function deleteInterview(){ _wcall("deleteInterview", Array.prototype.slice.call(arguments)); }
+  function deleteInterviewById(){ _wcall("deleteInterviewById", Array.prototype.slice.call(arguments)); }
+  function deleteNews(){ _wcall("deleteNews", Array.prototype.slice.call(arguments)); }
+  function deletePodcast(){ _wcall("deletePodcast", Array.prototype.slice.call(arguments)); }
+  function deleteTestimonial(){ _wcall("deleteTestimonial", Array.prototype.slice.call(arguments)); }
+  function deleteWork(){ _wcall("deleteWork", Array.prototype.slice.call(arguments)); }
+  function doLogin(){ _wcall("doLogin", Array.prototype.slice.call(arguments)); }
+  function downloadQuotePDF(){ _wcall("downloadQuotePDF", Array.prototype.slice.call(arguments)); }
+  function editCourse(){ _wcall("editCourse", Array.prototype.slice.call(arguments)); }
+  function editNews(){ _wcall("editNews", Array.prototype.slice.call(arguments)); }
+  function exportEmails(){ _wcall("exportEmails", Array.prototype.slice.call(arguments)); }
+  function exportSingleVO(){ _wcall("exportSingleVO", Array.prototype.slice.call(arguments)); }
+  function exportVOPDF(){ _wcall("exportVOPDF", Array.prototype.slice.call(arguments)); }
+  function handleImageUpload(){ _wcall("handleImageUpload", Array.prototype.slice.call(arguments)); }
+  function loadNewsletterSubscribers(){ _wcall("loadNewsletterSubscribers", Array.prototype.slice.call(arguments)); }
+  function logout(){ _wcall("logout", Array.prototype.slice.call(arguments)); }
+  function markSeen(){ _wcall("markSeen", Array.prototype.slice.call(arguments)); }
+  function openCourseModal(){ _wcall("openCourseModal", Array.prototype.slice.call(arguments)); }
+  function openNewsModal(){ _wcall("openNewsModal", Array.prototype.slice.call(arguments)); }
+  function openQuoteModal(){ _wcall("openQuoteModal", Array.prototype.slice.call(arguments)); }
+  function previewPodcast(){ _wcall("previewPodcast", Array.prototype.slice.call(arguments)); }
+  function renderVOTable(){ _wcall("renderVOTable", Array.prototype.slice.call(arguments)); }
+  function resetAll(){ _wcall("resetAll", Array.prototype.slice.call(arguments)); }
+  function saveBooks(){ _wcall("saveBooks", Array.prototype.slice.call(arguments)); }
+  function saveCourse(){ _wcall("saveCourse", Array.prototype.slice.call(arguments)); }
+  function saveNews(){ _wcall("saveNews", Array.prototype.slice.call(arguments)); }
+  function saveRSS(){ _wcall("saveRSS", Array.prototype.slice.call(arguments)); }
+  function saveSettings(){ _wcall("saveSettings", Array.prototype.slice.call(arguments)); }
+  function saveSocials(){ _wcall("saveSocials", Array.prototype.slice.call(arguments)); }
+  function saveYT(){ _wcall("saveYT", Array.prototype.slice.call(arguments)); }
+  function sendNewsletter(){ _wcall("sendNewsletter", Array.prototype.slice.call(arguments)); }
+  function sendQuote(){ _wcall("sendQuote", Array.prototype.slice.call(arguments)); }
+  function sendRejection(){ _wcall("sendRejection", Array.prototype.slice.call(arguments)); }
+  function showPage(){ _wcall("showPage", Array.prototype.slice.call(arguments)); }
+  function switchQuoteTab(){ _wcall("switchQuoteTab", Array.prototype.slice.call(arguments)); }
+  function toggleNewsArchive(){ _wcall("toggleNewsArchive", Array.prototype.slice.call(arguments)); }
+  function toggleSchedule(){ _wcall("toggleSchedule", Array.prototype.slice.call(arguments)); }
+  function toggleSubscriber(){ _wcall("toggleSubscriber", Array.prototype.slice.call(arguments)); }
+  function updateBadges(){ _wcall("updateBadges", Array.prototype.slice.call(arguments)); }
+  function updateRejectMsg(){ _wcall("updateRejectMsg", Array.prototype.slice.call(arguments)); }
+  function viewVO(){ _wcall("viewVO", Array.prototype.slice.call(arguments)); }
   </script>
 </head>
 <body>
