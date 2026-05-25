@@ -1016,6 +1016,7 @@ function renderCoursesTable(){
   });
 }
 function openCourseModal(id=''){
+  console.log('openCourseModal called, id:', id, '_editingCourse:', window._editingCourse);
   document.getElementById('cm-edit-id').value=id;
   if(id){
     const c=getCourses().find(x=>x.id===id);if(!c)return;
