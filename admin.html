@@ -1037,6 +1037,7 @@ function openCourseModal(id=''){
   openModal('courseModal');
 }
 function editCourse(id){
+  console.log("editCourse called with id:", id);
   db.collection('courses').doc(id).get().then(d=>{
     if(!d.exists){toast('لم يُعثر على الدورة',true);return;}
     window._editingCourse = {id:d.id,...d.data()};
