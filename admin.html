@@ -864,10 +864,9 @@ function renderNewsTable(){
 function openNewsModal(id=''){
   document.getElementById('nm-edit-id').value=id;
   if(id){
-    const n=getNews().find(x=>x.id===id);
-    if(!n)return;
+    const n = window._editingNews || {};
     document.getElementById('nm-title').value=n.title||'';
-    document.getElementById('nm-cat').value=n.category||'أخبار';
+    document.getElementById('nm-cat').value=n.category||n.cat||'أخبار';
     document.getElementById('nm-date').value=n.dateRaw||'';
     document.getElementById('nm-status').value=n.status||'published';
     document.getElementById('nm-schedule').value=n.scheduledAt||'';
@@ -875,15 +874,18 @@ function openNewsModal(id=''){
     document.getElementById('nm-img').value=n.img||'';
     document.getElementById('nm-img2').value=n.img2||'';
     document.getElementById('nm-img3').value=n.img3||'';
+    document.getElementById('nm-img-preview').innerHTML = n.img ? '<img src="'+n.img+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">' : '';
     document.getElementById('nm-img2-preview').innerHTML = n.img2 ? '<img src="'+n.img2+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">' : '';
     document.getElementById('nm-img3-preview').innerHTML = n.img3 ? '<img src="'+n.img3+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">' : '';
-    document.getElementById('nm-img-preview').innerHTML = n.img ? '<img src="'+n.img+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">' : '';
     document.getElementById('nm-icon').value=n.icon||'';
     document.getElementById('nm-body').value=n.body||n.excerpt||'';
     document.getElementById('news-modal-title').textContent='تعديل الخبر';
   } else {
-    ['nm-title','nm-date','nm-icon','nm-body'].forEach(x=>document.getElementById(x).value='');
+    ['nm-title','nm-date','nm-icon','nm-body','nm-img','nm-img2','nm-img3'].forEach(x=>document.getElementById(x).value='');
+    ['nm-img-preview','nm-img2-preview','nm-img3-preview'].forEach(x=>document.getElementById(x).innerHTML='');
     document.getElementById('nm-cat').value='أخبار';
+    document.getElementById('nm-status').value='published';
+    document.getElementById('nm-schedule-wrap').style.display='none';
     document.getElementById('news-modal-title').textContent='إضافة خبر';
   }
   openModal('newsModal');
