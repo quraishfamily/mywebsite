@@ -1853,16 +1853,119 @@ function toggleSchedule(){
   document.getElementById('nm-schedule-wrap').style.display = status==='scheduled' ? 'flex' : 'none';
 }
 
+function switchQuoteTab(tab){
+  var isQuote = tab === 'quote';
+  document.getElementById('quote-tab-content').style.display = isQuote ? 'block' : 'none';
+  document.getElementById('reject-tab-content').style.display = isQuote ? 'none' : 'block';
+  document.getElementById('tab-quote').className = isQuote ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
+  document.getElementById('tab-reject').className = isQuote ? 'btn btn-outline btn-sm' : 'btn btn-danger btn-sm';
+  document.getElementById('quote-modal-title').textContent = isQuote ? '💰 إرسال تسعيرة' : '❌ رفض الطلب';
+  if(!isQuote) updateRejectMsg();
+}
+
+var rejectMessages = {
+  busy: function(name){ return 'عزيزي '+name+'،
+
+شكراً لتواصلك مع Quraish Voice.
+
+بعد مراجعة طلبك، أودّ إعلامك بأن جدولي الحالي ممتلئ ولا يتسع لمشاريع إضافية في الوقت الراهن.
+
+أتمنى أن تجد المساعدة المناسبة، وأشكرك على ثقتك.
+
+مع تحياتي،
+أحمد قريش'; },
+  scope: function(name){ return 'عزيزي '+name+'،
+
+شكراً لتواصلك مع Quraish Voice.
+
+بعد مراجعة تفاصيل مشروعك، تبين أن طبيعة العمل المطلوب تختلف عن تخصصي وخدماتي المقدمة.
+
+أتمنى لك التوفيق في إيجاد المختص المناسب.
+
+مع تحياتي،
+أحمد قريش'; },
+  budget: function(name){ return 'عزيزي '+name+'،
+
+شكراً لتواصلك مع Quraish Voice.
+
+بعد مراجعة متطلبات مشروعك، للأسف لا يتناسب نطاق العمل مع الميزانية المتاحة لتقديم العمل بالجودة المطلوبة.
+
+أتمنى لك التوفيق.
+
+مع تحياتي،
+أحمد قريش'; },
+  deadline: function(name){ return 'عزيزي '+name+'،
+
+شكراً لتواصلك مع Quraish Voice.
+
+للأسف، الموعد المطلوب للتسليم غير متاح ضمن جدولي الحالي، ولا أستطيع ضمان تسليم العمل في الوقت المحدد بالجودة المطلوبة.
+
+أتمنى لك التوفيق.
+
+مع تحياتي،
+أحمد قريش'; },
+  custom: function(name){ return 'عزيزي '+name+'،
+
+شكراً لتواصلك مع Quraish Voice.
+
+
+
+مع تحياتي،
+أحمد قريش'; }
+};
+
+function updateRejectMsg(){
+  var reason = document.getElementById('reject-reason').value;
+  var name = quoteRequestData ? (quoteRequestData.name||'') : '';
+  var fn = rejectMessages[reason];
+  if(fn) document.getElementById('reject-msg').value = fn(name);
+}
+
+async function sendRejection(){
+  var msg = document.getElementById('reject-msg').value.trim();
+  var email = document.getElementById('quote-client-email').value;
+  var name = quoteRequestData ? quoteRequestData.name : '';
+  if(!msg){toast('أدخل رسالة الرفض',true);return;}
+  if(!email){toast('لا يوجد بريد إلكتروني للعميل',true);return;}
+  try {
+    await emailjs.send('service_6g3odwb','bozx1s3',{
+      from_name:'أحمد قريش',
+      from_email:email,
+      subject:'بخصوص طلب التعليق الصوتي',
+      message:msg,
+      phone:'-',course:'-',notes:'-',
+      time:new Date().toLocaleString('ar-SA')
+    },{publicKey:'QnIPBoSRBkpNWiNt4'});
+    // Update request status in Firebase
+    if(quoteRequestData && quoteRequestData.id){
+      await db.collection('voiceover_requests').doc(quoteRequestData.id).update({
+        rejected:true,
+        rejection_time:new Date().toLocaleString('ar-SA')
+      });
+    }
+    closeModal('quoteModal');
+    toast('تم إرسال رسالة الرفض ✓');
+    renderVOTable();
+  } catch(e){
+    toast('فشل الإرسال: '+e.message,true);
+  }
+}
+
 </script>
 
 <!-- QUOTE MODAL -->
 <div class="modal-overlay" id="quoteModal">
   <div class="modal" style="max-width:600px;">
     <button class="modal-close" onclick="closeModal('quoteModal')">✕</button>
-    <h3>💰 إرسال تسعيرة</h3>
-    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem;" id="quote-client-name">للعميل: —</p>
+    <h3 id="quote-modal-title">💰 إرسال تسعيرة</h3>
+    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.8rem;" id="quote-client-name">للعميل: —</p>
+    <div style="display:flex;gap:.5rem;margin-bottom:1.2rem;">
+      <button id="tab-quote" class="btn btn-primary btn-sm" onclick="switchQuoteTab('quote')" style="flex:1;">💰 إرسال تسعيرة</button>
+      <button id="tab-reject" class="btn btn-outline btn-sm" onclick="switchQuoteTab('reject')" style="flex:1;">❌ رفض الطلب</button>
+    </div>
     <input type="hidden" id="quote-request-id">
     <input type="hidden" id="quote-client-email">
+    <div id="quote-tab-content">
     <div class="form-grid" style="margin-top:1rem;">
       <div class="fg"><label>السعر (ريال)</label><input type="number" id="q-price" placeholder="500"></div>
       <div class="fg"><label>مدة التسليم</label>
@@ -1886,6 +1989,30 @@ function toggleSchedule(){
       <button class="btn btn-primary btn-sm" onclick="sendQuote()">📧 إرسال بالبريد</button>
       <button class="btn btn-outline btn-sm" onclick="downloadQuotePDF()">📄 تحميل PDF</button>
       <button class="btn btn-outline btn-sm" onclick="closeModal('quoteModal')">إلغاء</button>
+    </div>
+    </div><!-- end quote-tab-content -->
+
+    <div id="reject-tab-content" style="display:none;margin-top:1rem;">
+      <div class="form-grid">
+        <div class="fg fg-full">
+          <label>سبب الرفض</label>
+          <select id="reject-reason" onchange="updateRejectMsg()">
+            <option value="busy">الجدول ممتلئ حالياً</option>
+            <option value="scope">طبيعة المشروع خارج نطاق خدماتي</option>
+            <option value="budget">الميزانية لا تتناسب مع المشروع</option>
+            <option value="deadline">الموعد المطلوب غير متاح</option>
+            <option value="custom">سبب مخصص</option>
+          </select>
+        </div>
+        <div class="fg fg-full">
+          <label>رسالة الرفض</label>
+          <textarea id="reject-msg" style="min-height:100px;"></textarea>
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:1rem;">
+        <button class="btn btn-danger btn-sm" onclick="sendRejection()">📧 إرسال رسالة الرفض</button>
+        <button class="btn btn-outline btn-sm" onclick="closeModal('quoteModal')">إلغاء</button>
+      </div>
     </div>
   </div>
 </div>
