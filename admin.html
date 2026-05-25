@@ -1039,10 +1039,12 @@ function openCourseModal(id=''){
 function editCourse(id){
   console.log("editCourse called with id:", id);
   db.collection('courses').doc(id).get().then(d=>{
+    console.log("exists:", d.exists, "data:", d.data());
     if(!d.exists){toast('لم يُعثر على الدورة',true);return;}
     window._editingCourse = {id:d.id,...d.data()};
+    console.log("_editingCourse set:", window._editingCourse);
     openCourseModal(id);
-  });
+  }).catch(e=>{ console.log("error:", e); });
 }
 function saveCourse(){
   const id=document.getElementById('cm-edit-id').value;
