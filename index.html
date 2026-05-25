@@ -880,6 +880,15 @@ nav{top:36px !important;}
       <div class="sec-line"></div>
     </div>
     <div class="news-grid" id="newsGrid"></div>
+    <!-- Archive -->
+    <div id="newsArchive" style="display:none;">
+      <div style="border-top:1px solid var(--border);margin:2rem 0;"></div>
+      <div class="sec-label" style="margin-bottom:1.5rem;">الأرشيف</div>
+      <div class="news-grid" id="newsArchiveGrid"></div>
+    </div>
+    <div style="text-align:center;margin-top:2rem;" id="newsMoreWrap" style="display:none;">
+      <button class="btn btn-outline" id="newsMoreBtn" onclick="toggleNewsArchive()" style="font-size:.85rem;">📂 أخبار سابقة</button>
+    </div>
   </div>
 </section>
 
@@ -1390,17 +1399,26 @@ function renderNews(news=null){
     }
     return true;
   });
-  // Sort by date: oldest first (rightmost in RTL grid)
+  // Sort by date: newest first
   news = [...news].sort((a,b) => {
     const ta = a.timestamp || (a.dateRaw ? new Date(a.dateRaw).getTime() : 0);
     const tb = b.timestamp || (b.dateRaw ? new Date(b.dateRaw).getTime() : 0);
-    return ta - tb;
+    return tb - ta;
   });
-  document.getElementById('newsGrid').innerHTML=news.map(n=>`
+  const latestNews = news.slice(0,6);
+  const archiveNews = news.slice(6);
+
+  // Show/hide archive button
+  const moreWrap = document.getElementById('newsMoreWrap');
+  if(moreWrap) moreWrap.style.display = archiveNews.length > 0 ? 'block' : 'none';
+
+  document.getElementById('newsGrid').innerHTML=latestNews.map(n=>`
     <div class="news-card reveal">
-      <div class="news-img" style="${n.img ? 'background-image:url('+n.img+');background-size:cover;background-position:center;' : ''}">
+      <div class="news-img" style="${n.img ? 'padding:0;overflow:hidden;' : ''}">
         <span class="news-date">${n.date||'اليوم'}</span>
-        ${!n.img ? '<span style=\"font-size:2.5rem;\">'+(n.icon||'📰')+'</span>' : ''}
+        ${n.img
+          ? '<img src="'+n.img+'" style=\"width:100%;height:100%;object-fit:cover;display:block;\" alt=\"\"/>'
+          : '<span style=\"font-size:2.5rem;\">'+(n.icon||'📰')+'</span>'}
       </div>
       <div class="news-body">
         <div class="news-cat">${n.cat||n.category||'خبر'}</div>
@@ -1427,12 +1445,45 @@ function renderNews(news=null){
         </div>
       </div>
     </div>`).join('');
-  news.forEach(n=>{initStars(n.id);renderCmts(n.id);});
+  latestNews.forEach(n=>{initStars(n.id);renderCmts(n.id);});
   document.querySelectorAll('#newsGrid .reveal').forEach(el=>{
     obs.observe(el);
-    // Force visible after short delay in case already in viewport
     setTimeout(()=>el.classList.add('visible'), 100);
   });
+
+  // Render archive
+  if(archiveNews.length > 0){
+    document.getElementById('newsArchiveGrid').innerHTML=archiveNews.map(n=>`
+    <div class="news-card reveal">
+      <div class="news-img" style="${n.img ? 'padding:0;overflow:hidden;' : ''}">
+        <span class="news-date">${n.date||'اليوم'}</span>
+        ${n.img
+          ? '<img src="'+n.img+'" style=\"width:100%;height:100%;object-fit:cover;display:block;\" alt=\"\"/>'
+          : '<span style=\"font-size:2.5rem;\">'+(n.icon||'📰')+'</span>'}
+      </div>
+      <div class="news-body">
+        <div class="news-cat">${n.cat||n.category||'خبر'}</div>
+        <h3>${n.title}</h3>
+        <p>${(n.body||n.excerpt||'').substring(0,120)}${(n.body||n.excerpt||'').length>120?'...':''}</p>
+        ${(n.body||n.excerpt||'').length>120 ? `<a href="news.html?id=${n.id}" class="read-more-btn">اقرأ المزيد ←</a>` : ''}
+      </div>
+    </div>`).join('');
+    archiveNews.forEach(n=>{initStars(n.id);renderCmts(n.id);});
+  }
+}
+
+function toggleNewsArchive(){
+  const archive = document.getElementById('newsArchive');
+  const btn = document.getElementById('newsMoreBtn');
+  const isOpen = archive.style.display !== 'none';
+  archive.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '📂 أخبار سابقة' : '📁 إخفاء الأرشيف';
+  if(!isOpen){
+    document.querySelectorAll('#newsArchiveGrid .reveal').forEach(el=>{
+      obs.observe(el);
+      setTimeout(()=>el.classList.add('visible'),100);
+    });
+  }
 }
 
 function renderPodcast(eps=null){
@@ -1969,6 +2020,7 @@ window.prevWorksPage = prevWorksPage;
 window.goWorksPage = goWorksPage;
 window.updateCount = updateCount;
 window.closeMenu = closeMenu;
+window.toggleNewsArchive = toggleNewsArchive;
 window.sendMsg = sendMsg;
 window.submitForm = submitForm;
 
