@@ -95,48 +95,56 @@ tr:hover td{background:rgba(201,168,76,.03);}
 .confirm-box p{font-size:.85rem;color:var(--text-muted);margin-bottom:1.5rem;}
 .confirm-btns{display:flex;gap:.8rem;justify-content:center;}
 @media(max-width:768px){
-  /* Sidebar becomes top navigation */
+  /* ── LAYOUT ── */
   .admin-layout{flex-direction:column;}
-  .sidebar{
-    width:100%;height:auto;position:relative;
-    flex-direction:column;
-  }
-  .sidebar-logo{
-    display:flex;align-items:center;gap:1rem;
-    padding:1rem 1.5rem;
-  }
-  .sidebar-logo img{height:36px !important;}
+  .sidebar{width:100%;height:auto;position:relative;flex-direction:column;}
+  .main{margin-right:0;padding:.8rem;}
+
+  /* ── LOGO ── */
+  .sidebar-logo{display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;}
+  .sidebar-logo img{height:32px !important;}
+  .sidebar-logo span{font-size:.75rem;}
+
+  /* ── NAV ── */
   .sidebar-nav{
     display:flex;flex-wrap:nowrap;overflow-x:auto;
-    padding:.5rem;gap:.3rem;
-    flex-direction:row;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
+    padding:.4rem .8rem;gap:.3rem;flex-direction:row;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
   }
   .sidebar-nav::-webkit-scrollbar{display:none;}
   .nav-item{
-    flex-shrink:0;padding:.5rem .8rem;
+    flex-shrink:0;padding:.45rem .75rem;
     border-right:none !important;
     border-bottom:2px solid transparent;
-    border-radius:4px;font-size:.75rem;
-    white-space:nowrap;
+    border-radius:4px;font-size:.72rem;white-space:nowrap;
   }
   .nav-item.active{border-bottom-color:var(--gold);}
   .nav-icon{display:none;}
-  .sidebar-bottom{
-    display:flex;gap:1rem;padding:.7rem 1rem;
-    border-top:1px solid var(--border);
-    flex-direction:row;
-  }
-  .main{margin-right:0;padding:1rem;}
-  .stats-grid{grid-template-columns:1fr 1fr;}
+  .sidebar-bottom{display:flex;gap:.8rem;padding:.6rem 1rem;border-top:1px solid var(--border);}
+
+  /* ── CARDS & FORMS ── */
+  .stats-grid{grid-template-columns:1fr 1fr;gap:.6rem;}
+  .stat-card{padding:1rem;}
+  .stat-num{font-size:1.5rem;}
   .form-grid{grid-template-columns:1fr;}
-  .card{padding:1rem;}
-  table{font-size:.75rem;}
-  th,td{padding:.5rem .6rem;}
-  .btn-sm{padding:.35rem .7rem;font-size:.72rem;}
-  .page-title{font-size:1.3rem;}
-  .modal{padding:1.5rem;}
+  .card{padding:.9rem;}
+  .card-header{flex-wrap:wrap;gap:.5rem;}
+  .page-title{font-size:1.2rem;}
+  .page-sub{font-size:.78rem;}
+  .modal{padding:1.2rem;margin:.5rem;max-height:90vh;overflow-y:auto;}
+
+  /* ── TABLES ── */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{font-size:.72rem;min-width:500px;}
+  th,td{padding:.4rem .5rem;white-space:nowrap;}
+  
+  /* ── BUTTONS ── */
+  .btn-sm{padding:.3rem .6rem;font-size:.7rem;}
+  .btn{font-size:.82rem;padding:.6rem 1rem;}
+  .form-actions{flex-wrap:wrap;gap:.4rem;}
+
+  /* ── BADGE ── */
+  .nav-badge{min-width:15px;height:15px;font-size:.6rem;}
 }
 
 input[type="datetime-local"]{
@@ -308,7 +316,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
           <span class="card-title">الأخبار الحالية</span>
           <button class="btn btn-primary btn-sm" onclick="openNewsModal()">+ إضافة خبر</button>
         </div>
-        <div id="news-table"></div>
+        <div class="table-wrap"><div id="news-table"></div></div>
       </div>
     </div>
 
@@ -323,7 +331,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
           <span class="card-title">الدورات المتاحة</span>
           <button class="btn btn-primary btn-sm" onclick="openCourseModal()">+ إضافة دورة</button>
         </div>
-        <div id="courses-table"></div>
+        <div class="table-wrap"><div id="courses-table"></div></div>
       </div>
     </div>
 
@@ -369,7 +377,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
           <span class="card-title">قائمة المشتركين</span>
           <button class="btn btn-outline btn-sm" onclick="exportEmails()">تصدير CSV</button>
         </div>
-        <div id="nl-subscribers-table"></div>
+        <div class="table-wrap"><div id="nl-subscribers-table"></div></div>
       </div>
     </div>
     <!-- TESTIMONIALS -->
@@ -412,7 +420,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
           <span class="card-title">الطلبات الواردة</span>
           <button class="btn btn-outline btn-sm" onclick="exportVOPDF()">📄 تصدير PDF</button>
         </div>
-        <div id="vo-table"></div>
+        <div class="table-wrap"><div id="vo-table"></div></div>
       </div>
     </div>
     <!-- PODCAST -->
@@ -461,7 +469,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">المقابلات المضافة</span></div>
-        <div id="interviews-table"></div>
+        <div class="table-wrap"><div id="interviews-table"></div></div>
       </div>
     </div>
 
@@ -486,7 +494,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">المقاطع المضافة</span></div>
-        <div id="works-table"></div>
+        <div class="table-wrap"><div id="works-table"></div></div>
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">إعدادات YouTube API</span></div>
@@ -507,7 +515,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
         <div class="page-sub">طلبات التسجيل في الدورات</div>
       </div>
       <div class="card">
-        <div id="regs-table"></div>
+        <div class="table-wrap"><div id="regs-table"></div></div>
       </div>
     </div>
 
@@ -518,7 +526,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
         <div class="page-sub">حجوزات جلسات الاستشارة التدريبية</div>
       </div>
       <div class="card">
-        <div id="consult-table"></div>
+        <div class="table-wrap"><div id="consult-table"></div></div>
       </div>
     </div>
 
@@ -529,7 +537,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
         <div class="page-sub">رسائل صفحة تواصل معي</div>
       </div>
       <div class="card">
-        <div id="msgs-table"></div>
+        <div class="table-wrap"><div id="msgs-table"></div></div>
       </div>
     </div>
 
