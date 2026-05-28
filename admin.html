@@ -222,6 +222,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function exportSingleEvent(id){ _wcall("exportSingleEvent", [id]); }
   function openEventQuoteModal(id){ _wcall("openEventQuoteModal", [id]); }
   function sendEventQuote(){ _wcall("sendEventQuote", []); }
+  function downloadEventQuotePDF(){ _wcall("downloadEventQuotePDF", []); }
   function resetAll(){ _wcall("resetAll", Array.prototype.slice.call(arguments)); }
   function saveBooks(){ _wcall("saveBooks", Array.prototype.slice.call(arguments)); }
   function saveCourse(){ _wcall("saveCourse", Array.prototype.slice.call(arguments)); }
@@ -2241,7 +2242,28 @@ async function sendEventQuote(){
   } catch(e){ toast('فشل الإرسال: '+e.message, true); }
 }
 
+function downloadEventQuotePDF(){
+  var price = document.getElementById('eq-price').value;
+  var includes = document.getElementById('eq-includes').value;
+  var notes = document.getElementById('eq-notes').value;
+  if(!price){toast('أدخل السعر أولاً',true);return;}
+  var name = eventQuoteData ? eventQuoteData.name : '';
+  var title = eventQuoteData ? eventQuoteData.title : '';
+  var audience = eventQuoteData ? eventQuoteData.audience : '';
+  var hours = eventQuoteData ? eventQuoteData.hours : '';
+  var date = eventQuoteData ? eventQuoteData.date : '';
+  var location = eventQuoteData ? eventQuoteData.location : '';
+  var logoSrc = document.querySelector('.sidebar-logo img') ? document.querySelector('.sidebar-logo img').src : '';
+
+  var includesHtml = includes.split('\n').map(function(l){ return '<li>'+escHtml(l)+'<\/li>'; }).join('');
+
+  var win = window.open('','_blank','width=800,height=900');
+  win.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>تسعيرة حفل - '+escHtml(name)+'<\/title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Tajawal,sans-serif;background:#fff;color:#111;direction:rtl;}.header{background:#0A0A0A;padding:20px 30px;display:flex;align-items:center;gap:16px;}.header img{height:64px;}.header-text h1{color:#C9A84C;font-family:Cairo,sans-serif;font-size:22px;margin:0 0 4px;}.header-text p{color:#999;font-size:11px;}.quote-label{margin-right:auto;background:#C9A84C;color:#000;padding:6px 16px;border-radius:4px;font-size:12px;font-weight:700;font-family:Cairo,sans-serif;}.body{padding:28px 32px;}.client-box{background:#f8f8f8;border:1px solid #eee;border-radius:6px;padding:16px 20px;margin-bottom:20px;}.client-box h3{font-family:Cairo,sans-serif;color:#C9A84C;font-size:14px;margin-bottom:10px;}.client-info{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;}.client-info span{color:#555;}.client-info b{color:#111;}.price-box{background:linear-gradient(135deg,#0A0A0A,#1a1a00);border:2px solid #C9A84C;border-radius:8px;padding:20px;text-align:center;margin:20px 0;}.price-label{color:#999;font-size:12px;margin-bottom:6px;}.price-value{color:#C9A84C;font-size:2rem;font-weight:900;font-family:Cairo,sans-serif;}.includes-box{margin-bottom:16px;}.includes-box h3{font-family:Cairo,sans-serif;font-size:13px;color:#333;border-bottom:2px solid #C9A84C;padding-bottom:6px;margin-bottom:10px;}.includes-box ul{list-style:none;}.includes-box li{padding:5px 0;font-size:13px;color:#444;border-bottom:1px solid #f0f0f0;}.includes-box li::before{content:"✓";color:#C9A84C;margin-left:8px;font-weight:bold;}.notes-box{background:#fffbf0;border:1px solid #C9A84C33;border-radius:4px;padding:12px 16px;font-size:13px;color:#666;line-height:1.8;margin-bottom:16px;}.validity{text-align:center;color:#999;font-size:11px;margin-top:16px;}.footer{background:#0A0A0A;color:#666;font-size:11px;text-align:center;padding:14px;margin-top:24px;}.no-print{text-align:center;padding:16px;}@media print{.no-print{display:none;}.header{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.price-box{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}<\/style><\/head><body><div class="header"><img src="'+logoSrc+'" onerror="this.style.display=none"><div class="header-text"><h1>Quraish Voice<\/h1><p>quraishvoice.me &nbsp;|&nbsp; +966565909049<\/p><\/div><div class="quote-label">تسعيرة تقديم حفل<\/div><\/div><div class="body"><div class="client-box"><h3>📋 تفاصيل الفعالية<\/h3><div class="client-info"><span>صاحب الطلب:<\/span><b>'+escHtml(name)+'<\/b><span>البريد:<\/span><b>'+escHtml(eventQuoteData.email||'-')+'<\/b><span>اسم الحفل:<\/span><b>'+escHtml(title)+'<\/b><span>نوعية الحضور:<\/span><b>'+escHtml(audience)+'<\/b><span>عدد الساعات:<\/span><b>'+escHtml(String(hours))+'<\/b><span>التاريخ والوقت:<\/span><b>'+escHtml(date)+'<\/b><span>المكان:<\/span><b>'+escHtml(location)+'<\/b><span>تاريخ التسعيرة:<\/span><b>'+new Date().toLocaleDateString('ar-SA')+'<\/b><\/div><\/div><div class="price-box"><div class="price-label">إجمالي التسعيرة<\/div><div class="price-value">'+escHtml(price)+' ريال سعودي<\/div><\/div><div class="includes-box"><h3>يشمل السعر<\/h3><ul>'+includesHtml+'<\/ul><\/div>'+(notes?'<div class="notes-box"><b>ملاحظات:<\/b><br>'+escHtml(notes)+'<\/div>':'')+'<div class="validity">هذه التسعيرة سارية لمدة ٧ أيام من تاريخ الإصدار<\/div><\/div><div class="footer">أحمد قريش — مقدم احتفالات &nbsp;|&nbsp; quraishvoice.me &nbsp;|&nbsp; +966565909049<\/div><div class="no-print"><button onclick="window.print()" style="background:#C9A84C;color:#000;border:none;padding:10px 28px;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif;">🖨️ طباعة / حفظ PDF<\/button> <button onclick="window.close()" style="background:#333;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:14px;cursor:pointer;font-family:Tajawal,sans-serif;">إغلاق<\/button><\/div><\/body><\/html>');
+  win.document.close();
+}
+
 window._real_renderEventsTable = renderEventsTable;
+window._real_downloadEventQuotePDF = downloadEventQuotePDF;
 window._real_exportSingleEvent = exportSingleEvent;
 window._real_openEventQuoteModal = openEventQuoteModal;
 window._real_sendEventQuote = sendEventQuote;
@@ -2333,7 +2355,8 @@ window._real_sendEventQuote = sendEventQuote;
       </div>
     </div>
     <div class="form-actions" style="margin-top:1rem;">
-      <button class="btn btn-primary btn-sm" onclick="sendEventQuote()">📧 إرسال التسعيرة</button>
+      <button class="btn btn-primary btn-sm" onclick="sendEventQuote()">📧 إرسال بالبريد</button>
+      <button class="btn btn-outline btn-sm" onclick="downloadEventQuotePDF()">📄 تحميل PDF</button>
       <button class="btn btn-outline btn-sm" onclick="closeModal('eventQuoteModal')">إلغاء</button>
     </div>
   </div>
