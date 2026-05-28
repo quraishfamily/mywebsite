@@ -2118,23 +2118,32 @@ function renderEventsTable(){
   tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
   db.collection('event_requests').get().then(function(snap){
     if(snap.empty){tbl.innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد طلبات بعد.</p>';return;}
-    var rows='';
+    var table = document.createElement('table');
+    var thead = document.createElement('thead');
+    thead.innerHTML = '<tr><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الحفل</th><th>الحضور</th><th>الساعات</th><th>التاريخ</th><th>المكان</th><th>وقت الطلب</th><th></th></tr>';
+    table.appendChild(thead);
+    var tbody = document.createElement('tbody');
     snap.docs.forEach(function(d){
-      var r=d.data();
-      rows+='<tr>'
-        +'<td><b>'+escHtml(r.name||'-')+'</b></td>'
-        +'<td>'+escHtml(r.phone||'-')+'</td>'
-        +'<td>'+escHtml(r.email||'-')+'</td>'
-        +'<td><b>'+escHtml(r.title||'-')+'</b></td>'
-        +'<td>'+escHtml(r.audience||'-')+'</td>'
-        +'<td>'+escHtml(r.hours||'-')+'</td>'
-        +'<td>'+escHtml(r.date||'-')+'</td>'
-        +'<td>'+escHtml(r.location||'-')+'</td>'
-        +'<td style="font-size:.72rem;color:var(--text-muted);">'+escHtml(r.time||'-')+'</td>'
-        +'<td><button class="btn btn-danger btn-sm" onclick="deleteDoc('event_requests',''+d.id+'','events-table',renderEventsTable)">حذف</button></td>'
-        +'</tr>';
+      var r = d.data();
+      var tr = document.createElement('tr');
+      var cells = [r.name,r.phone,r.email,r.title,r.audience,r.hours,r.date,r.location,r.time];
+      cells.forEach(function(val){
+        var td = document.createElement('td');
+        td.textContent = val||'-';
+        tr.appendChild(td);
+      });
+      var tdBtn = document.createElement('td');
+      var btn = document.createElement('button');
+      btn.className = 'btn btn-danger btn-sm';
+      btn.textContent = 'حذف';
+      (function(id){ btn.addEventListener('click', function(){ deleteDoc('event_requests', id, 'events-table', renderEventsTable); }); })(d.id);
+      tdBtn.appendChild(btn);
+      tr.appendChild(tdBtn);
+      tbody.appendChild(tr);
     });
-    tbl.innerHTML='<table><thead><tr><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الحفل</th><th>الحضور</th><th>الساعات</th><th>التاريخ</th><th>المكان</th><th>وقت الطلب</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+    table.appendChild(tbody);
+    tbl.innerHTML = '';
+    tbl.appendChild(table);
   }).catch(function(){tbl.innerHTML='<p style="color:var(--red);">فشل التحميل</p>';});
 }
 
