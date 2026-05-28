@@ -219,6 +219,9 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function previewPodcast(){ _wcall("previewPodcast", Array.prototype.slice.call(arguments)); }
   function renderVOTable(){ _wcall("renderVOTable", Array.prototype.slice.call(arguments)); }
   function renderEventsTable(){ _wcall("renderEventsTable", Array.prototype.slice.call(arguments)); }
+  function exportSingleEvent(id){ _wcall("exportSingleEvent", [id]); }
+  function openEventQuoteModal(id){ _wcall("openEventQuoteModal", [id]); }
+  function sendEventQuote(){ _wcall("sendEventQuote", []); }
   function resetAll(){ _wcall("resetAll", Array.prototype.slice.call(arguments)); }
   function saveBooks(){ _wcall("saveBooks", Array.prototype.slice.call(arguments)); }
   function saveCourse(){ _wcall("saveCourse", Array.prototype.slice.call(arguments)); }
@@ -2133,10 +2136,26 @@ function renderEventsTable(){
         tr.appendChild(td);
       });
       var tdBtn = document.createElement('td');
+      var btnPdf = document.createElement('button');
+      btnPdf.className = 'btn btn-outline btn-sm';
+      btnPdf.style.marginLeft = '.3rem';
+      btnPdf.textContent = '📄 PDF';
+      (function(id){ btnPdf.addEventListener('click', function(){ exportSingleEvent(id); }); })(d.id);
+      
+      var btnQuote = document.createElement('button');
+      btnQuote.className = 'btn btn-primary btn-sm';
+      btnQuote.style.marginLeft = '.3rem';
+      btnQuote.style.fontSize = '.72rem';
+      btnQuote.textContent = '💰 تسعيرة';
+      (function(id){ btnQuote.addEventListener('click', function(){ openEventQuoteModal(id); }); })(d.id);
+      
       var btn = document.createElement('button');
       btn.className = 'btn btn-danger btn-sm';
       btn.textContent = 'حذف';
       (function(id){ btn.addEventListener('click', function(){ deleteDoc('event_requests', id, 'events-table', renderEventsTable); }); })(d.id);
+      
+      tdBtn.appendChild(btnPdf);
+      tdBtn.appendChild(btnQuote);
       tdBtn.appendChild(btn);
       tr.appendChild(tdBtn);
       tbody.appendChild(tr);
@@ -2147,7 +2166,85 @@ function renderEventsTable(){
   }).catch(function(){tbl.innerHTML='<p style="color:var(--red);">فشل التحميل</p>';});
 }
 
+// ═══════════════════════════════════════
+// EVENT PDF & QUOTE
+// ═══════════════════════════════════════
+var eventQuoteData = null;
+
+async function exportSingleEvent(id){
+  var d = await db.collection('event_requests').doc(id).get();
+  if(!d.exists){toast('لم يُعثر على الطلب',true);return;}
+  var r = d.data();
+  var logoSrc = document.querySelector('.sidebar-logo img') ? document.querySelector('.sidebar-logo img').src : '';
+
+  var win = window.open('','_blank','width=800,height=900');
+  win.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>طلب تقديم حفل - '+escHtml(r.name||'')+'<\/title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:Tajawal,sans-serif;background:#fff;color:#111;margin:0;direction:rtl;}.header{background:#0A0A0A;padding:20px 30px;display:flex;align-items:center;gap:16px;}.header img{height:64px;}.header-text h1{color:#C9A84C;font-family:Cairo,sans-serif;font-size:20px;margin:0;}.header-text p{color:#888;font-size:12px;}.body{padding:24px 30px;}.sec{background:#f5f5f5;padding:8px 14px;font-weight:700;font-size:13px;margin:16px 0 8px;border-right:4px solid #C9A84C;}table{width:100%;border-collapse:collapse;}td{padding:8px 12px;font-size:13px;border-bottom:1px solid #eee;}td:first-child{font-weight:700;color:#555;width:160px;}.footer{background:#0A0A0A;color:#666;font-size:11px;text-align:center;padding:12px;margin-top:24px;}.no-print{text-align:center;padding:16px;}@media print{.no-print{display:none;}}<\/style><\/head><body><div class="header"><img src="'+logoSrc+'" onerror="this.style.display=none"><div class="header-text"><h1>QURAISH VOICE<\/h1><p>quraishvoice.me | +966565909049<\/p><\/div><div style="margin-right:auto;color:#C9A84C;font-size:13px;font-weight:700;">طلب تقديم حفل<\/div><\/div><div class="body"><div class="sec">بيانات صاحب الطلب<\/div><table><tr><td>الاسم<\/td><td>'+(r.name||'-')+'<\/td><\/tr><tr><td>الجوال<\/td><td>'+(r.phone||'-')+'<\/td><\/tr><tr><td>البريد<\/td><td>'+(r.email||'-')+'<\/td><\/tr><\/table><div class="sec">تفاصيل الحفل<\/div><table><tr><td>اسم الحفل<\/td><td>'+(r.title||'-')+'<\/td><\/tr><tr><td>نوعية الحضور<\/td><td>'+(r.audience||'-')+'<\/td><\/tr><tr><td>عدد الساعات<\/td><td>'+(r.hours||'-')+'<\/td><\/tr><tr><td>التاريخ والوقت<\/td><td>'+(r.date||'-')+'<\/td><\/tr><tr><td>المكان<\/td><td>'+(r.location||'-')+'<\/td><\/tr><\/table>'+(r.notes?'<div class="sec">ملاحظات<\/div><div style="padding:12px;background:#f9f9f9;border:1px solid #eee;border-radius:4px;font-size:13px;line-height:1.9;">'+escHtml(r.notes)+'<\/div>':'')+(r.quote_price?'<div style="background:#1a1a00;border:1px solid #C9A84C;border-radius:4px;padding:12px;margin-top:16px;color:#C9A84C;font-weight:700;text-align:center;">تسعيرة مرسلة: '+r.quote_price+' ريال | '+r.quote_time+'<\/div>':'')+'<\/div><div class="footer">'+new Date().toLocaleDateString('ar-SA')+' | quraishvoice.me<\/div><div class="no-print"><button onclick="window.print()" style="background:#C9A84C;color:#000;border:none;padding:10px 28px;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif;">🖨️ طباعة / حفظ PDF<\/button> <button onclick="window.close()" style="background:#333;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:14px;cursor:pointer;font-family:Tajawal,sans-serif;">إغلاق<\/button><\/div><\/body><\/html>');
+  win.document.close();
+}
+
+function openEventQuoteModal(id){
+  db.collection('event_requests').doc(id).get().then(function(d){
+    if(!d.exists){toast('لم يُعثر على الطلب',true);return;}
+    eventQuoteData = Object.assign({id:d.id}, d.data());
+    document.getElementById('eq-client-name').textContent = 'للعميل: '+(eventQuoteData.name||'—')+' — '+(eventQuoteData.email||'');
+    document.getElementById('eq-request-id').value = id;
+    document.getElementById('eq-client-email').value = eventQuoteData.email||'';
+    document.getElementById('eq-event-title').textContent = eventQuoteData.title||'';
+    document.getElementById('eq-price').value = '';
+    document.getElementById('eq-notes').value = '';
+    openModal('eventQuoteModal');
+  });
+}
+
+async function sendEventQuote(){
+  var price = document.getElementById('eq-price').value;
+  var includes = document.getElementById('eq-includes').value;
+  var notes = document.getElementById('eq-notes').value;
+  var email = document.getElementById('eq-client-email').value;
+  var name = eventQuoteData ? eventQuoteData.name : '';
+  var title = eventQuoteData ? eventQuoteData.title : '';
+  if(!price){toast('أدخل السعر',true);return;}
+  if(!email){toast('لا يوجد بريد إلكتروني',true);return;}
+  var msgLines = [
+    'عزيزي '+name+'،',
+    '',
+    'شكراً لتواصلك مع أحمد قريش لتقديم الحفلات.',
+    '',
+    'بخصوص: '+title,
+    '',
+    '💰 التسعيرة: '+price+' ريال سعودي',
+    '',
+    '✅ يشمل السعر:',
+    includes,
+    '',
+    (notes ? '📝 ملاحظات: '+notes : ''),
+    '',
+    '📱 واتساب: +966565909049',
+    '',
+    'مع تحياتي،',
+    'أحمد قريش'
+  ];
+  try {
+    await emailjs.send('service_6g3odwb','bozx1s3',{
+      from_name:'أحمد قريش', from_email:email,
+      subject:'تسعيرة تقديم حفل — '+title,
+      message:msgLines.join('\n'),
+      phone:'-', course:title, notes:notes||'-',
+      time:new Date().toLocaleString('ar-SA')
+    },{publicKey:'QnIPBoSRBkpNWiNt4'});
+    await db.collection('event_requests').doc(eventQuoteData.id).update({
+      quote_price:price, quote_time:new Date().toLocaleString('ar-SA')
+    });
+    closeModal('eventQuoteModal');
+    toast('تم إرسال التسعيرة! ✓');
+    renderEventsTable();
+  } catch(e){ toast('فشل الإرسال: '+e.message, true); }
+}
+
 window._real_renderEventsTable = renderEventsTable;
+window._real_exportSingleEvent = exportSingleEvent;
+window._real_openEventQuoteModal = openEventQuoteModal;
+window._real_sendEventQuote = sendEventQuote;
 </script>
 
 <!-- QUOTE MODAL -->
@@ -2210,6 +2307,34 @@ window._real_renderEventsTable = renderEventsTable;
         <button class="btn btn-danger btn-sm" onclick="sendRejection()">📧 إرسال رسالة الرفض</button>
         <button class="btn btn-outline btn-sm" onclick="closeModal('quoteModal')">إلغاء</button>
       </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- EVENT QUOTE MODAL -->
+<div class="modal-overlay" id="eventQuoteModal">
+  <div class="modal" style="max-width:560px;">
+    <button class="modal-close" onclick="closeModal('eventQuoteModal')">✕</button>
+    <h3>💰 إرسال تسعيرة حفل</h3>
+    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.3rem;" id="eq-client-name">للعميل: —</p>
+    <p style="font-size:.82rem;color:var(--gold);margin-bottom:1rem;" id="eq-event-title"></p>
+    <input type="hidden" id="eq-request-id">
+    <input type="hidden" id="eq-client-email">
+    <div class="form-grid" style="margin-top:1rem;">
+      <div class="fg"><label>السعر الإجمالي (ريال)</label><input type="number" id="eq-price" placeholder="3000"></div>
+      <div class="fg fg-full"><label>يشمل السعر</label>
+        <textarea id="eq-includes" style="min-height:80px;">- تقديم الحفل كاملاً
+- التنسيق المسبق مع منظمي الفعالية
+- إدارة المراحل والفقرات</textarea>
+      </div>
+      <div class="fg fg-full"><label>ملاحظات (اختياري)</label>
+        <textarea id="eq-notes" style="min-height:60px;" placeholder="أي تفاصيل إضافية..."></textarea>
+      </div>
+    </div>
+    <div class="form-actions" style="margin-top:1rem;">
+      <button class="btn btn-primary btn-sm" onclick="sendEventQuote()">📧 إرسال التسعيرة</button>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('eventQuoteModal')">إلغاء</button>
     </div>
   </div>
 </div>
