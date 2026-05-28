@@ -218,6 +218,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function openQuoteModal(){ _wcall("openQuoteModal", Array.prototype.slice.call(arguments)); }
   function previewPodcast(){ _wcall("previewPodcast", Array.prototype.slice.call(arguments)); }
   function renderVOTable(){ _wcall("renderVOTable", Array.prototype.slice.call(arguments)); }
+  function renderEventsTable(){ _wcall("renderEventsTable", Array.prototype.slice.call(arguments)); }
   function resetAll(){ _wcall("resetAll", Array.prototype.slice.call(arguments)); }
   function saveBooks(){ _wcall("saveBooks", Array.prototype.slice.call(arguments)); }
   function saveCourse(){ _wcall("saveCourse", Array.prototype.slice.call(arguments)); }
@@ -270,6 +271,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       <div class="nav-item" onclick="showPage('works')"><span class="nav-icon">🎙️</span>الأعمال الصوتية</div>
       <div class="nav-item" onclick="showPage('voiceover')"><span class="nav-icon">🎙️</span>طلبات التعليق الصوتي<span class="nav-badge" id="badge-vo" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('regs')"><span class="nav-icon">📋</span>التسجيلات<span class="nav-badge" id="badge-regs" style="display:none">0</span></div>
+      <div class="nav-item" onclick="showPage('events')"><span class="nav-icon">🎤</span>طلبات تقديم الحفل<span class="nav-badge" id="badge-events" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('consulting')"><span class="nav-icon">💼</span>طلبات الاستشارة<span class="nav-badge" id="badge-consulting" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('messages')"><span class="nav-icon">✉</span>الرسائل<span class="nav-badge" id="badge-msgs" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('comments')"><span class="nav-icon">💬</span>التعليقات</div>
@@ -407,6 +409,16 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       <div class="card">
         <div class="card-header"><span class="card-title">الشهادات المضافة</span></div>
         <div id="testimonials-table"></div>
+      </div>
+    </div>
+    <!-- EVENT REQUESTS -->
+    <div class="page" id="page-events">
+      <div class="page-header">
+        <div class="page-title">طلبات تقديم الحفل</div>
+        <div class="page-sub">طلبات تقديم الحفلات والفعاليات الواردة من الموقع</div>
+      </div>
+      <div class="card">
+        <div class="table-wrap"><div id="events-table"></div></div>
       </div>
     </div>
     <!-- VOICEOVER REQUESTS -->
@@ -861,6 +873,7 @@ function renderPage(id){
   if(id==='dashboard')renderDashboard();
   else if(id==='news')renderNewsTable();
   else if(id==='courses')renderCoursesTable();
+  else if(id==='events'){renderEventsTable();markSeen('events');}
   else if(id==='voiceover'){renderVOTable();markSeen('voiceover');}
   else if(id==='newsletter'){loadNewsletterSubscribers();}
   else if(id==='testimonials')renderTestimonialsTable();
@@ -1785,6 +1798,11 @@ function updateBadges(){
     var b=document.getElementById('badge-msgs');
     if(b){b.textContent=unseen;b.style.display=unseen>0?'inline-flex':'none';}
   }).catch(function(){});
+  db.collection('event_requests').get().then(function(snap){
+    var unseen=Math.max(0,snap.size-(parseInt(localStorage.getItem('seen-events')||'0')));
+    var b=document.getElementById('badge-events');
+    if(b){b.textContent=unseen;b.style.display=unseen>0?'inline-flex':'none';}
+  }).catch(function(){});
   db.collection('voiceover_requests').get().then(function(snap){
     var unseen=Math.max(0,snap.size-lastSeen.voiceover);
     var b=document.getElementById('badge-vo');
@@ -1795,13 +1813,13 @@ function updateBadges(){
 }
 
 function markSeen(type){
-  var colMap={regs:'registrations',consulting:'consulting',messages:'messages',voiceover:'voiceover_requests'};
+  var colMap={regs:'registrations',consulting:'consulting',messages:'messages',voiceover:'voiceover_requests',events:'event_requests'};
   var col=colMap[type];
   if(!col)return;
   db.collection(col).get().then(function(snap){
-    var key=type==='messages'?'seen-msgs':(type==='voiceover'?'seen-voiceover':'seen-'+type);
+    var key=type==='messages'?'seen-msgs':(type==='voiceover'?'seen-voiceover':(type==='events'?'seen-events':'seen-'+type));
     localStorage.setItem(key,snap.size);
-    var badgeId=type==='messages'?'badge-msgs':(type==='voiceover'?'badge-vo':'badge-'+type);
+    var badgeId=type==='messages'?'badge-msgs':(type==='voiceover'?'badge-vo':(type==='events'?'badge-events':'badge-'+type));
     var b=document.getElementById(badgeId);
     if(b)b.style.display='none';
   }).catch(function(){});
@@ -2095,6 +2113,32 @@ function deleteDoc(colName, docId, tableId, reloadFn){
 }
 
 window._real_deleteDoc = deleteDoc;
+function renderEventsTable(){
+  var tbl = document.getElementById('events-table');
+  tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('event_requests').get().then(function(snap){
+    if(snap.empty){tbl.innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد طلبات بعد.</p>';return;}
+    var rows='';
+    snap.docs.forEach(function(d){
+      var r=d.data();
+      rows+='<tr>'
+        +'<td><b>'+escHtml(r.name||'-')+'</b></td>'
+        +'<td>'+escHtml(r.phone||'-')+'</td>'
+        +'<td>'+escHtml(r.email||'-')+'</td>'
+        +'<td><b>'+escHtml(r.title||'-')+'</b></td>'
+        +'<td>'+escHtml(r.audience||'-')+'</td>'
+        +'<td>'+escHtml(r.hours||'-')+'</td>'
+        +'<td>'+escHtml(r.date||'-')+'</td>'
+        +'<td>'+escHtml(r.location||'-')+'</td>'
+        +'<td style="font-size:.72rem;color:var(--text-muted);">'+escHtml(r.time||'-')+'</td>'
+        +'<td><button class="btn btn-danger btn-sm" onclick="deleteDoc('event_requests',''+d.id+'','events-table',renderEventsTable)">حذف</button></td>'
+        +'</tr>';
+    });
+    tbl.innerHTML='<table><thead><tr><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الحفل</th><th>الحضور</th><th>الساعات</th><th>التاريخ</th><th>المكان</th><th>وقت الطلب</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }).catch(function(){tbl.innerHTML='<p style="color:var(--red);">فشل التحميل</p>';});
+}
+
+window._real_renderEventsTable = renderEventsTable;
 </script>
 
 <!-- QUOTE MODAL -->
