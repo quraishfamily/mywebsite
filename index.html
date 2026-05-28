@@ -683,6 +683,18 @@ nav{top:36px !important;}
   .newsletter-form{flex-direction:column;}
   .newsletter-section{padding:3rem 1.5rem;}
 }
+
+/* EVENTS SECTION */
+.events-section{background:var(--dark2);}
+.events-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:4rem;align-items:start;}
+.events-features{display:flex;flex-direction:column;gap:.8rem;margin-bottom:1.5rem;}
+.events-feat{display:flex;align-items:center;gap:.8rem;font-size:.88rem;}
+.events-feat::before{content:"✦";color:var(--gold);font-size:.65rem;flex-shrink:0;}
+.events-note{background:rgba(201,168,76,.08);border:1px solid var(--border);border-radius:4px;padding:1rem 1.2rem;font-size:.82rem;color:var(--text-muted);line-height:1.7;}
+.events-note b{color:var(--gold);}
+.events-form{background:var(--dark3);border:1px solid var(--border);border-radius:6px;padding:2rem;}
+.events-form h3{font-family:"Cairo",sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:1.5rem;}
+@media(max-width:900px){.events-grid{grid-template-columns:1fr;}}
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -727,6 +739,7 @@ nav{top:36px !important;}
     <li><a href="#works">الأعمال</a></li>
     <li><a href="#courses">الدورات</a></li>
     <li><a href="#voiceover">تعليق صوتي</a></li>
+    <li><a href="#events">تقديم حفل</a></li>
     <li><a href="#consulting">الاستشارات</a></li>
     <li><a href="#contact">تواصل</a></li>
   </ul>
@@ -745,6 +758,7 @@ nav{top:36px !important;}
   <a href="#works" onclick="closeMenu()">الأعمال</a>
   <a href="#courses" onclick="closeMenu()">الدورات</a>
   <a href="#voiceover" onclick="closeMenu()">تعليق صوتي</a>
+  <a href="#events" onclick="closeMenu()">تقديم حفل</a>
   <a href="#consulting" onclick="closeMenu()">الاستشارات</a>
   <a href="#contact" onclick="closeMenu()">تواصل</a>
   <div class="mobile-social">
@@ -772,7 +786,7 @@ nav{top:36px !important;}
       </div>
     </div>
     <div class="hero-text reveal">
-      <div class="hero-label">معلق صوتي ومدرب ومقدم</div>
+      <div class="hero-label">معلق صوتي ومدرب ومقدم احتفالات</div>
       <h1>أحمد<br><span style="margin-top:.15em;display:inline-block;">قريش</span></h1>
       <div class="hero-roles">
         <span class="role-tag">تعليق صوتي</span>
@@ -944,6 +958,65 @@ nav{top:36px !important;}
   </div>
   <div class="testimonials-track-wrap">
     <div class="testimonials-track" id="testimonialsTrack"></div>
+  </div>
+</section>
+
+<!-- EVENTS -->
+<section id="events" class="events-section">
+  <div class="container">
+    <div class="reveal">
+      <div class="sec-label">تقديم الفعاليات</div>
+      <h2 class="sec-title">طلب تقديم حفل</h2>
+      <div class="sec-line"></div>
+    </div>
+    <div class="events-grid">
+      <div class="reveal">
+        <p style="font-size:.92rem;color:var(--text-muted);line-height:1.9;margin-bottom:1.5rem;">أحمد قريش مقدم احتفالات محترف بخبرة واسعة في إدارة الفعاليات والحفلات بأسلوب راقٍ ومميز يناسب جميع المناسبات.</p>
+        <div class="events-features">
+          <div class="events-feat">حفلات الأعراس والمناسبات العائلية</div>
+          <div class="events-feat">الفعاليات الرسمية والمؤتمرات</div>
+          <div class="events-feat">حفلات التخرج وتكريم الموظفين</div>
+          <div class="events-feat">الفعاليات الثقافية والترفيهية</div>
+          <div class="events-feat">إطلاق المنتجات والمعارض</div>
+        </div>
+        <div class="events-note">
+          📅 <b>للاستفسار والتسعير:</b> أرسل تفاصيل الحفل وسيتم التواصل معك خلال ٢٤ ساعة لمناقشة التفاصيل والسعر.
+        </div>
+      </div>
+      <div class="reveal">
+        <form class="events-form" onsubmit="submitEvent(event)">
+          <h3>🎤 أرسل طلبك الآن</h3>
+          <div class="contact-form" style="display:flex;flex-direction:column;gap:.9rem;">
+            <div class="f-row">
+              <div class="fg"><label>الاسم الكامل *</label><input type="text" id="ev-name" placeholder="اسمك الكريم" required></div>
+              <div class="fg"><label>رقم الجوال *</label><input type="tel" id="ev-phone" placeholder="+966 5X XXX XXXX" required></div>
+            </div>
+            <div class="fg"><label>البريد الإلكتروني *</label><input type="email" id="ev-email" placeholder="email@example.com" required></div>
+            <div class="fg"><label>موضوع / اسم الحفل *</label><input type="text" id="ev-title" placeholder="مثال: حفل تخرج دفعة 2025" required></div>
+            <div class="f-row">
+              <div class="fg">
+                <label>نوعية الحضور *</label>
+                <select id="ev-audience" required>
+                  <option value="">اختر...</option>
+                  <option>عائلي مختلط</option>
+                  <option>رجالي فقط</option>
+                  <option>نسائي فقط</option>
+                  <option>مهني / رسمي</option>
+                  <option>شبابي</option>
+                  <option>أطفال وعائلات</option>
+                </select>
+              </div>
+              <div class="fg"><label>عدد ساعات الحفل *</label><input type="number" id="ev-hours" placeholder="3" min="1" max="12" required></div>
+            </div>
+            <div class="fg"><label>تاريخ ووقت الحفل *</label><input type="datetime-local" id="ev-date" required></div>
+            <div class="fg"><label>مكان الحفل *</label><input type="text" id="ev-location" placeholder="اسم القاعة / المدينة" required></div>
+            <div class="fg"><label>ملاحظات ومتطلبات أخرى</label><textarea id="ev-notes" placeholder="أي تفاصيل إضافية تساعد في تقديم أفضل خدمة..." style="min-height:80px;"></textarea></div>
+            <button type="submit" class="btn btn-primary" style="width:100%;font-size:1rem;">إرسال الطلب 🎤</button>
+            <p style="font-size:.75rem;color:var(--text-muted);text-align:center;">سيتم التواصل معك خلال ٢٤ ساعة لتأكيد التفاصيل والسعر</p>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1127,6 +1200,7 @@ nav{top:36px !important;}
       <li><a href="#interviews">مقابلات</a></li>
       <li><a href="#courses">الدورات</a></li>
       <li><a href="#voiceover">تعليق صوتي</a></li>
+    <li><a href="#events">تقديم حفل</a></li>
       <li><a href="admin.html">الأدمن</a></li>
     </ul>
     <div class="social-row">
@@ -1871,6 +1945,43 @@ async function loadNewsletterCount(){
   } catch(e){}
 }
 
+
+// EVENTS REQUEST
+async function submitEvent(e){
+  e.preventDefault();
+  var evDate = document.getElementById('ev-date').value;
+  var months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  var dateAr = '';
+  if(evDate){
+    var d = new Date(evDate);
+    dateAr = d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+' — '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  }
+  var data = {
+    name: document.getElementById('ev-name').value,
+    phone: document.getElementById('ev-phone').value,
+    email: document.getElementById('ev-email').value,
+    title: document.getElementById('ev-title').value,
+    audience: document.getElementById('ev-audience').value,
+    hours: document.getElementById('ev-hours').value,
+    date: dateAr,
+    dateRaw: evDate,
+    location: document.getElementById('ev-location').value,
+    notes: document.getElementById('ev-notes').value,
+    time: new Date().toLocaleString('ar-SA')
+  };
+  db.collection('event_requests').add(data).catch(function(){});
+  emailjs.send(EJS_SERVICE, EJS_TEMPLATE_MSG, {
+    from_name: data.name,
+    from_email: data.email,
+    subject: 'طلب تقديم حفل — ' + data.title,
+    message: 'الحفل: '+data.title+'\nالجوال: '+data.phone+'\nالنوع: '+data.audience+'\nالساعات: '+data.hours+'\nالتاريخ: '+data.date+'\nالمكان: '+data.location+'\nملاحظات: '+data.notes,
+    phone: data.phone, course: data.title, notes: data.notes,
+    time: data.time
+  }, {publicKey: 'QnIPBoSRBkpNWiNt4'}).catch(function(){});
+  toast('تم إرسال طلبك! سنتواصل معك خلال ٢٤ ساعة ✓');
+  e.target.reset();
+}
+
 // MOBILE MENU
 // ═══════════════════════════════════════
 function toggleMenu(){
@@ -2020,6 +2131,7 @@ window.prevWorksPage = prevWorksPage;
 window.goWorksPage = goWorksPage;
 window.updateCount = updateCount;
 window.closeMenu = closeMenu;
+window.submitEvent = submitEvent;
 window.toggleNewsArchive = toggleNewsArchive;
 window.sendMsg = sendMsg;
 window.submitForm = submitForm;
