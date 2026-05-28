@@ -2086,6 +2086,15 @@ window._real_updateRejectMsg = updateRejectMsg;
 window._real_sendRejection = sendRejection;
 window._real_handleImageUpload = handleImageUpload;
 
+function deleteDoc(colName, docId, tableId, reloadFn){
+  confirm_action(function(){
+    db.collection(colName).doc(docId).delete()
+      .then(function(){ toast('تم الحذف ✓'); if(reloadFn) reloadFn(); })
+      .catch(function(){ toast('فشل الحذف', true); });
+  });
+}
+
+window._real_deleteDoc = deleteDoc;
 </script>
 
 <!-- QUOTE MODAL -->
