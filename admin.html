@@ -223,6 +223,8 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function openEventQuoteModal(id){ _wcall("openEventQuoteModal", [id]); }
   function sendEventQuote(){ _wcall("sendEventQuote", []); }
   function downloadEventQuotePDF(){ _wcall("downloadEventQuotePDF", []); }
+  function savePopup(){ _wcall("savePopup", []); }
+  function clearPopup(){ _wcall("clearPopup", []); }
   function resetAll(){ _wcall("resetAll", Array.prototype.slice.call(arguments)); }
   function saveBooks(){ _wcall("saveBooks", Array.prototype.slice.call(arguments)); }
   function saveCourse(){ _wcall("saveCourse", Array.prototype.slice.call(arguments)); }
@@ -281,6 +283,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       <div class="nav-item" onclick="showPage('comments')"><span class="nav-icon">💬</span>التعليقات</div>
       <div class="nav-item" onclick="showPage('testimonials')"><span class="nav-icon">⭐</span>شهادات المتدربين</div>
       <div class="nav-item" onclick="showPage('newsletter')"><span class="nav-icon">📧</span>النشرة البريدية<span class="nav-badge" id="badge-nl" style="display:none">0</span></div>
+      <div class="nav-item" onclick="showPage('popup')"><span class="nav-icon">📢</span>الإعلان المنبثق</div>
       <div class="nav-item" onclick="showPage('settings')"><span class="nav-icon">⚙</span>الإعدادات</div>
     </div>
     <div class="sidebar-bottom">
@@ -384,6 +387,49 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
           <button class="btn btn-outline btn-sm" onclick="exportEmails()">تصدير CSV</button>
         </div>
         <div class="table-wrap"><div id="nl-subscribers-table"></div></div>
+      </div>
+    </div>
+    <!-- POPUP MANAGEMENT -->
+    <div class="page" id="page-popup">
+      <div class="page-header">
+        <div class="page-title">الإعلان المنبثق</div>
+        <div class="page-sub">نافذة إعلانية تظهر للزوار عند فتح الموقع</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">إعدادات الإعلان</span>
+          <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;cursor:pointer;">
+            <input type="checkbox" id="popup-active" style="width:16px;height:16px;accent-color:var(--gold);">
+            تفعيل الإعلان
+          </label>
+        </div>
+        <div class="form-grid">
+          <div class="fg"><label>عنوان الإعلان *</label><input type="text" id="popup-title-input" placeholder="عنوان الخبر أو الإعلان"></div>
+          <div class="fg"><label>الوسم (Badge)</label><input type="text" id="popup-badge-input" placeholder="إعلان / جديد / عاجل" value="إعلان"></div>
+          <div class="fg fg-full"><label>وصف مختصر</label><textarea id="popup-desc-input" placeholder="نبذة قصيرة تجذب الزائر لقراءة المزيد..." style="min-height:80px;"></textarea></div>
+          <div class="fg"><label>رابط "اقرأ المزيد"</label><input type="url" id="popup-link-input" placeholder="https://quraishvoice.me/news.html?id=..."></div>
+          <div class="fg"><label>التأخير قبل الظهور (ثوانٍ)</label><input type="number" id="popup-delay-input" value="3" min="1" max="30"></div>
+          <div class="fg"><label>الأيقونة (إذا لم تكن صورة)</label><input type="text" id="popup-icon-input" placeholder="📢" value="📢"></div>
+          <div class="fg fg-full">
+            <label>صورة الإعلان (اختياري)</label>
+            <input type="file" id="popup-img-file" accept="image/*" onchange="handleImageUpload('popup-img-file','popup-img-preview','popup-img-url')" style="background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem;color:var(--text);width:100%;cursor:pointer;">
+            <div style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;">📐 المقاس المثالي: <b style="color:var(--gold);">480 × 220 px</b></div>
+            <input type="hidden" id="popup-img-url">
+            <div id="popup-img-preview"></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary btn-sm" onclick="savePopup()">حفظ الإعلان</button>
+          <button class="btn btn-outline btn-sm" onclick="clearPopup()">إلغاء الإعلان</button>
+        </div>
+      </div>
+      <div class="card" style="background:rgba(201,168,76,.04);border-color:rgba(201,168,76,.2);">
+        <div class="card-header"><span class="card-title" style="color:var(--gold);">💡 نصائح</span></div>
+        <ul style="font-size:.83rem;color:var(--text-muted);line-height:2;padding-right:1rem;">
+          <li>الإعلان يظهر مرة واحدة لكل زيارة (لا يزعج الزائر)</li>
+          <li>ضع رابط الخبر من صفحة news.html مع الـ ID المناسب</li>
+          <li>الصورة تجعل الإعلان أكثر جاذبية بشكل ملحوظ</li>
+          <li>التأخير المناسب: ٣-٥ ثوانٍ بعد فتح الصفحة</li>
+        </ul>
       </div>
     </div>
     <!-- TESTIMONIALS -->
@@ -879,6 +925,7 @@ function renderPage(id){
   else if(id==='courses')renderCoursesTable();
   else if(id==='events'){renderEventsTable();markSeen('events');}
   else if(id==='voiceover'){renderVOTable();markSeen('voiceover');}
+  else if(id==='popup'){loadPopupSettings();}
   else if(id==='newsletter'){loadNewsletterSubscribers();}
   else if(id==='testimonials')renderTestimonialsTable();
   else if(id==='podcast'){renderPodcastTable();}  
@@ -2266,8 +2313,59 @@ function downloadEventQuotePDF(){
   win.document.close();
 }
 
+function loadPopupSettings(){
+  db.collection('settings').doc('popup').get().then(function(snap){
+    if(!snap.exists) return;
+    var p = snap.data();
+    document.getElementById('popup-active').checked = p.active||false;
+    document.getElementById('popup-title-input').value = p.title||'';
+    document.getElementById('popup-badge-input').value = p.badge||'إعلان';
+    document.getElementById('popup-desc-input').value = p.desc||'';
+    document.getElementById('popup-link-input').value = p.link||'';
+    document.getElementById('popup-delay-input').value = p.delay||3;
+    document.getElementById('popup-icon-input').value = p.icon||'📢';
+    document.getElementById('popup-img-url').value = p.img||'';
+    if(p.img){
+      document.getElementById('popup-img-preview').innerHTML = '<img src="'+p.img+'" style="width:100%;max-height:150px;object-fit:cover;border-radius:4px;margin-top:.5rem;">';
+    }
+  }).catch(function(){});
+}
+
+function savePopup(){
+  var data = {
+    active: document.getElementById('popup-active').checked,
+    title: document.getElementById('popup-title-input').value.trim(),
+    badge: document.getElementById('popup-badge-input').value.trim()||'إعلان',
+    desc: document.getElementById('popup-desc-input').value.trim(),
+    link: document.getElementById('popup-link-input').value.trim(),
+    delay: parseInt(document.getElementById('popup-delay-input').value)||3,
+    icon: document.getElementById('popup-icon-input').value.trim()||'📢',
+    img: document.getElementById('popup-img-url').value.trim()
+  };
+  if(!data.title){toast('أدخل عنوان الإعلان',true);return;}
+  db.collection('settings').doc('popup').set(data)
+    .then(function(){ toast('تم حفظ الإعلان! ✓'); })
+    .catch(function(){ toast('فشل الحفظ',true); });
+}
+
+function clearPopup(){
+  db.collection('settings').doc('popup').set({active:false,title:'',desc:'',link:'',img:''})
+    .then(function(){
+      toast('تم إلغاء الإعلان ✓');
+      document.getElementById('popup-active').checked = false;
+      document.getElementById('popup-title-input').value = '';
+      document.getElementById('popup-desc-input').value = '';
+      document.getElementById('popup-link-input').value = '';
+      document.getElementById('popup-img-url').value = '';
+      document.getElementById('popup-img-preview').innerHTML = '';
+    }).catch(function(){ toast('فشل الإلغاء',true); });
+}
+
 window._real_renderEventsTable = renderEventsTable;
 window._real_downloadEventQuotePDF = downloadEventQuotePDF;
+window._real_savePopup = savePopup;
+window._real_clearPopup = clearPopup;
+window._real_loadPopupSettings = loadPopupSettings;
 window._real_exportSingleEvent = exportSingleEvent;
 window._real_openEventQuoteModal = openEventQuoteModal;
 window._real_sendEventQuote = sendEventQuote;
