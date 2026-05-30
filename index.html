@@ -2061,14 +2061,16 @@ function closePopup(){
 }
 
 async function loadPopup(){
-  // Don't show again in same session
-  if(sessionStorage.getItem('popup-closed')) return;
+  console.log("loadPopup called");
+  if(sessionStorage.getItem('popup-closed')){console.log("popup closed in session");return;}
   
   try {
     var snap = await db.collection('settings').doc('popup').get();
+    console.log("popup snap exists:", snap.exists);
     if(!snap.exists) return;
     var p = snap.data();
-    if(!p.active || !p.title) return;
+    console.log("popup data:", p);
+    if(!p.active || !p.title){console.log("popup inactive or no title");return;}
     
     // Set content
     document.getElementById('popup-title').textContent = p.title || '';
