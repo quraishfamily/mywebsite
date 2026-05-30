@@ -2061,8 +2061,7 @@ function closePopup(){
 }
 
 async function loadPopup(){
-  console.log("loadPopup called");
-  if(sessionStorage.getItem('popup-closed')){console.log("popup closed in session");return;}
+  if(sessionStorage.getItem('popup-closed')) return;
   
   try {
     var snap = await db.collection('settings').doc('popup').get();
