@@ -809,10 +809,12 @@ nav{top:36px !important;}
     <li><a href="#interviews">مقابلات</a></li>
     <li><a href="#works">الأعمال</a></li>
     <li><a href="#courses">الدورات</a></li>
-    <li><a href="#voiceover">تعليق صوتي</a></li>
-    <li><a href="#events">تقديم حفل</a></li>
-    <li><a href="#consulting">الاستشارات</a></li>
-    <li><a href="#contact">تواصل</a></li>
+    <li><a href="voiceover-request.html">تعليق صوتي</a></li>
+    <li><a href="events-request.html">تقديم حفل</a></li>
+    <li><a href="consulting.html">استشارة</a></li>
+    <li><a href="contact.html">تواصل</a></li>
+    
+    
   </ul>
   <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="القائمة">
     <span></span><span></span><span></span>
@@ -828,10 +830,12 @@ nav{top:36px !important;}
   <a href="#interviews" onclick="closeMenu()">مقابلات</a>
   <a href="#works" onclick="closeMenu()">الأعمال</a>
   <a href="#courses" onclick="closeMenu()">الدورات</a>
-  <a href="#voiceover" onclick="closeMenu()">تعليق صوتي</a>
-  <a href="#events" onclick="closeMenu()">تقديم حفل</a>
-  <a href="#consulting" onclick="closeMenu()">الاستشارات</a>
-  <a href="#contact" onclick="closeMenu()">تواصل</a>
+  <a href="voiceover-request.html" onclick="closeMenu()">تعليق صوتي</a>
+  <a href="events-request.html" onclick="closeMenu()">تقديم حفل</a>
+  <a href="consulting.html" onclick="closeMenu()">استشارة</a>
+  <a href="contact.html" onclick="closeMenu()">تواصل</a>
+  
+  
   <div class="mobile-social">
     <a id="mob-tw" href="#" title="تويتر">𝕏</a>
     <a id="mob-ig" href="#" title="انستقرام"><svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>
@@ -1091,158 +1095,6 @@ nav{top:36px !important;}
   </div>
 </section>
 
-<!-- CONSULTING -->
-<section id="consulting" class="consulting-section">
-  <div class="con-inner">
-    <div class="reveal">
-      <div class="sec-label">خدمة مميزة</div>
-      <h2 class="sec-title">الاستشارات التدريبية</h2>
-      <div class="sec-line"></div>
-      <div class="con-text">
-        <p>جلسة استشارية فردية مع أحمد قريش. سواء كنت مبتدئاً يريد الدخول لعالم الصوت والإلقاء، أو محترفاً يسعى للتطوير.</p>
-      </div>
-      <div class="con-feats">
-        <div class="con-feat">تشخيص الصوت وتحليل نقاط القوة والضعف</div>
-        <div class="con-feat">خطة تطوير شخصية مخصصة</div>
-        <div class="con-feat">نصائح عملية للدخول لسوق العمل</div>
-        <div class="con-feat">متابعة لأسبوع كامل بعد الجلسة</div>
-      </div>
-    </div>
-    <div class="reveal">
-      <div class="price-box">
-        <div class="price" id="site-price">499</div>
-        <div class="price-label">ريال سعودي · جلسة 60 دقيقة</div>
-        <button class="btn btn-primary" onclick="openModal('consulting')">احجز جلستك الآن</button>
-        <button class="btn btn-outline" onclick="openModal('consulting')">سجل اهتمامك مجاناً</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- VOICEOVER REQUEST -->
-<section id="voiceover" class="vo-section">
-  <div class="container">
-    <div class="reveal">
-      <div class="sec-label">خدمة احترافية</div>
-      <h2 class="sec-title">طلب تسعيرة تعليق صوتي</h2>
-      <div class="sec-line"></div>
-    </div>
-    <div class="vo-grid">
-      <div class="reveal">
-        <div class="vo-info">
-          <h3>ماذا نحتاج منك؟</h3>
-          <p>لتقديم تسعيرة دقيقة، نحتاج بعض المعلومات عن مشروعك. كلما كانت التفاصيل أوضح، كانت التسعيرة أدق وأسرع.</p>
-        </div>
-        <div class="vo-features">
-          <div class="vo-feat">وصف واضح لطبيعة المشروع (إعلان، وثائقي، تدريبي...)</div>
-          <div class="vo-feat">السكريبت الكامل أو نموذج منه للتسعير</div>
-          <div class="vo-feat">الوقت المطلوب للتسليم</div>
-          <div class="vo-feat">أي متطلبات خاصة بالصوت أو الأسلوب</div>
-        </div>
-        <div class="vo-note">
-          ⏱ <b>وقت التسليم المعتاد:</b> بين <b>٣ إلى ٥ أيام عمل</b> من تأكيد الطلب.<br>
-          في حال الاستعجال، يمكن التنسيق مسبقاً لتسليم أسرع وفق الإمكانية.
-        </div>
-      </div>
-      <div class="reveal">
-        <form class="vo-form" onsubmit="submitVO(event)">
-          <h3>🎙️ أرسل طلبك الآن</h3>
-          <div class="contact-form" style="display:flex;flex-direction:column;gap:.9rem;">
-            <div class="f-row">
-              <div class="fg"><label>الاسم الكامل *</label><input type="text" id="vo-name" placeholder="اسمك الكريم" required></div>
-              <div class="fg"><label>البريد الإلكتروني *</label><input type="email" id="vo-email" placeholder="email@example.com" required></div>
-            </div>
-            <div class="fg"><label>رقم الجوال *</label><input type="tel" id="vo-phone" placeholder="+966 5X XXX XXXX" required></div>
-            <div class="fg">
-              <label>نوع المشروع *</label>
-              <select id="vo-type" required>
-                <option value="">اختر نوع المشروع...</option>
-                <option>إعلان تجاري</option>
-                <option>فيلم وثائقي</option>
-                <option>محتوى تدريبي / تعليمي</option>
-                <option>دوبلاج</option>
-                <option>بودكاست</option>
-                <option>IVR / مركز اتصال</option>
-                <option>محتوى رقمي / يوتيوب</option>
-                <option>أخرى</option>
-              </select>
-            </div>
-            <div class="fg">
-              <label>شرح المشروع والمتطلبات *</label>
-              <textarea id="vo-desc" placeholder="اشرح طبيعة المشروع، الأسلوب المطلوب، الجمهور المستهدف، وأي تفاصيل تساعد في التسعير..." style="min-height:100px;" required oninput="updateCount('vo-desc','vo-desc-count',500)"></textarea>
-              <div class="char-count"><span id="vo-desc-count">0</span> / 500</div>
-            </div>
-            <div class="fg">
-              <label>السكريبت (أو نموذج منه) *</label>
-              <textarea id="vo-script" placeholder="ضع السكريبت هنا أو نموذجاً منه لتقدير الوقت والتسعير بدقة..." style="min-height:120px;" required oninput="updateCount('vo-script','vo-script-count',2000)"></textarea>
-              <div class="char-count"><span id="vo-script-count">0</span> / 2000</div>
-            </div>
-            <div class="fg">
-              <label>الوقت المطلوب للتسليم</label>
-              <select id="vo-deadline">
-                <option value="">اختر...</option>
-                <option>٣ - ٥ أيام عمل (المعتاد)</option>
-                <option>أسبوع</option>
-                <option>أسبوعان</option>
-                <option>لا يوجد موعد محدد</option>
-                <option>عاجل (أقل من ٣ أيام) — يخضع للتوافر</option>
-              </select>
-            </div>
-            <div class="fg">
-              <label>ملاحظات إضافية</label>
-              <textarea id="vo-notes" placeholder="أي تفاصيل أخرى تود إضافتها..." style="min-height:70px;"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;font-size:1rem;">إرسال الطلب</button>
-            <p style="font-size:.75rem;color:var(--text-muted);text-align:center;">سيتم التواصل معك خلال ٢٤ ساعة لمناقشة التفاصيل والتسعيرة</p>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CONTACT -->
-<section id="contact" class="contact-section">
-  <div class="container">
-    <div class="reveal">
-      <div class="sec-label">تواصل معي</div>
-      <h2 class="sec-title">أنا هنا</h2>
-      <div class="sec-line"></div>
-    </div>
-    <div class="contact-grid">
-      <div class="reveal">
-        <div class="c-item">
-          <div class="c-icon">✉</div>
-          <div class="c-item-text"><span>البريد الإلكتروني</span><p id="site-email">ahmed@example.com</p></div>
-        </div>
-        <div class="c-item">
-          <div class="c-icon">📱</div>
-          <div class="c-item-text"><span>الواتساب</span><p id="site-phone">+966 5X XXX XXXX</p></div>
-        </div>
-        <div class="c-item">
-          <div class="c-icon">📍</div>
-          <div class="c-item-text"><span>الموقع</span><p>المملكة العربية السعودية</p></div>
-        </div>
-        <div class="social-row" style="margin-top:2rem;">
-          <a id="ct-tw" href="#" title="تويتر">𝕏</a>
-          <a id="ct-ig" href="#" title="انستقرام"><svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>
-          <a id="ct-yt" href="#" title="يوتيوب"><svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M23.495 6.205a3.007 3.007 0 00-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 00.527 6.205a31.247 31.247 0 00-.522 5.805 31.247 31.247 0 00.522 5.783 3.007 3.007 0 002.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 002.088-2.088 31.247 31.247 0 00.5-5.783 31.247 31.247 0 00-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg></a>
-          <a id="ct-sn" href="#" title="سناب"><svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.016.254-.027.5-.031.748.021.022.051.047.09.067.61.32 1.558-.015 2.374-.303.1-.035.198-.068.29-.095.068-.02.136-.039.205-.039.26 0 .5.165.5.439 0 .289-.26.448-.592.594-.09.04-.19.07-.284.096l-.014.005c-.305.084-.744.17-1.098.275-.09.027-.185.063-.275.105-.058.027-.127.057-.191.09.086.181.205.327.39.474.497.397 1.196.584 1.837.728.176.04.35.08.512.124.263.07.44.226.44.453 0 .16-.09.311-.253.43-.163.12-.41.18-.671.18h-.026c-.302 0-.553-.077-.796-.13-.267-.06-.528-.125-.77-.125-.214 0-.41.04-.587.124.005.1.007.206.007.316 0 1.217-.144 2.566-.77 3.637-.567.97-1.452 1.74-2.65 2.344-1.197.606-2.747.919-4.558.919-1.81 0-3.362-.313-4.558-.92-1.197-.604-2.083-1.373-2.65-2.343-.627-1.07-.77-2.42-.77-3.636 0-.11.002-.216.007-.316-.177-.083-.373-.123-.587-.123-.241 0-.503.064-.77.124-.243.054-.494.131-.796.131h-.026c-.261 0-.508-.06-.671-.18-.163-.118-.253-.269-.253-.43 0-.226.177-.383.44-.453.16-.044.336-.083.511-.124.641-.143 1.34-.33 1.838-.728.185-.147.304-.293.39-.474-.064-.033-.133-.063-.191-.09-.09-.041-.184-.078-.275-.105-.354-.106-.793-.19-1.098-.276l-.014-.004c-.094-.026-.195-.057-.284-.097-.332-.146-.592-.305-.592-.594 0-.274.24-.439.5-.439.07 0 .137.02.205.04.092.026.19.06.29.094.816.288 1.764.623 2.374.303.04-.02.069-.045.09-.067l-.031-.748c-.104-1.628-.23-3.654.299-4.847C7.859 1.069 11.216.793 12.206.793z"/></svg></a>
-        </div>
-      </div>
-      <form class="contact-form reveal" onsubmit="sendMsg(event)">
-        <div class="f-row">
-          <div class="fg"><label>الاسم الكامل</label><input type="text" placeholder="اسمك" required></div>
-          <div class="fg"><label>البريد الإلكتروني</label><input type="email" placeholder="email@example.com" required></div>
-        </div>
-        <div class="fg"><label>الموضوع</label><input type="text" placeholder="موضوع رسالتك" required></div>
-        <div class="fg"><label>الرسالة</label><textarea placeholder="اكتب رسالتك هنا..." required></textarea></div>
-        <button type="submit" class="btn btn-primary">إرسال الرسالة</button>
-      </form>
-    </div>
-  </div>
-</section>
-
 <!-- NEWSLETTER -->
 <section class="newsletter-section">
   <div class="newsletter-inner reveal">
@@ -1270,8 +1122,10 @@ nav{top:36px !important;}
       <li><a href="#news">الأخبار</a></li>
       <li><a href="#interviews">مقابلات</a></li>
       <li><a href="#courses">الدورات</a></li>
-      <li><a href="#voiceover">تعليق صوتي</a></li>
-    <li><a href="#events">تقديم حفل</a></li>
+      <li><a href="voiceover-request.html">تعليق صوتي</a></li>
+    <li><a href="events-request.html">تقديم حفل</a></li>
+    <li><a href="consulting.html">استشارة</a></li>
+    <li><a href="contact.html">تواصل</a></li>
       <li><a href="admin.html">الأدمن</a></li>
     </ul>
     <div class="social-row">
