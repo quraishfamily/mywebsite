@@ -1749,7 +1749,8 @@ function renderCourses(courses=null){
         </div>
         <div class="c-footer">
           <span style="font-size:1.05rem;font-weight:700;color:var(--gold);">${c.price}</span>
-          <button class="btn btn-primary" style="padding:.45rem 1.1rem;font-size:.78rem;" onclick="openModal('course','${c.title}')">سجّل الآن</button>
+          <a href="course.html?id=${c.id}" class="btn btn-outline" style="padding:.45rem 1.1rem;font-size:.78rem;text-decoration:none;">التفاصيل</a>
+          <a href="course.html?id=${c.id}#reg-section" class="btn btn-primary" style="padding:.45rem 1.1rem;font-size:.78rem;text-decoration:none;">سجّل الآن</a>
           <button class="share-btn" onclick="shareTw('${c.title}')">𝕏</button>
           <button class="share-btn" onclick="shareWa('${c.title}')">📲</button>
         </div>
