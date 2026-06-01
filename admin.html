@@ -741,6 +741,9 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
         <div id="cm-img-preview"></div>
       </div>
       <div class="fg fg-full"><label>وصف الدورة</label><textarea id="cm-desc" placeholder="اكتب وصف الدورة..."></textarea></div>
+      <div class="fg fg-full"><label>محاور الدورة (سطر لكل محور)</label><textarea id="cm-outline" placeholder="المحور الأول: مقدمة في التعليق الصوتي&#10;المحور الثاني: تقنيات الأداء&#10;المحور الثالث: التسجيل والإنتاج" style="min-height:120px;"></textarea></div>
+      <div class="fg fg-full"><label>ما ستتعلمه (سطر لكل نقطة)</label><textarea id="cm-outcomes" placeholder="ستتعلم كيف تبني صوتاً احترافياً&#10;ستتعرف على أسرار التعليق الصوتي&#10;ستخرج بمشاريع حقيقية في ملفك" style="min-height:100px;"></textarea></div>
+      <div class="fg"><label>رابط التسجيل الخارجي (اختياري)</label><input type="url" id="cm-reglink" placeholder="https://..."></div>
     </div>
     <input type="hidden" id="cm-edit-id">
     <div class="form-actions">
@@ -1102,6 +1105,9 @@ function openCourseModal(id=''){
     document.getElementById('cm-img').value=c.img||'';
     document.getElementById('cm-img-preview').innerHTML = c.img ? '<img src="'+c.img+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">' : '';
     document.getElementById('cm-desc').value=c.desc||'';
+    document.getElementById('cm-outline').value=c.outline||'';
+    document.getElementById('cm-outcomes').value=c.outcomes||'';
+    document.getElementById('cm-reglink').value=c.reglink||'';
     document.getElementById('course-modal-title').textContent='تعديل الدورة';
   } else {
     ['cm-title','cm-icon','cm-price','cm-dur','cm-sess','cm-lvl','cm-badge','cm-desc'].forEach(x=>document.getElementById(x).value='');
@@ -1134,6 +1140,9 @@ function saveCourse(){
     lvl:document.getElementById('cm-lvl').value,
     badge:document.getElementById('cm-badge').value,
     desc:document.getElementById('cm-desc').value,
+    outline:document.getElementById('cm-outline').value,
+    outcomes:document.getElementById('cm-outcomes').value,
+    reglink:document.getElementById('cm-reglink').value,
   };
   if(!data.title){toast('أدخل عنوان الدورة',true);return;}
   const coursePreview = document.getElementById('cm-img-preview');
