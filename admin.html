@@ -218,6 +218,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function openQuoteModal(){ _wcall("openQuoteModal", Array.prototype.slice.call(arguments)); }
   function previewPodcast(){ _wcall("previewPodcast", Array.prototype.slice.call(arguments)); }
   function renderVOTable(){ _wcall("renderVOTable", Array.prototype.slice.call(arguments)); }
+  function addPodcastEpisode(){ _wcall("addPodcastEpisode", []); }
   function renderEventsTable(){ _wcall("renderEventsTable", Array.prototype.slice.call(arguments)); }
   function exportSingleEvent(id){ _wcall("exportSingleEvent", [id]); }
   function openEventQuoteModal(id){ _wcall("openEventQuoteModal", [id]); }
@@ -489,7 +490,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
     <div class="page" id="page-podcast">
       <div class="page-header">
         <div class="page-title">بودكاست صباحو</div>
-        <div class="page-sub">الحلقات تُحدَّث تلقائياً من RSS Feed</div>
+        <div class="page-sub">الحلقات تُحدَّث تلقائياً من RSS — أو أضفها يدوياً إذا فشل الـ RSS</div>
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">إعداد RSS Feed</span></div>
@@ -710,6 +711,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
         <input type="hidden" id="nm-img3">
         <div id="nm-img3-preview"></div>
       </div>
+      <div class="fg fg-full"><label>رابط الخبر (اختياري)</label><input type="url" id="nm-link" placeholder="https://..."></div>
       <div class="fg fg-full"><label>ملخص الخبر</label><textarea id="nm-body" placeholder="اكتب نص الخبر..."></textarea></div>
     </div>
     <input type="hidden" id="nm-edit-id">
@@ -931,7 +933,7 @@ function renderPage(id){
   else if(id==='popup'){loadPopupSettings();}
   else if(id==='newsletter'){loadNewsletterSubscribers();}
   else if(id==='testimonials')renderTestimonialsTable();
-  else if(id==='podcast'){renderPodcastTable();}  
+  else if(id==='podcast'){renderPodcastTable();loadManualEpisodes();}  
   else if(id==='interviews')renderInterviewsTable();
   else if(id==='works')renderWorksTable();
   else if(id==='regs'){renderRegsTable();markSeen('regs');}
@@ -2372,8 +2374,53 @@ function clearPopup(){
     }).catch(function(){ toast('فشل الإلغاء',true); });
 }
 
+function addPodcastEpisode(){
+  var title = document.getElementById('ep-title').value.trim();
+  if(!title){toast('أدخل عنوان الحلقة',true);return;}
+  var data = {
+    title: title,
+    link: document.getElementById('ep-link').value.trim(),
+    dur: document.getElementById('ep-dur').value.trim(),
+    date: document.getElementById('ep-date').value.trim(),
+    order: parseInt(document.getElementById('ep-order').value)||Date.now()
+  };
+  db.collection('podcast_episodes').add(data)
+    .then(function(){
+      toast('تمت إضافة الحلقة! ✓');
+      ['ep-title','ep-link','ep-dur','ep-date','ep-order'].forEach(function(id){document.getElementById(id).value='';});
+      loadManualEpisodes();
+    }).catch(function(){toast('فشل الحفظ',true);});
+}
+
+function loadManualEpisodes(){
+  var tbl = document.getElementById('podcast-manual-table');
+  if(!tbl) return;
+  tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('podcast_episodes').get().then(function(snap){
+    if(snap.empty){tbl.innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد حلقات مضافة يدوياً</p>';return;}
+    var table = document.createElement('table');
+    table.innerHTML = '<thead><tr><th>العنوان</th><th>المدة</th><th>التاريخ</th><th></th></tr></thead>';
+    var tbody = document.createElement('tbody');
+    snap.docs.forEach(function(d){
+      var r = d.data();
+      var tr = document.createElement('tr');
+      var td1=document.createElement('td'); td1.textContent=r.title||'-';
+      var td2=document.createElement('td'); td2.textContent=r.dur||'-';
+      var td3=document.createElement('td'); td3.textContent=r.date||'-';
+      var td4=document.createElement('td');
+      var btn=document.createElement('button'); btn.className='btn btn-danger btn-sm'; btn.textContent='حذف';
+      (function(id){btn.addEventListener('click',function(){deleteDoc('podcast_episodes',id,'podcast-manual-table',loadManualEpisodes);});})(d.id);
+      td4.appendChild(btn); tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody); tbl.innerHTML=''; tbl.appendChild(table);
+  }).catch(function(){tbl.innerHTML='<p style="color:var(--red);">فشل التحميل</p>';});
+}
+
 window._real_renderEventsTable = renderEventsTable;
 window._real_downloadEventQuotePDF = downloadEventQuotePDF;
+window._real_addPodcastEpisode = addPodcastEpisode;
+window._real_loadManualEpisodes = loadManualEpisodes;
 window._real_savePopup = savePopup;
 window._real_clearPopup = clearPopup;
 window._real_loadPopupSettings = loadPopupSettings;
