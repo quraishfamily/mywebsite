@@ -992,6 +992,7 @@ function openNewsModal(id=''){
     document.getElementById('nm-cat').value=n.category||n.cat||'أخبار';
     document.getElementById('nm-date').value=n.dateRaw||'';
     document.getElementById('nm-status').value=n.status||'published';
+    document.getElementById('nm-link').value=n.link||'';
     document.getElementById('nm-schedule').value=n.scheduledAt||'';
     document.getElementById('nm-schedule-wrap').style.display=n.status==='scheduled'?'flex':'none';
     document.getElementById('nm-img').value=n.img||'';
@@ -1039,6 +1040,7 @@ function saveNews(){
     img3:document.getElementById('nm-img3').value,
     body:document.getElementById('nm-body').value,
     status:document.getElementById('nm-status').value,
+    link:document.getElementById('nm-link').value.trim(),
     scheduledAt:document.getElementById('nm-schedule').value||'',
   };
   if(!data.title){toast('أدخل عنوان الخبر',true);return;}
