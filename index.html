@@ -1251,70 +1251,72 @@ const defaultPodcast=[];
 const RSS_FEED = 'https://feeds.libsyn.com/565035/rss';
 
 async function fetchPodcastFromRSS() {
+  const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  
+  function parseEpisode(item, i){
+    const d = item.pubDate ? new Date(item.pubDate) : null;
+    const dateAr = d ? d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear() : '';
+    const dur = item.enclosure && item.enclosure.duration ?
+      (parseInt(item.enclosure.duration) > 100 ? Math.floor(parseInt(item.enclosure.duration)/60)+' دقيقة' : item.enclosure.duration+' دقيقة') : '';
+    return { ep: 'حلقة '+(i+1), title: item.title, dur, date: dateAr, link: item.link||item.guid||'#' };
+  }
+
+  function parseXMLEpisode(item, i){
+    const title = item.querySelector('title')?.textContent || '';
+    const pubDate = item.querySelector('pubDate')?.textContent || '';
+    const duration = item.querySelector('duration')?.textContent || '';
+    const link = item.querySelector('enclosure')?.getAttribute('url') || item.querySelector('link')?.textContent || '#';
+    const d = pubDate ? new Date(pubDate) : null;
+    const dateAr = d ? d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear() : '';
+    let durText = duration;
+    if(duration && /^[0-9]+$/.test(duration)) durText = Math.floor(parseInt(duration)/60)+' دقيقة';
+    return { ep: 'حلقة '+(i+1), title, dur: durText, date: dateAr, link };
+  }
+
+  // Check Firebase for manually added episodes first
   try {
-    const proxies = [
-      { url: 'https://corsproxy.io/?' + encodeURIComponent(RSS_FEED), type: 'raw' },
-      { url: 'https://api.allorigins.win/get?url=' + encodeURIComponent(RSS_FEED), type: 'allorigins' },
-      { url: 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(RSS_FEED), type: 'rss2json' },
-    ];
-    
-    // Try rss2json as fallback only
+    const snap = await db.collection('podcast_episodes').orderBy('order','desc').limit(5).get();
+    if(!snap.empty){
+      const eps = snap.docs.map((d,i) => ({ep:'حلقة '+(i+1), ...d.data()}));
+      renderPodcast(eps);
+      return;
+    }
+  } catch(e){}
+
+  const proxies = [
+    { url: 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(RSS_FEED), type: 'rss2json' },
+    { url: 'https://corsproxy.io/?' + encodeURIComponent(RSS_FEED), type: 'raw' },
+    { url: 'https://api.allorigins.win/get?url=' + encodeURIComponent(RSS_FEED), type: 'allorigins' },
+    { url: 'https://thingproxy.freeboard.io/fetch/' + RSS_FEED, type: 'raw' },
+  ];
+
+  for(const proxy of proxies){
     try {
-      const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(RSS_FEED));
-      if(res.ok){
+      const res = await fetch(proxy.url, {signal: AbortSignal.timeout(8000)});
+      if(!res.ok) continue;
+      
+      if(proxy.type === 'rss2json'){
         const data = await res.json();
-        if(data.status === 'ok' && data.items && data.items.length > 0){
-          const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-          const episodes = data.items.slice(0,5).map((item,i) => {
-            const d = item.pubDate ? new Date(item.pubDate) : null;
-            const dateAr = d ? d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear() : '';
-            const dur = item.enclosure && item.enclosure.duration ? 
-              (parseInt(item.enclosure.duration) > 100 ? Math.floor(parseInt(item.enclosure.duration)/60)+' دقيقة' : item.enclosure.duration+' دقيقة') : '';
-            return { ep: 'حلقة', title: item.title, dur, date: dateAr, link: item.link||item.guid||'#' };
-          });
-          renderPodcast(episodes);
+        if(data.status === 'ok' && data.items?.length){
+          renderPodcast(data.items.slice(0,5).map(parseEpisode));
+          return;
+        }
+      } else {
+        const text = proxy.type === 'allorigins' ? (await res.json()).contents : await res.text();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(text, 'text/xml');
+        const items = Array.from(xml.querySelectorAll('item'));
+        if(items.length){
+          renderPodcast(items.slice(0,5).map(parseXMLEpisode));
           return;
         }
       }
-    } catch(e) { console.log('rss2json failed:', e); }
-
-    // Fallback to raw proxies
-    let xml = null;
-    for (const proxy of proxies.slice(1)) {
-      try {
-        const res = await fetch(proxy.url);
-        const text = proxy.type === 'allorigins' ? (await res.json()).contents : await res.text();
-        const parser = new DOMParser();
-        const parsed = parser.parseFromString(text, 'text/xml');
-        if (parsed.querySelector('item')) { xml = parsed; break; }
-      } catch(e) { continue; }
-    }
-    if (!xml) throw new Error('All proxies failed');
-    const items = Array.from(xml.querySelectorAll('item')).slice(0,5);
-    const episodes = items.map((item, i) => {
-      const title = item.querySelector('title')?.textContent || '';
-      const pubDate = item.querySelector('pubDate')?.textContent || '';
-      const duration = item.querySelector('duration')?.textContent || '';
-      const link = item.querySelector('enclosure')?.getAttribute('url') || 
-                   item.querySelector('link')?.textContent || '#';
-      const d = pubDate ? new Date(pubDate) : null;
-      const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-      const dateAr = d ? `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}` : '';
-      // Format duration from seconds to minutes
-      let durText = duration;
-      if (/^\d+$/.test(duration)) {
-        const mins = Math.floor(parseInt(duration)/60);
-        durText = mins + ' دقيقة';
-      }
-      return { ep: 'حلقة ' + (i+1), title, dur: durText, date: dateAr, link };
-    });
-    renderPodcast(episodes);
-  } catch(e) {
-    console.log('RSS fetch failed:', e);
-    renderPodcast([]);
+    } catch(e){ continue; }
   }
-}
 
+  // All failed — show message with direct link
+  renderPodcast('failed');
+}
 const defaultInterviews=[
   {id:'i1',vid:'dQw4w9WgXcQ',title:'مقابلة على قناة MBC',channel:'MBC'},
   {id:'i2',vid:'dQw4w9WgXcQ',title:'لقاء في برنامج صباح الخير',channel:'قناة السعودية'},
@@ -1433,8 +1435,8 @@ function toggleNewsArchive(){
 
 function renderPodcast(eps=null){
   if(!eps)eps=[];
-  if(eps.length===0){
-    document.getElementById('podcastGrid').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ تحميل الحلقات...</p>';
+  if(eps === 'failed' || !eps || eps.length===0){
+    document.getElementById('podcastGrid').innerHTML='<div style="text-align:center;padding:2rem;"><p style="color:var(--text-muted);font-size:.88rem;margin-bottom:1rem;">تعذّر تحميل الحلقات تلقائياً</p><a href="https://sabaho.libsyn.com" target="_blank" class="btn btn-outline" style="font-size:.82rem;padding:.5rem 1.2rem;">استمع على Libsyn ←</a></div>';
     return;
   }
   document.getElementById('podcastGrid').innerHTML=eps.slice(0,5).map((e,i)=>{
