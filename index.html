@@ -1253,26 +1253,28 @@ const RSS_FEED = 'https://feeds.libsyn.com/565035/rss';
 async function fetchPodcastFromRSS() {
   try {
     const proxies = [
-      { url: 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(RSS_FEED), type: 'rss2json' },
       { url: 'https://corsproxy.io/?' + encodeURIComponent(RSS_FEED), type: 'raw' },
       { url: 'https://api.allorigins.win/get?url=' + encodeURIComponent(RSS_FEED), type: 'allorigins' },
+      { url: 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(RSS_FEED), type: 'rss2json' },
     ];
     
-    // Try rss2json first (most reliable, no CORS issues)
+    // Try rss2json as fallback only
     try {
-      const res = await fetch(proxies[0].url);
-      const data = await res.json();
-      if(data.status === 'ok' && data.items && data.items.length > 0){
-        const episodes = data.items.slice(0,5).map((item,i) => {
-          const d = item.pubDate ? new Date(item.pubDate) : null;
+      const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(RSS_FEED));
+      if(res.ok){
+        const data = await res.json();
+        if(data.status === 'ok' && data.items && data.items.length > 0){
           const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-          const dateAr = d ? d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear() : '';
-          const dur = item.enclosure && item.enclosure.duration ? 
-            (parseInt(item.enclosure.duration) > 100 ? Math.floor(parseInt(item.enclosure.duration)/60)+' دقيقة' : item.enclosure.duration+' دقيقة') : '';
-          return { ep: 'حلقة', title: item.title, dur, date: dateAr, link: item.link||item.enclosure?.link||'#' };
-        });
-        renderPodcast(episodes);
-        return;
+          const episodes = data.items.slice(0,5).map((item,i) => {
+            const d = item.pubDate ? new Date(item.pubDate) : null;
+            const dateAr = d ? d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear() : '';
+            const dur = item.enclosure && item.enclosure.duration ? 
+              (parseInt(item.enclosure.duration) > 100 ? Math.floor(parseInt(item.enclosure.duration)/60)+' دقيقة' : item.enclosure.duration+' دقيقة') : '';
+            return { ep: 'حلقة', title: item.title, dur, date: dateAr, link: item.link||item.guid||'#' };
+          });
+          renderPodcast(episodes);
+          return;
+        }
       }
     } catch(e) { console.log('rss2json failed:', e); }
 
@@ -1372,9 +1374,9 @@ function renderNews(news=null){
             <div class="stars" id="stars-${n.id}">${[1,2,3,4,5].map(()=>'<span class="star">★</span>').join('')}</div>
           </div>
           <div class="share-btns">
+            ${n.link ? `<a href="${n.link}" target="_blank" class="share-btn" title="الرابط" style="text-decoration:none;">🔗</a>` : ''}
             <button class="share-btn" onclick="shareTw('${n.title}')" title="تويتر">𝕏</button>
             <button class="share-btn" onclick="shareWa('${n.title}')" title="واتساب">📲</button>
-            <button class="share-btn" onclick="shareCopy()" title="نسخ">🔗</button>
           </div>
         </div>
         <button class="cmt-toggle" onclick="toggleCmt('${n.id}')">💬 التعليقات</button>
@@ -1408,6 +1410,7 @@ function renderNews(news=null){
         <h3>${n.title}</h3>
         <p>${(n.body||n.excerpt||'').substring(0,120)}${(n.body||n.excerpt||'').length>120?'...':''}</p>
         ${(n.body||n.excerpt||'').length>120 ? `<a href="news.html?id=${n.id}" class="read-more-btn">اقرأ المزيد ←</a>` : ''}
+        ${n.link ? `<a href="${n.link}" target="_blank" style="font-size:.78rem;color:var(--gold);text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;margin-top:.4rem;">🔗 الرابط</a>` : ''}
       </div>
     </div>`).join('');
     archiveNews.forEach(n=>{initStars(n.id);renderCmts(n.id);});
@@ -1435,15 +1438,15 @@ function renderPodcast(eps=null){
     return;
   }
   document.getElementById('podcastGrid').innerHTML=eps.slice(0,5).map((e,i)=>{
-    const clickFn = (e.link && e.link!=='#') ? `onclick="window.open('${e.link}','_blank')"` : '';
-    return `<div class="ep-card reveal" ${clickFn}>
+    const epPageLink = 'podcast-episode.html?ep=' + i;
+    return `<div class="ep-card reveal" onclick="window.location.href='${epPageLink}'" style="cursor:pointer;">
       <div class="ep-num">${String(i+1).padStart(2,'0')}</div>
       <div class="ep-info">
         <h4 style="color:var(--text-muted);font-size:.8rem;font-weight:400;margin-bottom:.2rem;">${e.ep||''}</h4>
         <h4>${e.title}</h4>
         <div class="ep-meta"><span>⏱ ${e.dur||''}</span><span>📅 ${e.date||''}</span></div>
       </div>
-      <div class="ep-play">▶</div>
+      <div class="ep-play" title="${epLink?'استمع الآن':''}">▶</div>
     </div>`;
   }).join('');
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
