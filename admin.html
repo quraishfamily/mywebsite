@@ -219,6 +219,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function previewPodcast(){ _wcall("previewPodcast", Array.prototype.slice.call(arguments)); }
   function renderVOTable(){ _wcall("renderVOTable", Array.prototype.slice.call(arguments)); }
   function addPodcastEpisode(){ _wcall("addPodcastEpisode", []); }
+  function renderPodcastTable(){ _wcall("renderPodcastTable", []); }
   function renderEventsTable(){ _wcall("renderEventsTable", Array.prototype.slice.call(arguments)); }
   function exportSingleEvent(id){ _wcall("exportSingleEvent", [id]); }
   function openEventQuoteModal(id){ _wcall("openEventQuoteModal", [id]); }
@@ -2417,9 +2418,48 @@ function loadManualEpisodes(){
   }).catch(function(){tbl.innerHTML='<p style="color:var(--red);">فشل التحميل</p>';});
 }
 
+function renderPodcastTable(){
+  var tbl = document.getElementById('podcast-table');
+  if(!tbl) return;
+  tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  
+  var RSS_FEED = 'https://feeds.libsyn.com/565035/rss';
+  var months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+  fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(RSS_FEED))
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      if(data.status === 'ok' && data.items && data.items.length){
+        var table = document.createElement('table');
+        table.innerHTML = '<thead><tr><th>#</th><th>عنوان الحلقة</th><th>التاريخ</th><th>رابط</th></tr></thead>';
+        var tbody = document.createElement('tbody');
+        data.items.slice(0,10).forEach(function(item, i){
+          var d = item.pubDate ? new Date(item.pubDate) : null;
+          var dateAr = d ? d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear() : '-';
+          var tr = document.createElement('tr');
+          var td1=document.createElement('td'); td1.textContent=i+1;
+          var td2=document.createElement('td'); td2.textContent=item.title||'-';
+          var td3=document.createElement('td'); td3.textContent=dateAr;
+          var td4=document.createElement('td');
+          if(item.link){ var a=document.createElement('a'); a.href=item.link; a.target='_blank'; a.textContent='استمع'; a.style.color='var(--gold)'; td4.appendChild(a); }
+          tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4);
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        tbl.innerHTML = '';
+        tbl.appendChild(table);
+      } else {
+        tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">فشل تحميل الحلقات من RSS</p>';
+      }
+    }).catch(function(){
+      tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">فشل تحميل الحلقات</p>';
+    });
+}
+
 window._real_renderEventsTable = renderEventsTable;
 window._real_downloadEventQuotePDF = downloadEventQuotePDF;
 window._real_addPodcastEpisode = addPodcastEpisode;
+window._real_renderPodcastTable = renderPodcastTable;
 window._real_loadManualEpisodes = loadManualEpisodes;
 window._real_savePopup = savePopup;
 window._real_clearPopup = clearPopup;
