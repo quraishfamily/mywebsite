@@ -1283,17 +1283,29 @@ async function fetchPodcastFromRSS() {
     }
   } catch(e){}
 
-  // Try rss2json API
-  try {
-    const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(RSS_FEED), {signal: AbortSignal.timeout(8000)});
-    if(res.ok){
+  const apiUrls = [
+    'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(RSS_FEED),
+    'https://rss-to-json-serverless-api.vercel.app/api?feedURL=' + encodeURIComponent(RSS_FEED),
+    'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent('https://sabaho.libsyn.com/rss'),
+  ];
+
+  for(const url of apiUrls){
+    try {
+      const res = await fetch(url, {signal: AbortSignal.timeout(10000)});
+      if(!res.ok) continue;
       const data = await res.json();
+      // rss2json format
       if(data.status === 'ok' && data.items?.length){
         renderPodcast(data.items.slice(0,5).map(parseEpisode));
         return;
       }
-    }
-  } catch(e){}
+      // vercel format
+      if(data.items?.length){
+        renderPodcast(data.items.slice(0,5).map(parseEpisode));
+        return;
+      }
+    } catch(e){ continue; }
+  }
 
   // All failed — show link to Libsyn directly
   renderPodcast('failed');
