@@ -1428,7 +1428,7 @@ function renderPodcast(eps=null){
         <h4>${e.title}</h4>
         <div class="ep-meta"><span>⏱ ${e.dur||''}</span><span>📅 ${e.date||''}</span></div>
       </div>
-      <div class="ep-play" title="${epLink?'استمع الآن':''}">▶</div>
+      <div class="ep-play" title="${e.link && e.link!=='#'?'استمع الآن':''}">▶</div>
     </div>`;
   }).join('');
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
