@@ -804,7 +804,7 @@ nav{top:36px !important;}
   <ul class="nav-links">
     <li><a href="#about">نبذة</a></li>
     <li><a href="#books">كتبي</a></li>
-    <li><a href="#podcast">صباحو</a></li>
+    <li><a href="podcast.html">صباحو</a></li>
     <li><a href="#news">الأخبار</a></li>
     <li><a href="#interviews">مقابلات</a></li>
     <li><a href="#works">الأعمال</a></li>
@@ -825,7 +825,7 @@ nav{top:36px !important;}
 <div class="mobile-menu" id="mobileMenu">
   <a href="#about" onclick="closeMenu()">نبذة</a>
   <a href="#books" onclick="closeMenu()">كتبي</a>
-  <a href="#podcast" onclick="closeMenu()">صباحو</a>
+  <a href="podcast.html" onclick="closeMenu()">صباحو</a>
   <a href="#news" onclick="closeMenu()">الأخبار</a>
   <a href="#interviews" onclick="closeMenu()">مقابلات</a>
   <a href="#works" onclick="closeMenu()">الأعمال</a>
@@ -942,24 +942,7 @@ nav{top:36px !important;}
 </section>
 
 <!-- PODCAST -->
-<section id="podcast" class="podcast-section">
-  <div class="container">
-    <div class="reveal">
-      <div class="podcast-header">
-        <div>
-          <div class="sec-label">منذ عام ٢٠١٥</div>
-          <h2 class="sec-title">بودكاست صباحو</h2>
-          <div class="sec-line"></div>
-        </div>
-        <div class="podcast-badge">🎧 صباحو <span>آخر ٥ حلقات</span></div>
-      </div>
-    </div>
-    <div class="podcast-grid reveal" id="podcastGrid"></div>
-    <div class="podcast-more">
-      <a href="https://sites.libsyn.com/565035" target="_blank" class="btn btn-outline" style="font-size:.85rem;">استمع لجميع الحلقات على المنصات</a>
-    </div>
-  </div>
-</section>
+
 
 <!-- NEWS -->
 <section id="news" class="news-section">
@@ -1061,7 +1044,7 @@ nav{top:36px !important;}
     <ul class="foot-links">
       <li><a href="#about">نبذة</a></li>
       <li><a href="#books">كتبي</a></li>
-      <li><a href="#podcast">صباحو</a></li>
+      <li><a href="podcast.html">صباحو</a></li>
       <li><a href="#news">الأخبار</a></li>
       <li><a href="#interviews">مقابلات</a></li>
       <li><a href="#courses">الدورات</a></li>
@@ -1317,6 +1300,7 @@ function renderNews(news=null){
   // Filter: only show published or scheduled past due
   var now = Date.now();
   news = news.filter(function(n){
+    if(n.category === 'أخبار صباحو' || n.cat === 'أخبار صباحو') return false;
     if(!n.status || n.status === 'published') return true;
     if(n.status === 'draft') return false;
     if(n.status === 'scheduled'){
