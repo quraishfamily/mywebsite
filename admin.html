@@ -220,6 +220,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function renderVOTable(){ _wcall("renderVOTable", Array.prototype.slice.call(arguments)); }
   function addPodcastEpisode(){ _wcall("addPodcastEpisode", []); }
   function renderPodcastTable(){ _wcall("renderPodcastTable", []); }
+  function renderSabahoTable(){ _wcall("renderSabahoTable", []); }
   function renderEventsTable(){ _wcall("renderEventsTable", Array.prototype.slice.call(arguments)); }
   function exportSingleEvent(id){ _wcall("exportSingleEvent", [id]); }
   function openEventQuoteModal(id){ _wcall("openEventQuoteModal", [id]); }
@@ -279,6 +280,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       <div class="nav-item" onclick="showPage('works')"><span class="nav-icon">🎙️</span>الأعمال الصوتية</div>
       <div class="nav-item" onclick="showPage('voiceover')"><span class="nav-icon">🎙️</span>طلبات التعليق الصوتي<span class="nav-badge" id="badge-vo" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('regs')"><span class="nav-icon">📋</span>التسجيلات<span class="nav-badge" id="badge-regs" style="display:none">0</span></div>
+      <div class="nav-item" onclick="showPage('sabaho')"><span class="nav-icon">🎙️</span>أسئلة صباحو<span class="nav-badge" id="badge-sabaho" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('events')"><span class="nav-icon">🎤</span>طلبات تقديم الحفل<span class="nav-badge" id="badge-events" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('consulting')"><span class="nav-icon">💼</span>طلبات الاستشارة<span class="nav-badge" id="badge-consulting" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('messages')"><span class="nav-icon">✉</span>الرسائل<span class="nav-badge" id="badge-msgs" style="display:none">0</span></div>
@@ -461,6 +463,16 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       <div class="card">
         <div class="card-header"><span class="card-title">الشهادات المضافة</span></div>
         <div id="testimonials-table"></div>
+      </div>
+    </div>
+    <!-- SABAHO QUESTIONS -->
+    <div class="page" id="page-sabaho">
+      <div class="page-header">
+        <div class="page-title">أسئلة صباحو</div>
+        <div class="page-sub">الأسئلة والمواضيع المرسلة من صفحة البودكاست</div>
+      </div>
+      <div class="card">
+        <div class="table-wrap"><div id="sabaho-table"></div></div>
       </div>
     </div>
     <!-- EVENT REQUESTS -->
@@ -929,6 +941,7 @@ function renderPage(id){
   if(id==='dashboard')renderDashboard();
   else if(id==='news')renderNewsTable();
   else if(id==='courses')renderCoursesTable();
+  else if(id==='sabaho'){renderSabahoTable();markSeen('sabaho');}
   else if(id==='events'){renderEventsTable();markSeen('events');}
   else if(id==='voiceover'){renderVOTable();markSeen('voiceover');}
   else if(id==='popup'){loadPopupSettings();}
@@ -1865,6 +1878,11 @@ function updateBadges(){
     var b=document.getElementById('badge-msgs');
     if(b){b.textContent=unseen;b.style.display=unseen>0?'inline-flex':'none';}
   }).catch(function(){});
+  db.collection('sabaho_questions').get().then(function(snap){
+    var unseen=Math.max(0,snap.size-(parseInt(localStorage.getItem('seen-sabaho')||'0')));
+    var b=document.getElementById('badge-sabaho');
+    if(b){b.textContent=unseen;b.style.display=unseen>0?'inline-flex':'none';}
+  }).catch(function(){});
   db.collection('event_requests').get().then(function(snap){
     var unseen=Math.max(0,snap.size-(parseInt(localStorage.getItem('seen-events')||'0')));
     var b=document.getElementById('badge-events');
@@ -1880,13 +1898,13 @@ function updateBadges(){
 }
 
 function markSeen(type){
-  var colMap={regs:'registrations',consulting:'consulting',messages:'messages',voiceover:'voiceover_requests',events:'event_requests'};
+  var colMap={regs:'registrations',consulting:'consulting',messages:'messages',voiceover:'voiceover_requests',events:'event_requests',sabaho:'sabaho_questions'};
   var col=colMap[type];
   if(!col)return;
   db.collection(col).get().then(function(snap){
-    var key=type==='messages'?'seen-msgs':(type==='voiceover'?'seen-voiceover':(type==='events'?'seen-events':'seen-'+type));
+    var key=type==='messages'?'seen-msgs':(type==='voiceover'?'seen-voiceover':(type==='events'?'seen-events':(type==='sabaho'?'seen-sabaho':'seen-'+type)));
     localStorage.setItem(key,snap.size);
-    var badgeId=type==='messages'?'badge-msgs':(type==='voiceover'?'badge-vo':(type==='events'?'badge-events':'badge-'+type));
+    var badgeId=type==='messages'?'badge-msgs':(type==='voiceover'?'badge-vo':(type==='events'?'badge-events':(type==='sabaho'?'badge-sabaho':'badge-'+type)));
     var b=document.getElementById(badgeId);
     if(b)b.style.display='none';
   }).catch(function(){});
@@ -2183,6 +2201,11 @@ window._real_deleteDoc = deleteDoc;
 function renderEventsTable(){
   var tbl = document.getElementById('events-table');
   tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('sabaho_questions').get().then(function(snap){
+    var unseen=Math.max(0,snap.size-(parseInt(localStorage.getItem('seen-sabaho')||'0')));
+    var b=document.getElementById('badge-sabaho');
+    if(b){b.textContent=unseen;b.style.display=unseen>0?'inline-flex':'none';}
+  }).catch(function(){});
   db.collection('event_requests').get().then(function(snap){
     if(snap.empty){tbl.innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد طلبات بعد.</p>';return;}
     var table = document.createElement('table');
@@ -2456,6 +2479,46 @@ function renderPodcastTable(){
     });
 }
 
+function renderSabahoTable(){
+  var tbl = document.getElementById('sabaho-table');
+  tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('sabaho_questions').get().then(function(snap){
+    if(snap.empty){tbl.innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد أسئلة بعد.</p>';return;}
+    var table = document.createElement('table');
+    table.innerHTML = '<thead><tr><th>الاسم</th><th>البريد</th><th>الدولة</th><th>السؤال</th><th>الوقت</th><th>تمت الإجابة</th><th></th></tr></thead>';
+    var tbody = document.createElement('tbody');
+    var docs = snap.docs.slice().sort(function(a,b){
+      var ta = a.data().time || ''; var tb = b.data().time || '';
+      return tb.localeCompare(ta);
+    });
+    docs.forEach(function(d){
+      var r = d.data();
+      var tr = document.createElement('tr');
+      var td1=document.createElement('td'); td1.textContent=r.name||'-';
+      var td2=document.createElement('td'); td2.textContent=r.email||'-';
+      var td3=document.createElement('td');
+      var countryBadge=document.createElement('span'); countryBadge.className='badge badge-gold'; countryBadge.textContent=r.country||'-';
+      td3.appendChild(countryBadge);
+      var td4=document.createElement('td'); td4.style.maxWidth='300px'; td4.style.whiteSpace='normal'; td4.textContent=r.question||'-';
+      var td5=document.createElement('td'); td5.style.fontSize='.72rem'; td5.style.color='var(--text-muted)'; td5.textContent=r.time||'-';
+      var td6=document.createElement('td');
+      var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=r.answered||false; chk.style.width='18px'; chk.style.height='18px'; chk.style.accentColor='var(--gold)';
+      (function(id){chk.addEventListener('change',function(){
+        db.collection('sabaho_questions').doc(id).update({answered:chk.checked});
+      });})(d.id);
+      td6.appendChild(chk);
+      var td7=document.createElement('td');
+      var btn=document.createElement('button'); btn.className='btn btn-danger btn-sm'; btn.textContent='حذف';
+      (function(id){btn.addEventListener('click',function(){deleteDoc('sabaho_questions',id,'sabaho-table',renderSabahoTable);});})(d.id);
+      td7.appendChild(btn);
+      tr.appendChild(td1);tr.appendChild(td2);tr.appendChild(td3);tr.appendChild(td4);tr.appendChild(td5);tr.appendChild(td6);tr.appendChild(td7);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody); tbl.innerHTML=''; tbl.appendChild(table);
+  }).catch(function(){tbl.innerHTML='<p style="color:var(--red);">فشل التحميل</p>';});
+}
+
+window._real_renderSabahoTable = renderSabahoTable;
 window._real_renderEventsTable = renderEventsTable;
 window._real_downloadEventQuotePDF = downloadEventQuotePDF;
 window._real_addPodcastEpisode = addPodcastEpisode;
