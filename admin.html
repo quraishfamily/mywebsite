@@ -1742,63 +1742,29 @@ function downloadQuotePDF(){
   var includes = document.getElementById('q-includes').value;
   var notes = document.getElementById('q-notes').value;
   if(!price){toast('أدخل السعر أولاً',true);return;}
-  var clientName = quoteRequestData ? quoteRequestData.name : 'Client';
-  var projectType = quoteRequestData ? quoteRequestData.type : '';
-  var clientEmail = quoteRequestData ? quoteRequestData.email : '';
-  var date = new Date().toLocaleDateString();
-  var doc = new window.jspdf.jsPDF({unit:'mm',format:'a4'});
-  doc.setFillColor(20,20,20);
-  doc.rect(0,0,210,40,'F');
-  var logoQuoteImg = new Image();
-  logoQuoteImg.src = 'data:image/jpeg;base64,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';
-  doc.addImage(logoQuoteImg, 'JPEG', 5, 4, 32, 32);
-  doc.setTextColor(201,168,76);
-  doc.setFontSize(16);
-  doc.setFont('helvetica','bold');
-  doc.text('QURAISH VOICE', 130, 16, {align:'center'});
-  doc.setFontSize(8);
-  doc.setFont('helvetica','normal');
-  doc.setTextColor(200,200,200);
-  doc.text('quraishvoice.me  |  +966565909049', 130, 23, {align:'center'});
-  doc.setTextColor(201,168,76);
-  doc.setFontSize(11);
-  doc.setFont('helvetica','bold');
-  doc.text('VOICE OVER QUOTATION', 130, 32, {align:'center'});
-  doc.setTextColor(50,50,50);
-  doc.setFontSize(10);
-  doc.text('Client: ' + clientName, 20, 48);
-  doc.text('Email: ' + clientEmail, 20, 55);
-  doc.text('Project: ' + projectType, 20, 62);
-  doc.text('Date: ' + date, 150, 48);
-  doc.setDrawColor(201,168,76);
-  doc.setLineWidth(0.5);
-  doc.line(20, 70, 190, 70);
-  doc.setFillColor(255,250,240);
-  doc.rect(20,75,170,22,'F');
-  doc.setDrawColor(201,168,76);
-  doc.rect(20,75,170,22,'S');
-  doc.setFontSize(14);
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(180,130,20);
-  doc.text('Total: SAR ' + price, 105, 89, {align:'center'});
-  doc.setTextColor(50,50,50);
-  doc.setFontSize(10);
-  doc.setFont('helvetica','normal');
-  doc.text('Delivery: ' + delivery, 105, 108, {align:'center'});
-  doc.setFont('helvetica','bold');
-  doc.text('This quote includes:', 20, 122);
-  doc.setFont('helvetica','normal');
-  var includeLines = includes.replace(/\n/g,' | ').split(' | ');
-  var y = 130;
-  includeLines.forEach(function(l){ doc.text(l, 25, y); y += 7; });
-  if(notes){ doc.setFont('helvetica','bold'); doc.text('Notes:', 20, y+5); doc.setFont('helvetica','normal'); doc.text(notes, 20, y+12, {maxWidth:170}); }
-  doc.setFillColor(240,240,240);
-  doc.rect(0,272,210,25,'F');
-  doc.setFontSize(8);
-  doc.setTextColor(120,120,120);
-  doc.text('Valid for 7 days from issue date  |  Ahmed Quraish Voice Over  |  quraishvoice.me', 105, 282, {align:'center'});
-  doc.save('quote_' + clientName.replace(/ /g,'_') + '_' + date.replace(/\//g,'-') + '.pdf');
-  toast('تم تحميل PDF!');
+  var name = quoteRequestData ? quoteRequestData.name : '';
+  var email = quoteRequestData ? quoteRequestData.email : '';
+  var type = quoteRequestData ? quoteRequestData.type : '';
+  var date = new Date().toLocaleDateString('ar-SA');
+  var logoSrc = document.querySelector('.sidebar-logo img') ? document.querySelector('.sidebar-logo img').src : '';
+  var includesHtml = includes.split('\n').filter(function(l){return l.trim();}).map(function(l){
+    return '<li style="padding:5px 0;border-bottom:1px solid #f0f0f0;">'+escHtml(l.replace(/^[-•]/,'').trim())+'</li>';
+  }).join('');
+
+  var win = window.open('','_blank','width=800,height=900');
+  win.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>تسعيرة تعليق صوتي - '+escHtml(name)+'<\/title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Tajawal,sans-serif;background:#fff;color:#111;direction:rtl;}.header{background:#0A0A0A;padding:20px 30px;display:flex;align-items:center;gap:16px;}.header img{height:60px;}.header-text h1{color:#C9A84C;font-family:Cairo,sans-serif;font-size:20px;margin:0 0 4px;}.header-text p{color:#999;font-size:11px;}.quote-label{margin-right:auto;background:#C9A84C;color:#000;padding:6px 14px;border-radius:3px;font-size:11px;font-weight:700;}.body{padding:28px 32px;}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f8f8f8;border:1px solid #eee;border-radius:6px;padding:16px 20px;margin-bottom:20px;}.info-item{font-size:13px;}.info-item span{color:#777;display:block;font-size:11px;margin-bottom:2px;}.price-box{background:linear-gradient(135deg,#0A0A0A,#1a1a00);border:2px solid #C9A84C;border-radius:6px;padding:20px;text-align:center;margin:20px 0;}.price-val{color:#C9A84C;font-size:2rem;font-weight:900;font-family:Cairo,sans-serif;}.price-sub{color:#888;font-size:12px;margin-top:4px;}.sec-title{font-family:Cairo,sans-serif;font-size:13px;font-weight:700;border-bottom:2px solid #C9A84C;padding-bottom:6px;margin:16px 0 10px;color:#333;}.inc-list{list-style:none;font-size:13px;color:#444;}.inc-list li::before{content:"✓";color:#C9A84C;margin-left:8px;font-weight:bold;}.notes-box{background:#fffbf0;border:1px solid rgba(201,168,76,.3);border-radius:4px;padding:12px;font-size:13px;color:#555;line-height:1.8;margin-top:12px;}.validity{text-align:center;color:#aaa;font-size:11px;margin-top:20px;}.footer{background:#0A0A0A;color:#666;font-size:10px;text-align:center;padding:12px;margin-top:24px;}.no-print{text-align:center;padding:16px;}@media print{.no-print{display:none;}.header{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.price-box{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}<\/style><\/head><body>'
+    +'<div class="header"><img src="'+logoSrc+'" onerror="this.style.display='none'"><div class="header-text"><h1>Quraish Voice<\/h1><p>quraishvoice.me &nbsp;|&nbsp; +966565909049<\/p><\/div><div class="quote-label">تسعيرة تعليق صوتي<\/div><\/div>'
+    +'<div class="body">'
+    +'<div class="info-grid"><div class="info-item"><span>العميل<\/span>'+escHtml(name)+'<\/div><div class="info-item"><span>البريد<\/span>'+escHtml(email)+'<\/div><div class="info-item"><span>نوع المشروع<\/span>'+escHtml(type)+'<\/div><div class="info-item"><span>تاريخ التسعيرة<\/span>'+date+'<\/div><\/div>'
+    +'<div class="price-box"><div class="price-val">'+escHtml(price)+' ريال سعودي<\/div><div class="price-sub">مدة التسليم: '+escHtml(delivery)+'<\/div><\/div>'
+    +'<div class="sec-title">يشمل السعر<\/div><ul class="inc-list">'+includesHtml+'<\/ul>'
+    +(notes?'<div class="sec-title">ملاحظات<\/div><div class="notes-box">'+escHtml(notes)+'<\/div>':'')
+    +'<div class="validity">هذه التسعيرة سارية لمدة ٧ أيام من تاريخ الإصدار<\/div>'
+    +'<\/div>'
+    +'<div class="footer">أحمد قريش | quraishvoice.me | +966565909049<\/div>'
+    +'<div class="no-print"><button onclick="window.print()" style="background:#C9A84C;color:#000;border:none;padding:10px 28px;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif;">🖨️ طباعة / حفظ PDF<\/button> <button onclick="window.close()" style="background:#333;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:14px;cursor:pointer;font-family:Tajawal,sans-serif;">إغلاق<\/button><\/div>'
+    +'<\/body><\/html>');
+  win.document.close();
 }
 
 function buildInterviewRow(docId, iv){
