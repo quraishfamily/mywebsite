@@ -220,6 +220,13 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function renderVOTable(){ _wcall("renderVOTable", Array.prototype.slice.call(arguments)); }
   function addPodcastEpisode(){ _wcall("addPodcastEpisode", []); }
   function renderPodcastTable(){ _wcall("renderPodcastTable", []); }
+  function initInvoicePage(){ _wcall("initInvoicePage", []); }
+  function addInvoiceLine(){ _wcall("addInvoiceLine", []); }
+  function removeInvoiceLine(id){ _wcall("removeInvoiceLine", [id]); }
+  function calcTotal(){ _wcall("calcTotal", []); }
+  function previewInvoice(){ _wcall("previewInvoice", []); }
+  function saveInvoice(){ _wcall("saveInvoice", []); }
+  function sendInvoiceByEmail(){ _wcall("sendInvoiceByEmail", []); }
   function renderSabahoTable(){ _wcall("renderSabahoTable", []); }
   function renderEventsTable(){ _wcall("renderEventsTable", Array.prototype.slice.call(arguments)); }
   function exportSingleEvent(id){ _wcall("exportSingleEvent", [id]); }
@@ -288,6 +295,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       <div class="nav-item" onclick="showPage('testimonials')"><span class="nav-icon">⭐</span>شهادات المتدربين</div>
       <div class="nav-item" onclick="showPage('newsletter')"><span class="nav-icon">📧</span>النشرة البريدية<span class="nav-badge" id="badge-nl" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('popup')"><span class="nav-icon">📢</span>الإعلان المنبثق</div>
+      <div class="nav-item" onclick="showPage('invoices')"><span class="nav-icon">🧾</span>الفواتير</div>
       <div class="nav-item" onclick="showPage('settings')"><span class="nav-icon">⚙</span>الإعدادات</div>
     </div>
     <div class="sidebar-bottom">
@@ -434,6 +442,54 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
           <li>الصورة تجعل الإعلان أكثر جاذبية بشكل ملحوظ</li>
           <li>التأخير المناسب: ٣-٥ ثوانٍ بعد فتح الصفحة</li>
         </ul>
+      </div>
+    </div>
+    <!-- INVOICES -->
+    <div class="page" id="page-invoices">
+      <div class="page-header">
+        <div class="page-title">الفواتير</div>
+        <div class="page-sub">إنشاء وإرسال فواتير احترافية للعملاء</div>
+      </div>
+
+      <!-- NEW INVOICE FORM -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">إنشاء فاتورة جديدة</span></div>
+        <div class="form-grid">
+          <div class="fg"><label>اسم العميل *</label><input type="text" id="inv-client-name" placeholder="اسم العميل"></div>
+          <div class="fg"><label>البريد الإلكتروني *</label><input type="email" id="inv-client-email" placeholder="email@example.com"></div>
+          <div class="fg"><label>رقم الجوال</label><input type="tel" id="inv-client-phone" placeholder="+966 5X XXX XXXX"></div>
+          <div class="fg"><label>رقم الفاتورة</label><input type="text" id="inv-number" placeholder="INV-001"></div>
+          <div class="fg"><label>تاريخ الفاتورة</label><input type="date" id="inv-date"></div>
+          <div class="fg"><label>تاريخ الاستحقاق</label><input type="date" id="inv-due"></div>
+          <div class="fg fg-full"><label>ملاحظات</label><textarea id="inv-notes" placeholder="أي ملاحظات إضافية..." style="min-height:60px;"></textarea></div>
+        </div>
+
+        <!-- LINE ITEMS -->
+        <div style="margin-top:1.5rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;">
+            <label style="font-size:.82rem;color:var(--text-muted);font-weight:700;">الخدمات المقدمة</label>
+            <button class="btn btn-outline btn-sm" onclick="addInvoiceLine()">+ إضافة خدمة</button>
+          </div>
+          <div id="inv-lines">
+            <!-- lines added dynamically -->
+          </div>
+          <div style="margin-top:1rem;padding:1rem;background:var(--dark3);border-radius:4px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:.88rem;color:var(--text-muted);">الإجمالي</span>
+            <span style="font-size:1.3rem;font-weight:700;color:var(--gold);" id="inv-total">0 ريال</span>
+          </div>
+        </div>
+
+        <div class="form-actions" style="margin-top:1.5rem;">
+          <button class="btn btn-primary btn-sm" onclick="previewInvoice()">👁️ معاينة وطباعة</button>
+          <button class="btn btn-outline btn-sm" onclick="saveInvoice()">💾 حفظ الفاتورة</button>
+          <button class="btn btn-outline btn-sm" onclick="sendInvoiceByEmail()">📧 إرسال للعميل</button>
+        </div>
+      </div>
+
+      <!-- SAVED INVOICES -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">الفواتير المحفوظة</span></div>
+        <div class="table-wrap"><div id="invoices-table"></div></div>
       </div>
     </div>
     <!-- TESTIMONIALS -->
@@ -941,6 +997,7 @@ function renderPage(id){
   if(id==='dashboard')renderDashboard();
   else if(id==='news')renderNewsTable();
   else if(id==='courses')renderCoursesTable();
+  else if(id==='invoices'){initInvoicePage();}
   else if(id==='sabaho'){renderSabahoTable();markSeen('sabaho');}
   else if(id==='events'){renderEventsTable();markSeen('events');}
   else if(id==='voiceover'){renderVOTable();markSeen('voiceover');}
@@ -2509,7 +2566,217 @@ function renderSabahoTable(){
   }).catch(function(){tbl.innerHTML='<p style="color:var(--red);">فشل التحميل</p>';});
 }
 
+window._real_initInvoicePage = initInvoicePage;
+window._real_addInvoiceLine = addInvoiceLine;
+window._real_removeInvoiceLine = removeInvoiceLine;
+window._real_calcTotal = calcTotal;
+window._real_previewInvoice = previewInvoice;
+window._real_saveInvoice = saveInvoice;
+window._real_sendInvoiceByEmail = sendInvoiceByEmail;
+window._real_loadInvoicesTable = loadInvoicesTable;
 window._real_renderSabahoTable = renderSabahoTable;
+// ═══════════════════════════════════════
+// INVOICE FUNCTIONS
+// ═══════════════════════════════════════
+var invLineCount = 0;
+
+function initInvoicePage(){
+  // Set default date to today
+  var today = new Date().toISOString().split('T')[0];
+  var due = new Date(); due.setDate(due.getDate()+7);
+  var dueStr = due.toISOString().split('T')[0];
+  document.getElementById('inv-date').value = today;
+  document.getElementById('inv-due').value = dueStr;
+  // Auto invoice number
+  db.collection('invoices').get().then(function(snap){
+    var num = String(snap.size+1).padStart(3,'0');
+    document.getElementById('inv-number').value = 'INV-'+num;
+  }).catch(function(){
+    document.getElementById('inv-number').value = 'INV-001';
+  });
+  // Add first line if empty
+  if(invLineCount === 0) addInvoiceLine();
+  loadInvoicesTable();
+}
+
+function addInvoiceLine(){
+  invLineCount++;
+  var id = 'line-'+invLineCount;
+  var div = document.createElement('div');
+  div.id = id;
+  div.style.cssText = 'display:grid;grid-template-columns:1fr auto auto auto;gap:.6rem;align-items:center;margin-bottom:.6rem;';
+  div.innerHTML = '<input type="text" placeholder="وصف الخدمة" class="inv-desc" oninput="calcTotal()" style="background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem .8rem;color:var(--text);font-family:Tajawal,sans-serif;font-size:.85rem;width:100%;">'
+    +'<input type="number" placeholder="الكمية" class="inv-qty" value="1" min="1" oninput="calcTotal()" style="width:70px;background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem .8rem;color:var(--text);font-family:Tajawal,sans-serif;font-size:.85rem;">'
+    +'<input type="number" placeholder="السعر" class="inv-price" min="0" oninput="calcTotal()" style="width:110px;background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem .8rem;color:var(--text);font-family:Tajawal,sans-serif;font-size:.85rem;">'
+    +'<button onclick="removeInvoiceLine(''+id+'')" style="width:30px;height:30px;background:rgba(200,50,50,.15);border:1px solid rgba(200,50,50,.3);border-radius:4px;color:#cc4444;cursor:pointer;font-size:1rem;flex-shrink:0;">✕</button>';
+  document.getElementById('inv-lines').appendChild(div);
+}
+
+function removeInvoiceLine(id){
+  var el = document.getElementById(id);
+  if(el){ el.remove(); calcTotal(); }
+}
+
+function calcTotal(){
+  var total = 0;
+  document.querySelectorAll('#inv-lines > div').forEach(function(row){
+    var qty = parseFloat(row.querySelector('.inv-qty').value)||0;
+    var price = parseFloat(row.querySelector('.inv-price').value)||0;
+    total += qty * price;
+  });
+  document.getElementById('inv-total').textContent = total.toLocaleString('ar-SA') + ' ريال';
+  return total;
+}
+
+function getInvoiceData(){
+  var lines = [];
+  var total = 0;
+  document.querySelectorAll('#inv-lines > div').forEach(function(row){
+    var desc = row.querySelector('.inv-desc').value.trim();
+    var qty = parseFloat(row.querySelector('.inv-qty').value)||1;
+    var price = parseFloat(row.querySelector('.inv-price').value)||0;
+    if(desc){ lines.push({desc:desc,qty:qty,price:price,subtotal:qty*price}); total+=qty*price; }
+  });
+  return {
+    client: document.getElementById('inv-client-name').value.trim(),
+    email: document.getElementById('inv-client-email').value.trim(),
+    phone: document.getElementById('inv-client-phone').value.trim(),
+    number: document.getElementById('inv-number').value.trim(),
+    date: document.getElementById('inv-date').value,
+    due: document.getElementById('inv-due').value,
+    notes: document.getElementById('inv-notes').value.trim(),
+    lines: lines,
+    total: total,
+    status: 'pending',
+    time: new Date().toLocaleString('ar-SA')
+  };
+}
+
+function getLogoSrc(){
+  var img = document.querySelector('.sidebar-logo img');
+  return img ? img.src : '';
+}
+
+function buildInvoiceHTML(inv){
+  var logoSrc = getLogoSrc();
+  var linesHtml = inv.lines.map(function(l){
+    return '<tr><td style=\"padding:10px 14px;border-bottom:1px solid #eee;font-size:13px;\">'+escHtml(l.desc)+'<\/td>'
+      +'<td style=\"padding:10px 14px;border-bottom:1px solid #eee;text-align:center;font-size:13px;\">'+l.qty+'<\/td>'
+      +'<td style=\"padding:10px 14px;border-bottom:1px solid #eee;text-align:center;font-size:13px;\">'+l.price.toLocaleString('ar-SA')+' ر.س<\/td>'
+      +'<td style=\"padding:10px 14px;border-bottom:1px solid #eee;text-align:center;font-size:13px;font-weight:700;\">'+l.subtotal.toLocaleString('ar-SA')+' ر.س<\/td><\/tr>';
+  }).join('');
+
+  var content = [];
+  content.push('<!DOCTYPE html><html dir=\"rtl\" lang=\"ar\">');
+  content.push('<head><meta charset=\"UTF-8\"><title>فاتورة '+escHtml(inv.number)+'<\/title>');
+  content.push('<link href=\"https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700&display=swap\" rel=\"stylesheet\">');
+  content.push('<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Tajawal,sans-serif;background:#fff;color:#111;direction:rtl;font-size:14px;}');
+  content.push('.hdr{background:#0A0A0A;padding:24px 32px;display:flex;align-items:center;justify-content:space-between;}');
+  content.push('.hdr-left{display:flex;align-items:center;gap:14px;}.hdr img{height:60px;}.hdr-text h1{color:#C9A84C;font-family:Cairo,sans-serif;font-size:20px;}.hdr-text p{color:#888;font-size:11px;margin-top:3px;}');
+  content.push('.inv-badge{background:#C9A84C;color:#000;padding:6px 16px;border-radius:3px;font-size:12px;font-weight:700;font-family:Cairo,sans-serif;}');
+  content.push('.body{padding:28px 32px;}');
+  content.push('.info-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;}');
+  content.push('.info-box{background:#f8f8f8;border:1px solid #eee;border-radius:5px;padding:14px 18px;}');
+  content.push('.info-box h3{font-family:Cairo,sans-serif;font-size:12px;color:#C9A84C;margin-bottom:8px;font-weight:700;}');
+  content.push('.info-box p{font-size:13px;color:#333;line-height:1.8;}');
+  content.push('table{width:100%;border-collapse:collapse;margin-bottom:16px;}');
+  content.push('thead{background:#0A0A0A;}thead th{color:#C9A84C;padding:10px 14px;font-size:12px;font-weight:700;text-align:right;}');
+  content.push('.total-row{background:#f8f8f8;border-top:2px solid #C9A84C;display:flex;justify-content:space-between;padding:14px 18px;align-items:center;}');
+  content.push('.total-label{font-size:13px;color:#555;}');
+  content.push('.total-val{font-size:1.4rem;font-weight:900;color:#C9A84C;font-family:Cairo,sans-serif;}');
+  content.push('.status-box{display:inline-block;padding:4px 12px;border-radius:100px;font-size:11px;font-weight:700;background:rgba(201,168,76,.1);color:#C9A84C;border:1px solid rgba(201,168,76,.3);margin-bottom:16px;}');
+  content.push('.notes-box{background:#fffbf0;border:1px solid #f0e0a0;border-radius:4px;padding:12px 16px;font-size:13px;color:#555;line-height:1.8;margin-top:12px;}');
+  content.push('.ftr{background:#0A0A0A;color:#666;font-size:10px;text-align:center;padding:12px;margin-top:24px;}');
+  content.push('.noprint{text-align:center;padding:16px;}');
+  content.push('@media print{.noprint{display:none;}.hdr,.total-row,thead{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}<\/style><\/head><body>');
+
+  content.push('<div class=\"hdr\"><div class=\"hdr-left\"><img src=\"'+logoSrc+'\"><div class=\"hdr-text\"><h1>Quraish Voice<\/h1><p>quraishvoice.me | +966565909049<\/p><\/div><\/div><div class=\"inv-badge\">فاتورة<\/div><\/div>');
+  content.push('<div class=\"body\">');
+  content.push('<div class=\"info-row\">');
+  content.push('<div class=\"info-box\"><h3>بيانات العميل<\/h3><p><b>'+escHtml(inv.client)+'<\/b><br>'+escHtml(inv.email)+'<br>'+(inv.phone?escHtml(inv.phone):'')+'<\/p><\/div>');
+  content.push('<div class=\"info-box\"><h3>تفاصيل الفاتورة<\/h3><p>رقم الفاتورة: <b>'+escHtml(inv.number)+'<\/b><br>تاريخ الإصدار: '+escHtml(inv.date)+'<br>تاريخ الاستحقاق: '+escHtml(inv.due)+'<\/p><\/div>');
+  content.push('<\/div>');
+  content.push('<table><thead><tr><th>الخدمة<\/th><th style=\"text-align:center;\">الكمية<\/th><th style=\"text-align:center;\">سعر الوحدة<\/th><th style=\"text-align:center;\">الإجمالي<\/th><\/tr><\/thead><tbody>'+linesHtml+'<\/tbody><\/table>');
+  content.push('<div class=\"total-row\"><span class=\"total-label\">الإجمالي الكلي<\/span><span class=\"total-val\">'+inv.total.toLocaleString('ar-SA')+' ريال سعودي<\/span><\/div>');
+  if(inv.notes){ content.push('<div class=\"notes-box\"><b>ملاحظات:<\/b> '+escHtml(inv.notes)+'<\/div>'); }
+  content.push('<\/div>');
+  content.push('<div class=\"ftr\">أحمد قريش | Quraish Voice | quraishvoice.me | +966565909049<\/div>');
+  content.push('<div class=\"noprint\"><button onclick=\"window.print()\" style=\"background:#C9A84C;color:#000;border:none;padding:10px 24px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif;\">🖨️ طباعة / حفظ PDF<\/button> <button onclick=\"window.close()\" style=\"background:#333;color:#fff;border:none;padding:10px 18px;border-radius:4px;font-size:13px;cursor:pointer;\">إغلاق<\/button><\/div>');
+  content.push('<\/body><\/html>');
+  return content.join('\n');
+}
+
+function previewInvoice(){
+  var inv = getInvoiceData();
+  if(!inv.client){toast('أدخل اسم العميل',true);return;}
+  if(!inv.lines.length){toast('أضف خدمة واحدة على الأقل',true);return;}
+  var win = window.open('','_blank','width=860,height=950');
+  win.document.write(buildInvoiceHTML(inv));
+  win.document.close();
+}
+
+function saveInvoice(){
+  var inv = getInvoiceData();
+  if(!inv.client){toast('أدخل اسم العميل',true);return;}
+  if(!inv.lines.length){toast('أضف خدمة واحدة على الأقل',true);return;}
+  db.collection('invoices').add(inv).then(function(){
+    toast('تم حفظ الفاتورة! ✓');
+    loadInvoicesTable();
+  }).catch(function(){toast('فشل الحفظ',true);});
+}
+
+async function sendInvoiceByEmail(){
+  var inv = getInvoiceData();
+  if(!inv.client){toast('أدخل اسم العميل',true);return;}
+  if(!inv.email){toast('أدخل البريد الإلكتروني للعميل',true);return;}
+  if(!inv.lines.length){toast('أضف خدمة واحدة على الأقل',true);return;}
+  var linesText = inv.lines.map(function(l){return l.desc+' × '+l.qty+' = '+l.subtotal.toLocaleString('ar-SA')+' ر.س';}).join('\n');
+  var msg = ['عزيزي '+inv.client+'،','','مرفق تفاصيل فاتورة رقم '+inv.number+':','',linesText,'','الإجمالي: '+inv.total.toLocaleString('ar-SA')+' ريال سعودي','تاريخ الاستحقاق: '+inv.due,'',inv.notes?'ملاحظات: '+inv.notes:'','للاستفسار: +966565909049','','مع تحياتي،','أحمد قريش'].join('\n');
+  try {
+    await emailjs.send('service_6g3odwb','bozx1s3',{
+      from_name:'أحمد قريش',from_email:inv.email,
+      subject:'فاتورة رقم '+inv.number+' — Quraish Voice',
+      message:msg,phone:inv.phone||'-',course:'فاتورة',notes:inv.notes||'-',time:inv.time
+    },{publicKey:'QnIPBoSRBkpNWiNt4'});
+    db.collection('invoices').add(Object.assign(inv,{status:'sent',sentAt:new Date().toLocaleString('ar-SA')})).catch(function(){});
+    toast('تم إرسال الفاتورة للعميل! ✓');
+    loadInvoicesTable();
+  } catch(e){ toast('فشل الإرسال: '+e.message,true); }
+}
+
+function loadInvoicesTable(){
+  var tbl = document.getElementById('invoices-table');
+  if(!tbl) return;
+  tbl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('invoices').get().then(function(snap){
+    if(snap.empty){tbl.innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد فواتير محفوظة بعد.</p>';return;}
+    var table = document.createElement('table');
+    table.innerHTML = '<thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>الإجمالي</th><th>التاريخ</th><th>الاستحقاق</th><th>الحالة</th><th></th></tr></thead>';
+    var tbody = document.createElement('tbody');
+    var docs = snap.docs.slice().sort(function(a,b){return (b.data().time||'').localeCompare(a.data().time||'');});
+    docs.forEach(function(d){
+      var r = d.data();
+      var tr = document.createElement('tr');
+      var statusBadge = r.status==='sent'?'<span class="badge badge-green">مُرسَلة</span>':'<span class="badge" style="background:rgba(201,168,76,.1);color:var(--gold);">محفوظة</span>';
+      var cells = [r.number||'-', r.client||'-', (r.total||0).toLocaleString('ar-SA')+' ر.س', r.date||'-', r.due||'-'];
+      cells.forEach(function(val){var td=document.createElement('td');td.textContent=val;tr.appendChild(td);});
+      var td6=document.createElement('td'); td6.innerHTML=statusBadge; tr.appendChild(td6);
+      var td7=document.createElement('td');
+      var btnP=document.createElement('button'); btnP.className='btn btn-outline btn-sm'; btnP.textContent='طباعة'; btnP.style.marginLeft='.3rem';
+      (function(inv){ btnP.addEventListener('click',function(){
+        var win=window.open('','_blank','width=860,height=950');
+        win.document.write(buildInvoiceHTML(inv));
+        win.document.close();
+      }); })(r);
+      var btnD=document.createElement('button'); btnD.className='btn btn-danger btn-sm'; btnD.textContent='حذف';
+      (function(id){btnD.addEventListener('click',function(){deleteDoc('invoices',id,'invoices-table',loadInvoicesTable);});})(d.id);
+      td7.appendChild(btnP); td7.appendChild(btnD); tr.appendChild(td7);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody); tbl.innerHTML=''; tbl.appendChild(table);
+  }).catch(function(){tbl.innerHTML='<p style="color:var(--red);">فشل التحميل</p>';});
+}
+
 window._real_renderEventsTable = renderEventsTable;
 window._real_downloadEventQuotePDF = downloadEventQuotePDF;
 window._real_addPodcastEpisode = addPodcastEpisode;
