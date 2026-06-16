@@ -1747,23 +1747,48 @@ function downloadQuotePDF(){
   var type = quoteRequestData ? quoteRequestData.type : '';
   var date = new Date().toLocaleDateString('ar-SA');
   var logoSrc = document.querySelector('.sidebar-logo img') ? document.querySelector('.sidebar-logo img').src : '';
-  var includesHtml = includes.split('\n').filter(function(l){return l.trim();}).map(function(l){
-    return '<li style="padding:5px 0;border-bottom:1px solid #f0f0f0;">'+escHtml(l.replace(/^[-•]/,'').trim())+'<\/li>';
+  var incLines = includes.split('\n').filter(function(l){return l.trim();});
+  var incHtml = incLines.map(function(l){
+    return '<li style=\"padding:5px 0;border-bottom:1px solid #f0f0f0;\"><span style=\"color:#C9A84C;margin-left:6px;\">✓<\/span>'+escHtml(l.replace(/^[-•]/,'').trim())+'<\/li>';
   }).join('');
 
-  var win = window.open('','_blank','width=800,height=900');
-  win.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>تسعيرة تعليق صوتي - '+escHtml(name)+'<\/title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Tajawal,sans-serif;background:#fff;color:#111;direction:rtl;}.header{background:#0A0A0A;padding:20px 30px;display:flex;align-items:center;gap:16px;}.header img{height:60px;}.header-text h1{color:#C9A84C;font-family:Cairo,sans-serif;font-size:20px;margin:0 0 4px;}.header-text p{color:#999;font-size:11px;}.quote-label{margin-right:auto;background:#C9A84C;color:#000;padding:6px 14px;border-radius:3px;font-size:11px;font-weight:700;}.body{padding:28px 32px;}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f8f8f8;border:1px solid #eee;border-radius:6px;padding:16px 20px;margin-bottom:20px;}.info-item{font-size:13px;}.info-item span{color:#777;display:block;font-size:11px;margin-bottom:2px;}.price-box{background:linear-gradient(135deg,#0A0A0A,#1a1a00);border:2px solid #C9A84C;border-radius:6px;padding:20px;text-align:center;margin:20px 0;}.price-val{color:#C9A84C;font-size:2rem;font-weight:900;font-family:Cairo,sans-serif;}.price-sub{color:#888;font-size:12px;margin-top:4px;}.sec-title{font-family:Cairo,sans-serif;font-size:13px;font-weight:700;border-bottom:2px solid #C9A84C;padding-bottom:6px;margin:16px 0 10px;color:#333;}.inc-list{list-style:none;font-size:13px;color:#444;}.inc-list li::before{content:"✓";color:#C9A84C;margin-left:8px;font-weight:bold;}.notes-box{background:#fffbf0;border:1px solid rgba(201,168,76,.3);border-radius:4px;padding:12px;font-size:13px;color:#555;line-height:1.8;margin-top:12px;}.validity{text-align:center;color:#aaa;font-size:11px;margin-top:20px;}.footer{background:#0A0A0A;color:#666;font-size:10px;text-align:center;padding:12px;margin-top:24px;}.no-print{text-align:center;padding:16px;}@media print{.no-print{display:none;}.header{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.price-box{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}<\/style><\/head><body>'
-    +'<div class="header"><img src="'+logoSrc+'" onerror="this.style.display='none'"><div class="header-text"><h1>Quraish Voice<\/h1><p>quraishvoice.me &nbsp;|&nbsp; +966565909049<\/p><\/div><div class="quote-label">تسعيرة تعليق صوتي<\/div><\/div>'
-    +'<div class="body">'
-    +'<div class="info-grid"><div class="info-item"><span>العميل<\/span>'+escHtml(name)+'<\/div><div class="info-item"><span>البريد<\/span>'+escHtml(email)+'<\/div><div class="info-item"><span>نوع المشروع<\/span>'+escHtml(type)+'<\/div><div class="info-item"><span>تاريخ التسعيرة<\/span>'+date+'<\/div><\/div>'
-    +'<div class="price-box"><div class="price-val">'+escHtml(price)+' ريال سعودي<\/div><div class="price-sub">مدة التسليم: '+escHtml(delivery)+'<\/div><\/div>'
-    +'<div class="sec-title">يشمل السعر<\/div><ul class="inc-list">'+includesHtml+'<\/ul>'
-    +(notes?'<div class="sec-title">ملاحظات<\/div><div class="notes-box">'+escHtml(notes)+'<\/div>':'')
-    +'<div class="validity">هذه التسعيرة سارية لمدة ٧ أيام من تاريخ الإصدار<\/div>'
-    +'<\/div>'
-    +'<div class="footer">أحمد قريش | quraishvoice.me | +966565909049<\/div>'
-    +'<div class="no-print"><button onclick="window.print()" style="background:#C9A84C;color:#000;border:none;padding:10px 28px;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif;">🖨️ طباعة / حفظ PDF<\/button> <button onclick="window.close()" style="background:#333;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:14px;cursor:pointer;font-family:Tajawal,sans-serif;">إغلاق<\/button><\/div>'
-    +'<\/body><\/html>');
+  var content = [];
+  content.push('<!DOCTYPE html>');
+  content.push('<html dir=\"rtl\" lang=\"ar\">');
+  content.push('<head><meta charset=\"UTF-8\"><title>تسعيرة — '+escHtml(name)+'<\/title>');
+  content.push('<link href=\"https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&family=Tajawal:wght@400;700&display=swap\" rel=\"stylesheet\">');
+  content.push('<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Tajawal,sans-serif;background:#fff;color:#111;direction:rtl;}.hdr{background:#0A0A0A;padding:18px 28px;display:flex;align-items:center;gap:14px;}.hdr img{height:56px;}.hdr h1{color:#C9A84C;font-family:Cairo,sans-serif;font-size:18px;margin:0;}.hdr p{color:#888;font-size:10px;margin-top:3px;}.qlabel{margin-right:auto;background:#C9A84C;color:#000;padding:5px 12px;border-radius:3px;font-size:10px;font-weight:700;}.body{padding:26px 30px;}.igrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f8f8f8;border:1px solid #eee;border-radius:5px;padding:14px 18px;margin-bottom:18px;}.iitem{font-size:12px;}.iitem span{color:#888;display:block;font-size:10px;margin-bottom:2px;}.pbox{background:#0A0A0A;border:2px solid #C9A84C;border-radius:5px;padding:18px;text-align:center;margin:18px 0;}.pval{color:#C9A84C;font-size:1.8rem;font-weight:900;font-family:Cairo,sans-serif;}.psub{color:#888;font-size:11px;margin-top:3px;}.stitle{font-family:Cairo,sans-serif;font-size:12px;font-weight:700;border-bottom:2px solid #C9A84C;padding-bottom:5px;margin:14px 0 8px;color:#333;}.ilist{list-style:none;font-size:12px;color:#444;}.nbox{background:#fffbf0;border:1px solid #f0e0a0;border-radius:4px;padding:10px;font-size:12px;color:#555;line-height:1.7;margin-top:10px;}.valid{text-align:center;color:#bbb;font-size:10px;margin-top:16px;}.ftr{background:#0A0A0A;color:#666;font-size:10px;text-align:center;padding:10px;margin-top:20px;}.noprint{text-align:center;padding:14px;}@media print{.noprint{display:none;}.hdr,.pbox{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}<\/style><\/head>');
+  content.push('<body>');
+  content.push('<div class=\"hdr\">');
+  content.push('<img src=\"'+logoSrc+'\" style=\"height:56px;\">');
+  content.push('<div><h1>Quraish Voice<\/h1><p>quraishvoice.me | +966565909049<\/p><\/div>');
+  content.push('<div class=\"qlabel\">تسعيرة تعليق صوتي<\/div>');
+  content.push('<\/div>');
+  content.push('<div class=\"body\">');
+  content.push('<div class=\"igrid\">');
+  content.push('<div class=\"iitem\"><span>العميل<\/span>'+escHtml(name)+'<\/div>');
+  content.push('<div class=\"iitem\"><span>البريد<\/span>'+escHtml(email)+'<\/div>');
+  content.push('<div class=\"iitem\"><span>نوع المشروع<\/span>'+escHtml(type)+'<\/div>');
+  content.push('<div class=\"iitem\"><span>تاريخ التسعيرة<\/span>'+date+'<\/div>');
+  content.push('<\/div>');
+  content.push('<div class=\"pbox\"><div class=\"pval\">'+escHtml(price)+' ريال سعودي<\/div><div class=\"psub\">مدة التسليم: '+escHtml(delivery)+'<\/div><\/div>');
+  content.push('<div class=\"stitle\">يشمل السعر<\/div>');
+  content.push('<ul class=\"ilist\">'+incHtml+'<\/ul>');
+  if(notes){
+    content.push('<div class=\"stitle\">ملاحظات<\/div>');
+    content.push('<div class=\"nbox\">'+escHtml(notes)+'<\/div>');
+  }
+  content.push('<div class=\"valid\">هذه التسعيرة سارية لمدة ٧ أيام من تاريخ الإصدار<\/div>');
+  content.push('<\/div>');
+  content.push('<div class=\"ftr\">أحمد قريش | quraishvoice.me | +966565909049<\/div>');
+  content.push('<div class=\"noprint\" style=\"padding:14px;text-align:center;\">');
+  content.push('<button onclick=\"window.print()\" style=\"background:#C9A84C;color:#000;border:none;padding:10px 24px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif;\">🖨️ طباعة / حفظ PDF<\/button>');
+  content.push('&nbsp;<button onclick=\"window.close()\" style=\"background:#333;color:#fff;border:none;padding:10px 18px;border-radius:4px;font-size:13px;cursor:pointer;\">إغلاق<\/button>');
+  content.push('<\/div>');
+  content.push('<\/body><\/html>');
+
+  var win = window.open('','_blank','width=820,height=900');
+  win.document.write(content.join('\n'));
   win.document.close();
 }
 
