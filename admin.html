@@ -1748,7 +1748,7 @@ function downloadQuotePDF(){
   var date = new Date().toLocaleDateString('ar-SA');
   var logoSrc = document.querySelector('.sidebar-logo img') ? document.querySelector('.sidebar-logo img').src : '';
   var includesHtml = includes.split('\n').filter(function(l){return l.trim();}).map(function(l){
-    return '<li style="padding:5px 0;border-bottom:1px solid #f0f0f0;">'+escHtml(l.replace(/^[-•]/,'').trim())+'</li>';
+    return '<li style="padding:5px 0;border-bottom:1px solid #f0f0f0;">'+escHtml(l.replace(/^[-•]/,'').trim())+'<\/li>';
   }).join('');
 
   var win = window.open('','_blank','width=800,height=900');
