@@ -3169,20 +3169,4 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
 </div>
 
 </body>
-</html>  var inp1 = document.createElement('input');
-  inp1.type='text'; inp1.placeholder='وصف الخدمة'; inp1.className='inv-desc';
-  inp1.style.cssText='background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem .8rem;color:var(--text);font-family:Tajawal,sans-serif;font-size:.85rem;width:100%;';
-  inp1.addEventListener('input', calcTotal);
-  var inp2 = document.createElement('input');
-  inp2.type='number'; inp2.placeholder='الكمية'; inp2.value='1'; inp2.min='1'; inp2.className='inv-qty';
-  inp2.style.cssText='width:70px;background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem .8rem;color:var(--text);font-family:Tajawal,sans-serif;font-size:.85rem;';
-  inp2.addEventListener('input', calcTotal);
-  var inp3 = document.createElement('input');
-  inp3.type='number'; inp3.placeholder='السعر'; inp3.min='0'; inp3.className='inv-price';
-  inp3.style.cssText='width:110px;background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem .8rem;color:var(--text);font-family:Tajawal,sans-serif;font-size:.85rem;';
-  inp3.addEventListener('input', calcTotal);
-  var btnX = document.createElement('button');
-  btnX.textContent='✕';
-  btnX.style.cssText='width:30px;height:30px;background:rgba(200,50,50,.15);border:1px solid rgba(200,50,50,.3);border-radius:4px;color:#cc4444;cursor:pointer;font-size:1rem;flex-shrink:0;';
-  (function(el){ btnX.addEventListener('click', function(){ el.remove(); calcTotal(); }); })(div);
-  div.appendChild(inp1); div.appendChild(inp2); div.appendChild(inp3); div.appendChild(btnX);
+</html>
