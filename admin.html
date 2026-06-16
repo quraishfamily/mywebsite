@@ -1033,16 +1033,17 @@ function renderDashboard(){
     snap.docs.forEach(function(d){
       var inv = d.data();
       var total = inv.total || 0;
-      // Parse invoice date
-      var invDate = inv.paidAt ? new Date(inv.paidAt) : (inv.date ? new Date(inv.date) : null);
-      if(invDate){
+      // Use ISO date for reliable parsing
+      var invDate = inv.paidISO ? new Date(inv.paidISO) : (inv.date ? new Date(inv.date) : null);
+      if(invDate && !isNaN(invDate.getTime())){
         if(invDate.getFullYear() === curYear){
           yearTotal += total;
           if(invDate.getMonth() === curMonth) monthTotal += total;
         }
       } else {
-        // fallback: count all
+        // fallback: count all if no date
         yearTotal += total;
+        monthTotal += total;
       }
     });
     var mEl = document.getElementById('rev-month');
@@ -2827,8 +2828,8 @@ function loadInvoicesTable(){
         btnPay.className='btn btn-outline btn-sm'; btnPay.style.marginLeft='.3rem';
         btnPay.textContent='💰 مدفوعة';
         (function(id){ btnPay.addEventListener('click',function(){
-          db.collection('invoices').doc(id).update({status:'paid',paidAt:new Date().toLocaleString('ar-SA')})
-            .then(function(){toast('تم تحديث حالة الفاتورة ✓');loadInvoicesTable();})
+          db.collection('invoices').doc(id).update({status:'paid',paidAt:new Date().toLocaleString('ar-SA'),paidISO:new Date().toISOString()})
+            .then(function(){toast('تم تحديث حالة الفاتورة ✓');loadInvoicesTable();renderDashboard();})
             .catch(function(){toast('فشل التحديث',true);});
         }); })(d.id);
       }
