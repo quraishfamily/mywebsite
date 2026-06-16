@@ -2707,6 +2707,14 @@ function buildInvoiceHTML(inv){
   content.push('<\/div>');
   content.push('<table><thead><tr><th>الخدمة<\/th><th style=\"text-align:center;\">الكمية<\/th><th style=\"text-align:center;\">سعر الوحدة<\/th><th style=\"text-align:center;\">الإجمالي<\/th><\/tr><\/thead><tbody>'+linesHtml+'<\/tbody><\/table>');
   content.push('<div class=\"total-row\"><span class=\"total-label\">الإجمالي الكلي<\/span><span class=\"total-val\">'+inv.total.toLocaleString('ar-SA')+' ريال سعودي<\/span><\/div>');
+  content.push('<div style=\"background:#f8f8f8;border:1px solid #eee;border-radius:5px;padding:14px 18px;margin-top:14px;\">');
+  content.push('<div style=\"font-family:Cairo,sans-serif;font-size:12px;font-weight:700;color:#C9A84C;margin-bottom:8px;\">معلومات التحويل البنكي<\/div>');
+  content.push('<div style=\"font-size:12px;line-height:2.2;color:#333;\">');
+  content.push('اسم البنك: <b>D360 بنك<\/b><br>');
+  content.push('صاحب الحساب: <b>احمد بن سعيد بن سلمان آل قريش<\/b><br>');
+  content.push('الآيبان: <b style=\"direction:ltr;display:inline-block;\">SA7436036036016521312360<\/b><br>');
+  content.push('رمز السويفت: <b>DBAKSARIXXX<\/b>');
+  content.push('<\/div><\/div>');
   if(inv.notes){ content.push('<div class=\"notes-box\"><b>ملاحظات:<\/b> '+escHtml(inv.notes)+'<\/div>'); }
   content.push('<\/div>');
   content.push('<div class=\"ftr\">أحمد قريش | Quraish Voice | quraishvoice.me | +966565909049<\/div>');
