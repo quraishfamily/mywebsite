@@ -319,6 +319,8 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
         <div class="stat-card"><div class="stat-num" id="count-vo">0</div><div class="stat-label">طلبات تعليق صوتي</div></div>
         <div class="stat-card"><div class="stat-num" id="count-regs">0</div><div class="stat-label">طلبات تسجيل</div></div>
         <div class="stat-card"><div class="stat-num" id="count-msgs">0</div><div class="stat-label">رسائل واردة</div></div>
+        <div class="stat-card" style="border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.05);"><div class="stat-num" id="rev-month" style="color:#4caf50;font-size:1.4rem;">0</div><div class="stat-label">إيرادات هذا الشهر (ر.س)</div></div>
+        <div class="stat-card" style="border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.05);"><div class="stat-num" id="rev-year" style="color:#4caf50;font-size:1.4rem;">0</div><div class="stat-label">إيرادات هذا العام (ر.س)</div></div>
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">أحدث التسجيلات</span></div>
@@ -1020,6 +1022,34 @@ function renderDashboard(){
   db.collection('voiceover_requests').get().then(s=>{const el=document.getElementById('count-vo');if(el)el.textContent=s.size;}).catch(()=>{});
   db.collection('registrations').get().then(s=>document.getElementById('count-regs').textContent=s.size).catch(()=>{});
   db.collection('messages').get().then(s=>document.getElementById('count-msgs').textContent=s.size).catch(()=>{});
+
+  // Revenue from paid invoices
+  db.collection('invoices').where('status','==','paid').get().then(function(snap){
+    var now = new Date();
+    var curMonth = now.getMonth();
+    var curYear = now.getFullYear();
+    var monthTotal = 0;
+    var yearTotal = 0;
+    snap.docs.forEach(function(d){
+      var inv = d.data();
+      var total = inv.total || 0;
+      // Parse invoice date
+      var invDate = inv.paidAt ? new Date(inv.paidAt) : (inv.date ? new Date(inv.date) : null);
+      if(invDate){
+        if(invDate.getFullYear() === curYear){
+          yearTotal += total;
+          if(invDate.getMonth() === curMonth) monthTotal += total;
+        }
+      } else {
+        // fallback: count all
+        yearTotal += total;
+      }
+    });
+    var mEl = document.getElementById('rev-month');
+    var yEl = document.getElementById('rev-year');
+    if(mEl) mEl.textContent = monthTotal.toLocaleString('ar-SA');
+    if(yEl) yEl.textContent = yearTotal.toLocaleString('ar-SA');
+  }).catch(function(){});
 
   // Latest registrations from Firebase
   db.collection('registrations').get().then(snap=>{
@@ -2574,6 +2604,8 @@ window._real_previewInvoice = previewInvoice;
 window._real_saveInvoice = saveInvoice;
 window._real_sendInvoiceByEmail = sendInvoiceByEmail;
 window._real_loadInvoicesTable = loadInvoicesTable;
+window._real_loadInvoiceForEdit = loadInvoiceForEdit;
+window._real_updateInvoice = updateInvoice;
 window._real_renderSabahoTable = renderSabahoTable;
 // ═══════════════════════════════════════
 // INVOICE FUNCTIONS
@@ -2785,13 +2817,81 @@ function loadInvoicesTable(){
         win.document.write(buildInvoiceHTML(inv));
         win.document.close();
       }); })(r);
+      var btnE=document.createElement('button'); btnE.className='btn btn-outline btn-sm'; btnE.textContent='تعديل'; btnE.style.marginLeft='.3rem';
+      (function(id,inv){ btnE.addEventListener('click',function(){ loadInvoiceForEdit(id,inv); }); })(d.id, r);
+      var btnPay=document.createElement('button');
+      if(r.status==='paid'){
+        btnPay.className='btn btn-sm'; btnPay.style.cssText='margin-left:.3rem;background:rgba(60,180,60,.15);color:#4caf50;border:1px solid rgba(60,180,60,.3);';
+        btnPay.textContent='✓ مدفوعة';
+      } else {
+        btnPay.className='btn btn-outline btn-sm'; btnPay.style.marginLeft='.3rem';
+        btnPay.textContent='💰 مدفوعة';
+        (function(id){ btnPay.addEventListener('click',function(){
+          db.collection('invoices').doc(id).update({status:'paid',paidAt:new Date().toLocaleString('ar-SA')})
+            .then(function(){toast('تم تحديث حالة الفاتورة ✓');loadInvoicesTable();})
+            .catch(function(){toast('فشل التحديث',true);});
+        }); })(d.id);
+      }
       var btnD=document.createElement('button'); btnD.className='btn btn-danger btn-sm'; btnD.textContent='حذف';
       (function(id){btnD.addEventListener('click',function(){deleteDoc('invoices',id,'invoices-table',loadInvoicesTable);});})(d.id);
-      td7.appendChild(btnP); td7.appendChild(btnD); tr.appendChild(td7);
+      td7.appendChild(btnP); td7.appendChild(btnE); td7.appendChild(btnPay); td7.appendChild(btnD); tr.appendChild(td7);
       tbody.appendChild(tr);
     });
     table.appendChild(tbody); tbl.innerHTML=''; tbl.appendChild(table);
   }).catch(function(){tbl.innerHTML='<p style="color:var(--red);">فشل التحميل</p>';});
+}
+
+function loadInvoiceForEdit(id, inv){
+  // Scroll to form
+  document.getElementById('page-invoices').scrollIntoView({behavior:'smooth'});
+  // Fill form fields
+  document.getElementById('inv-client-name').value = inv.client||'';
+  document.getElementById('inv-client-email').value = inv.email||'';
+  document.getElementById('inv-client-phone').value = inv.phone||'';
+  document.getElementById('inv-number').value = inv.number||'';
+  document.getElementById('inv-date').value = inv.date||'';
+  document.getElementById('inv-due').value = inv.due||'';
+  document.getElementById('inv-notes').value = inv.notes||'';
+  // Clear existing lines
+  document.getElementById('inv-lines').innerHTML = '';
+  invLineCount = 0;
+  // Re-add lines
+  if(inv.lines && inv.lines.length){
+    inv.lines.forEach(function(line){
+      addInvoiceLine();
+      var rows = document.querySelectorAll('#inv-lines > div');
+      var lastRow = rows[rows.length-1];
+      lastRow.querySelector('.inv-desc').value = line.desc||'';
+      lastRow.querySelector('.inv-qty').value = line.qty||1;
+      lastRow.querySelector('.inv-price').value = line.price||0;
+      calcTotal();
+    });
+  } else {
+    addInvoiceLine();
+  }
+  // Store editing id
+  window._editingInvoiceId = id;
+  // Change save button text
+  var saveBtn = document.querySelector('#page-invoices .form-actions .btn-outline');
+  if(saveBtn && saveBtn.textContent.includes('حفظ')){
+    saveBtn.textContent = '💾 حفظ التعديلات';
+    saveBtn.onclick = function(){ updateInvoice(id); };
+  }
+  calcTotal();
+  toast('تم تحميل الفاتورة للتعديل');
+}
+
+function updateInvoice(id){
+  var inv = getInvoiceData();
+  if(!inv.client){toast('أدخل اسم العميل',true);return;}
+  if(!inv.lines.length){toast('أضف خدمة واحدة على الأقل',true);return;}
+  db.collection('invoices').doc(id).update(inv).then(function(){
+    toast('تم تحديث الفاتورة! ✓');
+    loadInvoicesTable();
+    window._editingInvoiceId = null;
+    var saveBtn = document.querySelector('#page-invoices .form-actions .btn-outline');
+    if(saveBtn){ saveBtn.textContent = '💾 حفظ الفاتورة'; saveBtn.onclick = saveInvoice; }
+  }).catch(function(){toast('فشل التحديث',true);});
 }
 
 window._real_renderEventsTable = renderEventsTable;
