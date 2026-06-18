@@ -210,6 +210,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function exportSingleVO(){ _wcall("exportSingleVO", Array.prototype.slice.call(arguments)); }
   function exportVOPDF(){ _wcall("exportVOPDF", Array.prototype.slice.call(arguments)); }
   function handleImageUpload(){ _wcall("handleImageUpload", Array.prototype.slice.call(arguments)); }
+  function copyId(){ _wcall("copyId", Array.prototype.slice.call(arguments)); }
   function renderReviewsPage(){ _wcall("renderReviewsPage", Array.prototype.slice.call(arguments)); }
   function showReviewsTab(){ _wcall("showReviewsTab", Array.prototype.slice.call(arguments)); }
   function generateReviewLink(){ _wcall("generateReviewLink", Array.prototype.slice.call(arguments)); }
@@ -1624,13 +1625,15 @@ function renderVOTable(){
     }
     const rows=snap.docs.map(d=>{
       const r=d.data();
+      const shortId=d.id.substring(0,10)+'...';
       return `<tr>
+        <td><code style="font-size:.7rem;color:var(--gold);cursor:pointer;background:rgba(201,168,76,.08);padding:.2rem .4rem;border-radius:3px;" title="${d.id}" onclick="copyId('${d.id}')">${shortId} 📋</code></td>
         <td><b>${r.name||'—'}</b></td>
         <td>${r.phone||'—'}</td>
         <td>${r.email||'—'}</td>
         <td><span class="badge badge-gold">${r.type||'—'}</span></td>
         <td>${r.deadline||'—'}</td>
-        <td style="font-size:.75rem;max-width:180px;color:var(--text-muted);">${(r.desc||'').substring(0,80)}...</td>
+        <td style="font-size:.75rem;max-width:150px;color:var(--text-muted);">${(r.desc||'').substring(0,60)}...</td>
         <td style="font-size:.72rem;color:var(--text-muted);">${r.time||'—'}</td>
         <td>
           <button class="btn btn-outline btn-sm" style="margin-left:.3rem;" onclick="viewVO('${d.id}')">عرض</button>
@@ -1640,7 +1643,7 @@ function renderVOTable(){
         </td>
       </tr>`;
     }).join('');
-    document.getElementById('vo-table').innerHTML=`<table><thead><tr><th>الاسم</th><th>الجوال</th><th>البريد</th><th>النوع</th><th>الموعد</th><th>الوصف</th><th>الوقت</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    document.getElementById('vo-table').innerHTML=`<table><thead><tr><th>المعرف</th><th>الاسم</th><th>الجوال</th><th>البريد</th><th>النوع</th><th>الموعد</th><th>الوصف</th><th>الوقت</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
   }).catch(()=>{
     document.getElementById('vo-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';
   });
@@ -2259,6 +2262,15 @@ function handleImageUpload(inputId, previewId, hiddenId){
     });
 }
 
+// ===== COPY ID HELPER =====
+function copyId(id){
+  navigator.clipboard.writeText(id).then(function(){
+    toast('تم نسخ المعرف: ' + id.substring(0,12) + '... ✓');
+  }).catch(function(){
+    toast('المعرف: ' + id);
+  });
+}
+
 // ===== REVIEWS MANAGEMENT =====
 function starsDisplay(n){
   var s='';
@@ -2528,6 +2540,7 @@ window._real_switchQuoteTab = switchQuoteTab;
 window._real_updateRejectMsg = updateRejectMsg;
 window._real_sendRejection = sendRejection;
 window._real_handleImageUpload = handleImageUpload;
+window._real_copyId = copyId;
 window._real_renderReviewsPage = renderReviewsPage;
 window._real_renderPendingReviews = renderPendingReviews;
 window._real_renderApprovedReviews = renderApprovedReviews;
@@ -2558,12 +2571,21 @@ function renderEventsTable(){
     if(snap.empty){tbl.innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد طلبات بعد.</p>';return;}
     var table = document.createElement('table');
     var thead = document.createElement('thead');
-    thead.innerHTML = '<tr><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الحفل</th><th>الحضور</th><th>الساعات</th><th>التاريخ</th><th>المكان</th><th>وقت الطلب</th><th></th></tr>';
+    thead.innerHTML = '<tr><th>المعرف</th><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الحفل</th><th>الحضور</th><th>الساعات</th><th>التاريخ</th><th>المكان</th><th>وقت الطلب</th><th></th></tr>';
     table.appendChild(thead);
     var tbody = document.createElement('tbody');
     snap.docs.forEach(function(d){
       var r = d.data();
       var tr = document.createElement('tr');
+      // ID cell
+      var tdId = document.createElement('td');
+      var codeEl = document.createElement('code');
+      codeEl.style.cssText = 'font-size:.7rem;color:var(--gold);cursor:pointer;background:rgba(201,168,76,.08);padding:.2rem .4rem;border-radius:3px;';
+      codeEl.title = d.id;
+      codeEl.textContent = d.id.substring(0,10)+'... 📋';
+      (function(id){ codeEl.addEventListener('click', function(){ copyId(id); }); })(d.id);
+      tdId.appendChild(codeEl);
+      tr.appendChild(tdId);
       var cells = [r.name,r.phone,r.email,r.title,r.audience,r.hours,r.date,r.location,r.time];
       cells.forEach(function(val){
         var td = document.createElement('td');
