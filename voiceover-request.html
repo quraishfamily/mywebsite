@@ -129,6 +129,28 @@ textarea{resize:vertical;min-height:100px;}
         </div>
         <div class="fg"><label>عدد الكلمات التقريبي</label><input type="number" id="vo-words" placeholder="مثال: 150"></div>
       </div>
+      <div class="f-row">
+        <div class="fg">
+          <label>الأسلوب المقترح للتعليق الصوتي *</label>
+          <select id="vo-style" required onchange="toggleStyleOther(this.value)">
+            <option value="">اختر الأسلوب...</option>
+            <option>حماسي 🔥</option>
+            <option>جاد</option>
+            <option>حزين / عاطفي</option>
+            <option>فخم / راقٍ</option>
+            <option>شاعري</option>
+            <option>ودّي / خفيف</option>
+            <option>غيره</option>
+          </select>
+          <span style="font-size:.75rem;color:var(--text-muted);margin-top:.3rem;">💡 اختر الأسلوب الذي يناسب طبيعة مشروعك وجمهوره</span>
+          <textarea id="vo-style-other" placeholder="صف الأسلوب المطلوب..." style="display:none;margin-top:.5rem;min-height:70px;"></textarea>
+        </div>
+        <div class="fg">
+          <label>رابط مقطع يوضح الأسلوب المطلوب</label>
+          <input type="url" id="vo-ref-link" placeholder="https://... (إن وجد)">
+          <span style="font-size:.75rem;color:var(--text-muted);margin-top:.3rem;">🔗 مقطع يوتيوب أو أي رابط يوضح النبرة المطلوبة</span>
+        </div>
+      </div>
       <div class="fg"><label>وصف المشروع *</label><textarea id="vo-desc" required placeholder="اشرح لنا طبيعة المشروع والجمهور المستهدف..." style="min-height:90px;"></textarea></div>
       <div class="fg"><label>السكريبت (النص) — إن وُجد</label><textarea id="vo-script" placeholder="ضع النص المراد تسجيله هنا..." style="min-height:120px;"></textarea></div>
       <div class="fg"><label>ملاحظات إضافية</label><textarea id="vo-notes" placeholder="أي تفاصيل أخرى مهمة..."></textarea></div>
@@ -200,6 +222,12 @@ var firebaseConfig = {
 var app = firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
+function toggleStyleOther(val){
+  var el=document.getElementById('vo-style-other');
+  if(val==='غيره'){el.style.display='block';el.required=true;}
+  else{el.style.display='none';el.required=false;el.value='';}
+}
+
 function toggleTheme(){
   var cur=document.documentElement.getAttribute('data-theme');
   var next=cur==='light'?'dark':'light';
@@ -246,6 +274,10 @@ async function submitVO(e){
     type:document.getElementById('vo-type').value,
     deadline:document.getElementById('vo-deadline').value,
     words:document.getElementById('vo-words').value,
+    style:(document.getElementById('vo-style').value==='غيره'
+      ? 'غيره: '+(document.getElementById('vo-style-other').value||'')
+      : document.getElementById('vo-style').value),
+    refLink:document.getElementById('vo-ref-link').value,
     desc:document.getElementById('vo-desc').value,
     script:document.getElementById('vo-script').value,
     notes:document.getElementById('vo-notes').value,
@@ -256,7 +288,7 @@ async function submitVO(e){
     await emailjs.send('service_6g3odwb','bozx1s3',{
       from_name:data.name,from_email:data.email,phone:data.phone,
       subject:'طلب تعليق صوتي — '+data.type,
-      message:'النوع: '+data.type+'\nالموعد: '+data.deadline+'\nالكلمات: '+data.words+'\nالوصف: '+data.desc+'\nالسكريبت: '+data.script,
+      message:'النوع: '+data.type+'\nالأسلوب: '+data.style+'\nرابط المرجع: '+(data.refLink||'—')+'\nالموعد: '+data.deadline+'\nالكلمات: '+data.words+'\nالوصف: '+data.desc+'\nالسكريبت: '+data.script,
       course:data.type,notes:data.notes||'-',time:data.time
     },{publicKey:'QnIPBoSRBkpNWiNt4'});
   }catch(err){}
