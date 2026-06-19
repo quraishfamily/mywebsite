@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -212,6 +211,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function exportVOPDF(){ _wcall("exportVOPDF", Array.prototype.slice.call(arguments)); }
   function handleImageUpload(){ _wcall("handleImageUpload", Array.prototype.slice.call(arguments)); }
   function copyId(){ _wcall("copyId", Array.prototype.slice.call(arguments)); }
+  function setVOStatus(){ _wcall("setVOStatus", Array.prototype.slice.call(arguments)); }
   function renderReviewsPage(){ _wcall("renderReviewsPage", Array.prototype.slice.call(arguments)); }
   function showReviewsTab(){ _wcall("showReviewsTab", Array.prototype.slice.call(arguments)); }
   function generateReviewLink(){ _wcall("generateReviewLink", Array.prototype.slice.call(arguments)); }
@@ -324,7 +324,8 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-num" id="count-news">0</div><div class="stat-label">أخبار منشورة</div></div>
         <div class="stat-card"><div class="stat-num" id="count-courses">0</div><div class="stat-label">دورات متاحة</div></div>
-        <div class="stat-card"><div class="stat-num" id="count-vo">0</div><div class="stat-label">طلبات تعليق صوتي</div></div>
+        <div class="stat-card" style="border-color:rgba(255,165,0,.3);background:rgba(255,165,0,.04);"><div class="stat-num" id="count-vo-pending" style="color:#FFA500;">0</div><div class="stat-label">طلبات تعليق صوتي معلقة</div></div>
+        <div class="stat-card" style="border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.04);"><div class="stat-num" id="count-vo-done" style="color:#4caf50;">0</div><div class="stat-label">طلبات تعليق صوتي مكتملة</div></div>
         <div class="stat-card"><div class="stat-num" id="count-regs">0</div><div class="stat-label">طلبات تسجيل</div></div>
         <div class="stat-card"><div class="stat-num" id="count-msgs">0</div><div class="stat-label">رسائل واردة</div></div>
         <div class="stat-card" style="border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.05);"><div class="stat-num" id="rev-month" style="color:#4caf50;font-size:1.4rem;">0</div><div class="stat-label">إيرادات هذا الشهر (ر.س)</div></div>
@@ -1086,7 +1087,17 @@ function renderDashboard(){
   // Load all counts from Firebase
   db.collection('news').get().then(s=>document.getElementById('count-news').textContent=s.size).catch(()=>{});
   db.collection('courses').get().then(s=>document.getElementById('count-courses').textContent=s.size).catch(()=>{});
-  db.collection('voiceover_requests').get().then(s=>{const el=document.getElementById('count-vo');if(el)el.textContent=s.size;}).catch(()=>{});
+  db.collection('voiceover_requests').get().then(function(snap){
+    var pending=0, done=0;
+    snap.forEach(function(d){
+      var s=d.data().status||'pending';
+      if(s==='done') done++; else pending++;
+    });
+    var ep=document.getElementById('count-vo-pending');
+    var ed=document.getElementById('count-vo-done');
+    if(ep) ep.textContent=pending;
+    if(ed) ed.textContent=done;
+  }).catch(function(){});
   db.collection('registrations').get().then(s=>document.getElementById('count-regs').textContent=s.size).catch(()=>{});
   db.collection('messages').get().then(s=>document.getElementById('count-msgs').textContent=s.size).catch(()=>{});
 
@@ -1627,16 +1638,25 @@ function renderVOTable(){
     const rows=snap.docs.map(d=>{
       const r=d.data();
       const shortId=d.id.substring(0,10)+'...';
-      return `<tr>
+      const isDone=(r.status||'pending')==='done';
+      const statusBadge=isDone
+        ? '<span class="badge badge-green">مكتمل ✓</span>'
+        : '<span class="badge" style="background:rgba(255,165,0,.15);color:#FFA500;border:1px solid rgba(255,165,0,.3);">معلق</span>';
+      const completeBtn=isDone
+        ? `<button class="btn btn-sm" style="margin-left:.3rem;font-size:.72rem;background:rgba(255,165,0,.15);color:#FFA500;border:1px solid rgba(255,165,0,.3);" onclick="setVOStatus('${d.id}','pending')">↩ إعادة فتح</button>`
+        : `<button class="btn btn-sm" style="margin-left:.3rem;font-size:.72rem;background:rgba(76,175,80,.15);color:#4caf50;border:1px solid rgba(76,175,80,.3);" onclick="setVOStatus('${d.id}','done')">✓ مكتمل</button>`;
+      return `<tr style="${isDone?'opacity:.7':''}">
         <td><code style="font-size:.7rem;color:var(--gold);cursor:pointer;background:rgba(201,168,76,.08);padding:.2rem .4rem;border-radius:3px;" title="${d.id}" onclick="copyId('${d.id}')">${shortId} 📋</code></td>
         <td><b>${r.name||'—'}</b></td>
         <td>${r.phone||'—'}</td>
         <td>${r.email||'—'}</td>
         <td><span class="badge badge-gold">${r.type||'—'}</span></td>
+        <td>${statusBadge}</td>
         <td>${r.deadline||'—'}</td>
         <td style="font-size:.75rem;max-width:150px;color:var(--text-muted);">${(r.desc||'').substring(0,60)}...</td>
         <td style="font-size:.72rem;color:var(--text-muted);">${r.time||'—'}</td>
         <td>
+          ${completeBtn}
           <button class="btn btn-outline btn-sm" style="margin-left:.3rem;" onclick="viewVO('${d.id}')">عرض</button>
           <button class="btn btn-outline btn-sm" style="margin-left:.3rem;font-size:.72rem;" onclick="exportSingleVO('${d.id}')">📄 PDF</button>
           <button class="btn btn-primary btn-sm" style="margin-left:.3rem;font-size:.72rem;" onclick="openQuoteModal('${d.id}')">💰 تسعيرة</button>
@@ -1644,7 +1664,7 @@ function renderVOTable(){
         </td>
       </tr>`;
     }).join('');
-    document.getElementById('vo-table').innerHTML=`<table><thead><tr><th>المعرف</th><th>الاسم</th><th>الجوال</th><th>البريد</th><th>النوع</th><th>الموعد</th><th>الوصف</th><th>الوقت</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    document.getElementById('vo-table').innerHTML=`<table><thead><tr><th>المعرف</th><th>الاسم</th><th>الجوال</th><th>البريد</th><th>النوع</th><th>الحالة</th><th>الموعد</th><th>الوصف</th><th>الوقت</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
   }).catch(()=>{
     document.getElementById('vo-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';
   });
@@ -2263,6 +2283,15 @@ function handleImageUpload(inputId, previewId, hiddenId){
     });
 }
 
+// ===== VO STATUS =====
+function setVOStatus(id, status){
+  db.collection('voiceover_requests').doc(id).update({status: status}).then(function(){
+    toast(status==='done' ? 'تم تحديده كمكتمل ✓' : 'تم إعادة فتح الطلب');
+    renderVOTable();
+    renderDashboard();
+  }).catch(function(){ toast('خطأ في التحديث', true); });
+}
+
 // ===== COPY ID HELPER =====
 function copyId(id){
   navigator.clipboard.writeText(id).then(function(){
@@ -2542,6 +2571,7 @@ window._real_updateRejectMsg = updateRejectMsg;
 window._real_sendRejection = sendRejection;
 window._real_handleImageUpload = handleImageUpload;
 window._real_copyId = copyId;
+window._real_setVOStatus = setVOStatus;
 window._real_renderReviewsPage = renderReviewsPage;
 window._real_renderPendingReviews = renderPendingReviews;
 window._real_renderApprovedReviews = renderApprovedReviews;
