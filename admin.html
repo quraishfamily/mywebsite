@@ -212,6 +212,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function handleImageUpload(){ _wcall("handleImageUpload", Array.prototype.slice.call(arguments)); }
   function copyId(){ _wcall("copyId", Array.prototype.slice.call(arguments)); }
   function setVOStatus(){ _wcall("setVOStatus", Array.prototype.slice.call(arguments)); }
+  function setEventStatus(){ _wcall("setEventStatus", Array.prototype.slice.call(arguments)); }
   function renderReviewsPage(){ _wcall("renderReviewsPage", Array.prototype.slice.call(arguments)); }
   function showReviewsTab(){ _wcall("showReviewsTab", Array.prototype.slice.call(arguments)); }
   function generateReviewLink(){ _wcall("generateReviewLink", Array.prototype.slice.call(arguments)); }
@@ -327,6 +328,8 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
         <div class="stat-card"><div class="stat-num" id="count-courses">0</div><div class="stat-label">دورات متاحة</div></div>
         <div class="stat-card" style="border-color:rgba(255,165,0,.3);background:rgba(255,165,0,.04);"><div class="stat-num" id="count-vo-pending" style="color:#FFA500;">0</div><div class="stat-label">طلبات تعليق صوتي معلقة</div></div>
         <div class="stat-card" style="border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.04);"><div class="stat-num" id="count-vo-done" style="color:#4caf50;">0</div><div class="stat-label">طلبات تعليق صوتي مكتملة</div></div>
+        <div class="stat-card" style="border-color:rgba(255,165,0,.3);background:rgba(255,165,0,.04);"><div class="stat-num" id="count-ev-pending" style="color:#FFA500;">0</div><div class="stat-label">طلبات احتفالات معلقة</div></div>
+        <div class="stat-card" style="border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.04);"><div class="stat-num" id="count-ev-done" style="color:#4caf50;">0</div><div class="stat-label">طلبات احتفالات مكتملة</div></div>
         <div class="stat-card"><div class="stat-num" id="count-regs">0</div><div class="stat-label">طلبات تسجيل</div></div>
         <div class="stat-card"><div class="stat-num" id="count-msgs">0</div><div class="stat-label">رسائل واردة</div></div>
         <div class="stat-card" style="border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.05);"><div class="stat-num" id="rev-month" style="color:#4caf50;font-size:1.4rem;">0</div><div class="stat-label">إيرادات هذا الشهر (ر.س)</div></div>
@@ -1112,6 +1115,17 @@ function renderDashboard(){
   }).catch(function(){});
   db.collection('registrations').get().then(s=>document.getElementById('count-regs').textContent=s.size).catch(()=>{});
   db.collection('messages').get().then(s=>document.getElementById('count-msgs').textContent=s.size).catch(()=>{});
+  db.collection('event_requests').get().then(function(snap){
+    var pending=0, done=0;
+    snap.forEach(function(d){
+      var s=d.data().status||'pending';
+      if(s==='done') done++; else pending++;
+    });
+    var ep=document.getElementById('count-ev-pending');
+    var ed=document.getElementById('count-ev-done');
+    if(ep) ep.textContent=pending;
+    if(ed) ed.textContent=done;
+  }).catch(function(){});
 
   // Revenue from paid invoices
   db.collection('invoices').where('status','==','paid').get().then(function(snap){
@@ -2370,6 +2384,15 @@ function setVOStatus(id, status){
   }).catch(function(){ toast('خطأ في التحديث', true); });
 }
 
+// ===== EVENT STATUS =====
+function setEventStatus(id, status){
+  db.collection('event_requests').doc(id).update({status: status}).then(function(){
+    toast(status==='done' ? 'تم تحديده كمكتمل ✓' : 'تم إعادة فتح الطلب');
+    renderEventsTable();
+    renderDashboard();
+  }).catch(function(){ toast('خطأ في التحديث', true); });
+}
+
 // ===== COPY ID HELPER =====
 function copyId(id){
   navigator.clipboard.writeText(id).then(function(){
@@ -2652,6 +2675,7 @@ window._real_copyId = copyId;
 window._real_renderApprovalsTable = renderApprovalsTable;
 window._real_markSeenApprovals = markSeenApprovals;
 window._real_setVOStatus = setVOStatus;
+window._real_setEventStatus = setEventStatus;
 window._real_renderReviewsPage = renderReviewsPage;
 window._real_renderPendingReviews = renderPendingReviews;
 window._real_renderApprovedReviews = renderApprovedReviews;
@@ -2682,7 +2706,7 @@ function renderEventsTable(){
     if(snap.empty){tbl.innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد طلبات بعد.</p>';return;}
     var table = document.createElement('table');
     var thead = document.createElement('thead');
-    thead.innerHTML = '<tr><th>المعرف</th><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الحفل</th><th>الحضور</th><th>الساعات</th><th>التاريخ</th><th>المكان</th><th>وقت الطلب</th><th></th></tr>';
+    thead.innerHTML = '<tr><th>المعرف</th><th>الاسم</th><th>الجوال</th><th>البريد</th><th>الحفل</th><th>الحضور</th><th>الساعات</th><th>التاريخ</th><th>المكان</th><th>الحالة</th><th>وقت الطلب</th><th></th></tr>';
     table.appendChild(thead);
     var tbody = document.createElement('tbody');
     snap.docs.forEach(function(d){
@@ -2697,13 +2721,39 @@ function renderEventsTable(){
       (function(id){ codeEl.addEventListener('click', function(){ copyId(id); }); })(d.id);
       tdId.appendChild(codeEl);
       tr.appendChild(tdId);
-      var cells = [r.name,r.phone,r.email,r.title,r.audience,r.hours,r.date,r.location,r.time];
+      var cells = [r.name,r.phone,r.email,r.title,r.audience,r.hours,r.date,r.location];
       cells.forEach(function(val){
         var td = document.createElement('td');
         td.textContent = val||'-';
         tr.appendChild(td);
       });
+      // Status cell
+      var tdStatus = document.createElement('td');
+      var isDoneEv = (r.status||'pending')==='done';
+      tdStatus.innerHTML = isDoneEv
+        ? '<span class="badge badge-green">مكتمل ✓</span>'
+        : '<span class="badge" style="background:rgba(255,165,0,.15);color:#FFA500;border:1px solid rgba(255,165,0,.3);">معلق</span>';
+      tr.appendChild(tdStatus);
+      // Time cell
+      var tdTime = document.createElement('td');
+      tdTime.style.fontSize = '.78rem';
+      tdTime.textContent = r.time||'-';
+      tr.appendChild(tdTime);
       var tdBtn = document.createElement('td');
+      // Complete/reopen button
+      var btnStatus = document.createElement('button');
+      if(isDoneEv){
+        btnStatus.className='btn btn-sm';
+        btnStatus.style.cssText='margin-left:.3rem;font-size:.72rem;background:rgba(255,165,0,.15);color:#FFA500;border:1px solid rgba(255,165,0,.3);';
+        btnStatus.textContent='↩ إعادة فتح';
+        (function(id){ btnStatus.addEventListener('click', function(){ setEventStatus(id,'pending'); }); })(d.id);
+      } else {
+        btnStatus.className='btn btn-sm';
+        btnStatus.style.cssText='margin-left:.3rem;font-size:.72rem;background:rgba(76,175,80,.15);color:#4caf50;border:1px solid rgba(76,175,80,.3);';
+        btnStatus.textContent='✓ مكتمل';
+        (function(id){ btnStatus.addEventListener('click', function(){ setEventStatus(id,'done'); }); })(d.id);
+      }
+      tdBtn.appendChild(btnStatus);
       var btnPdf = document.createElement('button');
       btnPdf.className = 'btn btn-outline btn-sm';
       btnPdf.style.marginLeft = '.3rem';
