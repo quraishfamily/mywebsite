@@ -301,6 +301,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       <div class="nav-item" onclick="showPage('comments')"><span class="nav-icon">💬</span>التعليقات</div>
       <div class="nav-item" onclick="showPage('testimonials')"><span class="nav-icon">⭐</span>شهادات المتدربين</div>
       <div class="nav-item" onclick="showPage('reviews')"><span class="nav-icon">🌟</span>تقييمات العملاء<span class="nav-badge" id="badge-reviews" style="display:none">0</span></div>
+      <div class="nav-item" onclick="showPage('approvals')"><span class="nav-icon">✅</span>موافقات التسعيرة<span class="nav-badge" id="badge-approvals" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('newsletter')"><span class="nav-icon">📧</span>النشرة البريدية<span class="nav-badge" id="badge-nl" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('popup')"><span class="nav-icon">📢</span>الإعلان المنبثق</div>
       <div class="nav-item" onclick="showPage('invoices')"><span class="nav-icon">🧾</span>الفواتير</div>
@@ -530,6 +531,16 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       <div class="card">
         <div class="card-header"><span class="card-title">الشهادات المضافة</span></div>
         <div id="testimonials-table"></div>
+      </div>
+    </div>
+    <!-- APPROVALS -->
+    <div class="page" id="page-approvals">
+      <div class="page-header">
+        <div class="page-title">موافقات التسعيرة</div>
+        <div class="page-sub">العملاء الذين وافقوا على التسعيرات المرسَلة إليهم</div>
+      </div>
+      <div class="card">
+        <div id="approvals-table"></div>
       </div>
     </div>
     <!-- REVIEWS -->
@@ -1074,6 +1085,7 @@ function renderPage(id){
   else if(id==='newsletter'){loadNewsletterSubscribers();}
   else if(id==='testimonials')renderTestimonialsTable();
   else if(id==='reviews'){renderReviewsPage();markSeenReviews();}
+  else if(id==='approvals'){renderApprovalsTable();markSeenApprovals();}
   else if(id==='podcast'){renderPodcastTable();loadManualEpisodes();}  
   else if(id==='interviews')renderInterviewsTable();
   else if(id==='works')renderWorksTable();
@@ -1868,6 +1880,7 @@ async function sendQuote(){
   if(!price){toast('أدخل السعر',true);return;}
   if(!email){toast('لا يوجد بريد إلكتروني للعميل',true);return;}
 
+  var approveLink = 'https://quraishvoice.me/voiceover-request.html?approve=' + encodeURIComponent(quoteRequestData.id) + '&name=' + encodeURIComponent(name) + '&price=' + encodeURIComponent(price);
   var msgLines = [
     'عزيزي ' + name + '،',
     '',
@@ -1881,9 +1894,10 @@ async function sendQuote(){
     '',
     (notes ? '📝 ملاحظات: ' + notes : ''),
     '',
-    '📱 واتساب: +966565909049',
+    '✍️ للموافقة على التسعيرة اضغط على الرابط التالي:',
+    approveLink,
     '',
-    '📎 للحصول على نسخة PDF من التسعيرة، تواصل معنا عبر واتساب على الرقم أعلاه.',
+    '📱 واتساب: +966565909049',
     '',
     'مع تحياتي،',
     'أحمد قريش'
@@ -2062,6 +2076,12 @@ function updateBadges(){
     if(b){b.textContent=unseen;b.style.display=unseen>0?'inline-flex':'none';}
     var nl=document.getElementById('badge-nl');
     if(nl&&snap.size>0){nl.textContent=snap.size;nl.style.display='inline-flex';}
+  }).catch(function(){});
+  db.collection('quote_approvals').get().then(function(snap){
+    var seen=parseInt(localStorage.getItem('seen-approvals')||'0');
+    var unseen=Math.max(0,snap.size-seen);
+    var b=document.getElementById('badge-approvals');
+    if(b){b.textContent=unseen;b.style.display=unseen>0?'inline-flex':'none';}
   }).catch(function(){});
   db.collection('reviews').where('approved','==',false).get().then(function(snap){
     var seen=parseInt(localStorage.getItem('seen-reviews')||'0');
@@ -2281,6 +2301,64 @@ function handleImageUpload(inputId, previewId, hiddenId){
       preview.innerHTML = '';
       toast('فشل رفع الصورة', true);
     });
+}
+
+// ===== QUOTE APPROVALS =====
+function renderApprovalsTable(){
+  var container=document.getElementById('approvals-table');
+  if(!container)return;
+  container.innerHTML='<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem 0;">جارٍ التحميل...</p>';
+  db.collection('quote_approvals').get().then(function(snap){
+    if(snap.empty){
+      container.innerHTML='<p style="color:var(--text-muted);font-size:.85rem;padding:1.5rem;text-align:center;">لا توجد موافقات بعد</p>';
+      return;
+    }
+    var items=[];
+    snap.forEach(function(doc){var d=doc.data();d.id=doc.id;items.push(d);});
+    items.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});
+    var tbl=document.createElement('table');
+    tbl.innerHTML='<thead><tr><th>العميل</th><th>النوع</th><th>التسعيرة</th><th>التفاصيل</th><th>الوقت</th><th>إجراء</th></tr></thead>';
+    var tbody=document.createElement('tbody');
+    items.forEach(function(r){
+      var tr=document.createElement('tr');
+      var typeLabel=r.type==='vo'?'🎙️ تعليق صوتي':'🎤 فعالية';
+      var details=r.eventTitle?'الفعالية: '+r.eventTitle:'—';
+      tr.innerHTML=[
+        '<td><strong>'+escHtml(r.name||'—')+'</strong></td>',
+        '<td><span class="badge badge-gold">'+typeLabel+'</span></td>',
+        '<td style="color:var(--gold);font-weight:700;">'+escHtml(r.price||'—')+' ر.س</td>',
+        '<td style="font-size:.82rem;color:var(--text-muted);">'+escHtml(details)+'</td>',
+        '<td style="font-size:.78rem;color:var(--text-muted);">'+escHtml(r.time||'—')+'</td>',
+        '<td></td>'
+      ].join('');
+      var td=tr.cells[5];
+      var delBtn=document.createElement('button');
+      delBtn.className='btn btn-danger btn-sm';
+      delBtn.textContent='حذف';
+      (function(id){
+        delBtn.addEventListener('click',function(){
+          db.collection('quote_approvals').doc(id).delete().then(function(){
+            toast('تم الحذف');renderApprovalsTable();
+          }).catch(function(){toast('خطأ في الحذف',true);});
+        });
+      })(r.id);
+      td.appendChild(delBtn);
+      tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);
+    container.innerHTML='';
+    container.appendChild(tbl);
+  }).catch(function(){
+    container.innerHTML='<p style="color:var(--red);font-size:.85rem;padding:1rem;">خطأ في التحميل</p>';
+  });
+}
+
+function markSeenApprovals(){
+  db.collection('quote_approvals').get().then(function(snap){
+    localStorage.setItem('seen-approvals',snap.size);
+    var b=document.getElementById('badge-approvals');
+    if(b)b.style.display='none';
+  }).catch(function(){});
 }
 
 // ===== VO STATUS =====
@@ -2571,6 +2649,8 @@ window._real_updateRejectMsg = updateRejectMsg;
 window._real_sendRejection = sendRejection;
 window._real_handleImageUpload = handleImageUpload;
 window._real_copyId = copyId;
+window._real_renderApprovalsTable = renderApprovalsTable;
+window._real_markSeenApprovals = markSeenApprovals;
 window._real_setVOStatus = setVOStatus;
 window._real_renderReviewsPage = renderReviewsPage;
 window._real_renderPendingReviews = renderPendingReviews;
@@ -2693,6 +2773,7 @@ async function sendEventQuote(){
   var title = eventQuoteData ? eventQuoteData.title : '';
   if(!price){toast('أدخل السعر',true);return;}
   if(!email){toast('لا يوجد بريد إلكتروني',true);return;}
+  var approveLink = 'https://quraishvoice.me/events-request.html?approve=' + encodeURIComponent(eventQuoteData.id) + '&name=' + encodeURIComponent(name) + '&price=' + encodeURIComponent(price) + '&title=' + encodeURIComponent(title);
   var msgLines = [
     'عزيزي '+name+'،',
     '',
@@ -2707,9 +2788,10 @@ async function sendEventQuote(){
     '',
     (notes ? '📝 ملاحظات: '+notes : ''),
     '',
-    '📱 واتساب: +966565909049',
+    '✍️ للموافقة على التسعيرة اضغط على الرابط التالي:',
+    approveLink,
     '',
-    '📎 للحصول على نسخة PDF من التسعيرة، تواصل معنا عبر واتساب على الرقم أعلاه.',
+    '📱 واتساب: +966565909049',
     '',
     'مع تحياتي،',
     'أحمد قريش'
