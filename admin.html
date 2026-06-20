@@ -212,6 +212,8 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function handleImageUpload(){ _wcall("handleImageUpload", Array.prototype.slice.call(arguments)); }
   function copyId(){ _wcall("copyId", Array.prototype.slice.call(arguments)); }
   function setVOStatus(){ _wcall("setVOStatus", Array.prototype.slice.call(arguments)); }
+  function confirmPayment(){ _wcall("confirmPayment", Array.prototype.slice.call(arguments)); }
+  function doConfirmPayment(){ _wcall("doConfirmPayment", []); }
   function setEventStatus(){ _wcall("setEventStatus", Array.prototype.slice.call(arguments)); }
   function renderReviewsPage(){ _wcall("renderReviewsPage", Array.prototype.slice.call(arguments)); }
   function showReviewsTab(){ _wcall("showReviewsTab", Array.prototype.slice.call(arguments)); }
@@ -327,7 +329,8 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
         <div class="stat-card"><div class="stat-num" id="count-news">0</div><div class="stat-label">أخبار منشورة</div></div>
         <div class="stat-card"><div class="stat-num" id="count-courses">0</div><div class="stat-label">دورات متاحة</div></div>
         <div class="stat-card" style="border-color:rgba(255,165,0,.3);background:rgba(255,165,0,.04);"><div class="stat-num" id="count-vo-pending" style="color:#FFA500;">0</div><div class="stat-label">طلبات تعليق صوتي معلقة</div></div>
-        <div class="stat-card" style="border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.04);"><div class="stat-num" id="count-vo-done" style="color:#4caf50;">0</div><div class="stat-label">طلبات تعليق صوتي مكتملة</div></div>
+        <div class="stat-card" style="border-color:rgba(33,150,243,.3);background:rgba(33,150,243,.04);"><div class="stat-num" id="count-vo-active" style="color:#2196F3;">0</div><div class="stat-label">قيد التسجيل الآن</div></div>
+        <div class="stat-card" style="border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.04);"><div class="stat-num" id="count-vo-done" style="color:#4caf50;">0</div><div class="stat-label">تم تسليمها</div></div>
         <div class="stat-card" style="border-color:rgba(255,165,0,.3);background:rgba(255,165,0,.04);"><div class="stat-num" id="count-ev-pending" style="color:#FFA500;">0</div><div class="stat-label">طلبات احتفالات معلقة</div></div>
         <div class="stat-card" style="border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.04);"><div class="stat-num" id="count-ev-done" style="color:#4caf50;">0</div><div class="stat-label">طلبات احتفالات مكتملة</div></div>
         <div class="stat-card"><div class="stat-num" id="count-regs">0</div><div class="stat-label">طلبات تسجيل</div></div>
@@ -1103,14 +1106,18 @@ function renderDashboard(){
   db.collection('news').get().then(s=>document.getElementById('count-news').textContent=s.size).catch(()=>{});
   db.collection('courses').get().then(s=>document.getElementById('count-courses').textContent=s.size).catch(()=>{});
   db.collection('voiceover_requests').get().then(function(snap){
-    var pending=0, done=0;
+    var pending=0, active=0, done=0;
     snap.forEach(function(d){
       var s=d.data().status||'pending';
-      if(s==='done') done++; else pending++;
+      if(s==='paid') active++;
+      else if(s==='done') done++;
+      else pending++;
     });
     var ep=document.getElementById('count-vo-pending');
+    var ea=document.getElementById('count-vo-active');
     var ed=document.getElementById('count-vo-done');
     if(ep) ep.textContent=pending;
+    if(ea) ea.textContent=active;
     if(ed) ed.textContent=done;
   }).catch(function(){});
   db.collection('registrations').get().then(s=>document.getElementById('count-regs').textContent=s.size).catch(()=>{});
@@ -1654,44 +1661,124 @@ function extractVideoId(url) {
 
 
 
+function fmtElapsed(ms){
+  var h=Math.floor(ms/3600000);
+  var d=Math.floor(h/24); h=h%24;
+  if(d>0) return d+'ي '+h+'س';
+  return h+'س '+Math.floor((ms%3600000)/60000)+'د';
+}
+function timerColor(elapsed, deadlineHours){
+  if(!deadlineHours) return '#2196F3';
+  var pct = elapsed / (deadlineHours * 3600000);
+  if(pct >= 1) return '#f44336';
+  if(pct >= 0.75) return '#FF9800';
+  return '#2196F3';
+}
+
 function renderVOTable(){
   document.getElementById('vo-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
-  db.collection('voiceover_requests').orderBy('time','desc').get().then(snap=>{
+  db.collection('voiceover_requests').orderBy('time','desc').get().then(function(snap){
     if(snap.empty){
       document.getElementById('vo-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد طلبات بعد.</p>';
       return;
     }
-    const rows=snap.docs.map(d=>{
-      const r=d.data();
-      const shortId=d.id.substring(0,10)+'...';
-      const isDone=(r.status||'pending')==='done';
-      const statusBadge=isDone
-        ? '<span class="badge badge-green">مكتمل ✓</span>'
-        : '<span class="badge" style="background:rgba(255,165,0,.15);color:#FFA500;border:1px solid rgba(255,165,0,.3);">معلق</span>';
-      const completeBtn=isDone
-        ? `<button class="btn btn-sm" style="margin-left:.3rem;font-size:.72rem;background:rgba(255,165,0,.15);color:#FFA500;border:1px solid rgba(255,165,0,.3);" onclick="setVOStatus('${d.id}','pending')">↩ إعادة فتح</button>`
-        : `<button class="btn btn-sm" style="margin-left:.3rem;font-size:.72rem;background:rgba(76,175,80,.15);color:#4caf50;border:1px solid rgba(76,175,80,.3);" onclick="setVOStatus('${d.id}','done')">✓ مكتمل</button>`;
-      return `<tr style="${isDone?'opacity:.7':''}">
-        <td><code style="font-size:.7rem;color:var(--gold);cursor:pointer;background:rgba(201,168,76,.08);padding:.2rem .4rem;border-radius:3px;" title="${d.id}" onclick="copyId('${d.id}')">${shortId} 📋</code></td>
-        <td><b>${r.name||'—'}</b></td>
-        <td>${r.phone||'—'}</td>
-        <td>${r.email||'—'}</td>
-        <td><span class="badge badge-gold">${r.type||'—'}</span></td>
-        <td>${statusBadge}</td>
-        <td>${r.deadline||'—'}</td>
-        <td style="font-size:.75rem;max-width:150px;color:var(--text-muted);">${(r.desc||'').substring(0,60)}...</td>
-        <td style="font-size:.72rem;color:var(--text-muted);">${r.time||'—'}</td>
-        <td>
-          ${completeBtn}
-          <button class="btn btn-outline btn-sm" style="margin-left:.3rem;" onclick="viewVO('${d.id}')">عرض</button>
-          <button class="btn btn-outline btn-sm" style="margin-left:.3rem;font-size:.72rem;" onclick="exportSingleVO('${d.id}')">📄 PDF</button>
-          <button class="btn btn-primary btn-sm" style="margin-left:.3rem;font-size:.72rem;" onclick="openQuoteModal('${d.id}')">💰 تسعيرة</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteDoc('voiceover_requests','${d.id}','vo-table',renderVOTable)">حذف</button>
-        </td>
-      </tr>`;
+
+    // Clear old timer intervals
+    if(window._voTimers){ window._voTimers.forEach(function(t){clearInterval(t);}); }
+    window._voTimers = [];
+
+    var rows = snap.docs.map(function(d){
+      var r = d.data();
+      var status = r.status || 'pending';
+      var shortId = d.id.substring(0,10)+'...';
+
+      // Status badge
+      var statusBadge = '';
+      if(status === 'paid'){
+        statusBadge = '<span class="badge" style="background:rgba(33,150,243,.15);color:#2196F3;border:1px solid rgba(33,150,243,.3);">🔴 قيد التسجيل</span>';
+      } else if(status === 'done'){
+        statusBadge = '<span class="badge badge-green">✅ تم التسليم</span>';
+      } else {
+        statusBadge = '<span class="badge" style="background:rgba(255,165,0,.15);color:#FFA500;border:1px solid rgba(255,165,0,.3);">معلق</span>';
+      }
+
+      // Timer cell (only for paid status)
+      var timerCell = '—';
+      var timerId = 'timer-'+d.id;
+      if(status === 'paid' && r.paidAt){
+        timerCell = '<span id="'+timerId+'" style="font-family:monospace;font-weight:700;font-size:.82rem;color:#2196F3;"></span>';
+      } else if(status === 'done' && r.paidAt && r.deliveredAt){
+        var elapsed = r.deliveredAt - r.paidAt;
+        timerCell = '<span style="font-size:.78rem;color:var(--text-muted);">'+fmtElapsed(elapsed)+'</span>';
+      }
+
+      // Action buttons based on status
+      var actionBtns = '';
+      if(status === 'pending'){
+        actionBtns = '<button class="btn btn-sm" style="margin-left:.3rem;font-size:.72rem;background:rgba(33,150,243,.15);color:#2196F3;border:1px solid rgba(33,150,243,.3);" onclick="confirmPayment(''+d.id+'')">💳 تأكيد الدفع</button>';
+      } else if(status === 'paid'){
+        actionBtns = '<button class="btn btn-sm" style="margin-left:.3rem;font-size:.72rem;background:rgba(76,175,80,.15);color:#4caf50;border:1px solid rgba(76,175,80,.3);" onclick="setVOStatus(''+d.id+'','done')">✅ تم التسليم</button>'
+                   + '<button class="btn btn-sm" style="margin-left:.3rem;font-size:.72rem;background:rgba(255,165,0,.15);color:#FFA500;border:1px solid rgba(255,165,0,.3);" onclick="setVOStatus(''+d.id+'','pending')">↩ إلغاء الدفع</button>';
+      } else if(status === 'done'){
+        actionBtns = '<button class="btn btn-sm" style="margin-left:.3rem;font-size:.72rem;background:rgba(255,165,0,.15);color:#FFA500;border:1px solid rgba(255,165,0,.3);" onclick="setVOStatus(''+d.id+'','paid')">↩ إعادة فتح</button>';
+      }
+
+      return '<tr style="'+(status==='done'?'opacity:.65':'')+'"">'
+        + '<td><code style="font-size:.7rem;color:var(--gold);cursor:pointer;background:rgba(201,168,76,.08);padding:.2rem .4rem;border-radius:3px;" title="'+d.id+'" onclick="copyId(''+d.id+'')">'+shortId+' 📋</code></td>'
+        + '<td><b>'+(r.name||'—')+'</b></td>'
+        + '<td>'+(r.phone||'—')+'</td>'
+        + '<td>'+(r.email||'—')+'</td>'
+        + '<td><span class="badge badge-gold">'+(r.type||'—')+'</span></td>'
+        + '<td>'+statusBadge+'</td>'
+        + '<td id="tdtimer-'+d.id+'">'+timerCell+'</td>'
+        + '<td style="font-size:.75rem;max-width:120px;color:var(--text-muted);">'+(r.desc||'').substring(0,50)+'...</td>'
+        + '<td style="font-size:.72rem;color:var(--text-muted);">'+(r.time||'—')+'</td>'
+        + '<td>'
+          + actionBtns
+          + '<button class="btn btn-outline btn-sm" style="margin-left:.3rem;" onclick="viewVO(''+d.id+'')">عرض</button>'
+          + '<button class="btn btn-outline btn-sm" style="margin-left:.3rem;font-size:.72rem;" onclick="exportSingleVO(''+d.id+'')">📄 PDF</button>'
+          + '<button class="btn btn-primary btn-sm" style="margin-left:.3rem;font-size:.72rem;" onclick="openQuoteModal(''+d.id+'')">💰 تسعيرة</button>'
+          + '<button class="btn btn-danger btn-sm" onclick="deleteDoc('voiceover_requests',''+d.id+'','vo-table',renderVOTable)">حذف</button>'
+        + '</td>'
+        + '</tr>';
     }).join('');
-    document.getElementById('vo-table').innerHTML=`<table><thead><tr><th>المعرف</th><th>الاسم</th><th>الجوال</th><th>البريد</th><th>النوع</th><th>الحالة</th><th>الموعد</th><th>الوصف</th><th>الوقت</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
-  }).catch(()=>{
+
+    document.getElementById('vo-table').innerHTML = '<table><thead><tr>'
+      + '<th>المعرف</th><th>الاسم</th><th>الجوال</th><th>البريد</th>'
+      + '<th>النوع</th><th>الحالة</th><th>العداد</th>'
+      + '<th>الوصف</th><th>الوقت</th><th></th>'
+      + '</tr></thead><tbody>'+rows+'</tbody></table>';
+
+    // Start live timers for paid projects
+    snap.docs.forEach(function(d){
+      var r = d.data();
+      if((r.status||'pending') === 'paid' && r.paidAt){
+        var el = document.getElementById('timer-'+d.id);
+        if(!el) return;
+        var deadlineH = r.deadlineHours || 0;
+        function tick(){
+          var now = Date.now();
+          var elapsed = now - r.paidAt;
+          var color = timerColor(elapsed, deadlineH);
+          var label = fmtElapsed(elapsed);
+          if(deadlineH){
+            var remaining = (deadlineH * 3600000) - elapsed;
+            if(remaining < 0){
+              label = '⚠️ تأخّر ' + fmtElapsed(-remaining);
+              color = '#f44336';
+            } else {
+              label = fmtElapsed(elapsed) + ' / متبقٍ ' + fmtElapsed(remaining);
+            }
+          }
+          if(el){ el.textContent = label; el.style.color = color; }
+        }
+        tick();
+        var interval = setInterval(tick, 60000);
+        window._voTimers.push(interval);
+      }
+    });
+
+  }).catch(function(){
     document.getElementById('vo-table').innerHTML='<p style="color:var(--red);">فشل التحميل</p>';
   });
 }
@@ -2377,8 +2464,54 @@ function markSeenApprovals(){
 
 // ===== VO STATUS =====
 function setVOStatus(id, status){
-  db.collection('voiceover_requests').doc(id).update({status: status}).then(function(){
-    toast(status==='done' ? 'تم تحديده كمكتمل ✓' : 'تم إعادة فتح الطلب');
+  var updateData = {status: status};
+  if(status === 'done') updateData.deliveredAt = Date.now();
+  if(status === 'pending') { updateData.paidAt = null; updateData.deadlineHours = null; }
+  db.collection('voiceover_requests').doc(id).update(updateData).then(function(){
+    var msg = status==='done' ? 'تم تسليم المشروع ✅' : status==='paid' ? 'تم تأكيد الدفع — بدأ العداد ⏱' : 'تم إعادة فتح الطلب';
+    toast(msg);
+    renderVOTable();
+    renderDashboard();
+  }).catch(function(){ toast('خطأ في التحديث', true); });
+}
+
+function confirmPayment(id){
+  // Show modal to enter deadline
+  var modal = document.getElementById('payConfirmModal');
+  if(modal){ modal.style.display='flex'; window._payConfirmId=id; return; }
+
+  // Build modal if not exists
+  var m = document.createElement('div');
+  m.id = 'payConfirmModal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  m.innerHTML = [
+    '<div style="background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:2rem;width:90%;max-width:420px;">',
+    '<h3 style="font-family:Cairo,sans-serif;color:var(--gold);margin-bottom:1.2rem;">💳 تأكيد استلام الدفع</h3>',
+    '<div class="fg" style="margin-bottom:1rem;">',
+    '<label style="font-size:.82rem;color:var(--text-muted);display:block;margin-bottom:.4rem;">مهلة التسليم (بالساعات)</label>',
+    '<input id="pay-deadline-hours" type="number" min="1" placeholder="مثال: 72 = 3 أيام" style="width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.7rem 1rem;color:var(--text);font-family:Tajawal,sans-serif;font-size:.9rem;outline:none;">',
+    '<span style="font-size:.75rem;color:var(--text-muted);margin-top:.3rem;display:block;">💡 24 ساعة = يوم | 72 = 3 أيام | 120 = 5 أيام | اتركه فارغاً إذا لم تحدد مهلة</span>',
+    '</div>',
+    '<div style="display:flex;gap:.5rem;justify-content:flex-end;">',
+    '<button onclick="document.getElementById('payConfirmModal').style.display='none'" style="background:var(--dark3);border:1px solid var(--border);color:var(--text);padding:.6rem 1.2rem;border-radius:4px;cursor:pointer;font-family:Tajawal,sans-serif;">إلغاء</button>',
+    '<button onclick="doConfirmPayment()" style="background:var(--gold);color:#000;padding:.6rem 1.5rem;border-radius:4px;border:none;cursor:pointer;font-family:Tajawal,sans-serif;font-weight:700;">✓ تأكيد وبدء العداد</button>',
+    '</div>',
+    '</div>'
+  ].join('');
+  document.body.appendChild(m);
+  window._payConfirmId = id;
+}
+
+function doConfirmPayment(){
+  var id = window._payConfirmId;
+  if(!id) return;
+  var hours = parseInt(document.getElementById('pay-deadline-hours').value) || 0;
+  var updateData = { status: 'paid', paidAt: Date.now() };
+  if(hours > 0) updateData.deadlineHours = hours;
+  db.collection('voiceover_requests').doc(id).update(updateData).then(function(){
+    document.getElementById('payConfirmModal').style.display='none';
+    document.getElementById('pay-deadline-hours').value='';
+    toast('تم تأكيد الدفع — بدأ العداد ⏱');
     renderVOTable();
     renderDashboard();
   }).catch(function(){ toast('خطأ في التحديث', true); });
@@ -2675,6 +2808,8 @@ window._real_copyId = copyId;
 window._real_renderApprovalsTable = renderApprovalsTable;
 window._real_markSeenApprovals = markSeenApprovals;
 window._real_setVOStatus = setVOStatus;
+window._real_confirmPayment = confirmPayment;
+window._real_doConfirmPayment = doConfirmPayment;
 window._real_setEventStatus = setEventStatus;
 window._real_renderReviewsPage = renderReviewsPage;
 window._real_renderPendingReviews = renderPendingReviews;
