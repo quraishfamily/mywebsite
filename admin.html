@@ -2901,6 +2901,12 @@ function renderCalTable(statusFilter, containerId){
         '<td></td>'
       ].join('');
       var td = tr.cells[6];
+      var viewBtn = document.createElement('button');
+      viewBtn.className = 'btn btn-outline btn-sm';
+      viewBtn.style.marginLeft = '.3rem';
+      viewBtn.textContent = '👁 عرض';
+      (function(booking){ viewBtn.addEventListener('click', function(){ viewBookingDetails(booking); }); })(r);
+      td.appendChild(viewBtn);
       if(r.status === 'pending'){
         var confirmBtn = document.createElement('button');
         confirmBtn.className = 'btn btn-primary btn-sm';
@@ -3073,6 +3079,89 @@ document.addEventListener('click', function(e){
   if(action === 'closeRejectModal'){ var m=document.getElementById('rejectModal'); if(m) m.style.display='none'; }
 });
 
+function viewBookingDetails(r){
+  var modal = document.getElementById('bookingDetailsModal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'bookingDetailsModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    modal.addEventListener('click', function(e){ if(e.target===modal) modal.style.display='none'; });
+    document.body.appendChild(modal);
+  }
+  var statusLabel = r.status==='pending'
+    ? '<span class="badge" style="background:rgba(255,165,0,.15);color:#FFA500;border:1px solid rgba(255,165,0,.3);">⏳ معلق</span>'
+    : r.status==='confirmed'
+    ? '<span class="badge badge-green">✅ مؤكد</span>'
+    : '<span class="badge" style="background:rgba(244,67,54,.15);color:#f44336;">❌ مرفوض</span>';
+  var rows = [
+    ['الاسم', r.name||'—'],
+    ['الجوال', r.phone||'—'],
+    ['البريد الإلكتروني', r.email||'—'],
+    ['المجال', r.field||'—'],
+    ['المستوى الحالي', r.level||'—'],
+    ['التاريخ', r.dateLabel||r.date||'—'],
+    ['الوقت', r.slot||'—'],
+    ['مدة الجلسة', (r.duration||60)+' دقيقة'],
+    ['هدف الجلسة', r.goal||'—'],
+    ['تاريخ الطلب', r.time||'—'],
+  ];
+  if(r.rejectReason) rows.push(['سبب الرفض', r.rejectReason]);
+  var rowsHtml = rows.map(function(row){
+    return '<div style="display:flex;gap:1rem;padding:.6rem 0;border-bottom:1px solid rgba(201,168,76,.08);">'
+      +'<div style="min-width:130px;font-size:.78rem;color:var(--text-muted);font-weight:600;">'+escHtml(row[0])+'</div>'
+      +'<div style="font-size:.88rem;flex:1;line-height:1.6;">'+escHtml(String(row[1]))+'</div>'
+      +'</div>';
+  }).join('');
+  var inner = document.createElement('div');
+  inner.style.cssText = 'background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:2rem;width:90%;max-width:520px;max-height:85vh;overflow-y:auto;';
+  // Header
+  var header = document.createElement('div');
+  header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;';
+  header.innerHTML = '<h3 style="font-family:Cairo,sans-serif;color:var(--gold);font-size:1.1rem;margin:0;">📋 تفاصيل الحجز</h3>';
+  var rightSide = document.createElement('div');
+  rightSide.style.cssText = 'display:flex;align-items:center;gap:.6rem;';
+  rightSide.innerHTML = statusLabel;
+  var xBtn = document.createElement('button');
+  xBtn.style.cssText = 'background:var(--dark3);border:1px solid var(--border);color:var(--text-muted);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;line-height:1;';
+  xBtn.textContent = '✕';
+  xBtn.addEventListener('click', function(){ modal.style.display='none'; });
+  rightSide.appendChild(xBtn);
+  header.appendChild(rightSide);
+  inner.appendChild(header);
+  // Rows
+  var rowsEl = document.createElement('div');
+  rowsEl.innerHTML = rowsHtml;
+  inner.appendChild(rowsEl);
+  // Action buttons
+  var actDiv = document.createElement('div');
+  actDiv.style.cssText = 'margin-top:1.2rem;display:flex;gap:.5rem;flex-wrap:wrap;';
+  if(r.status === 'pending'){
+    var cBtn = document.createElement('button');
+    cBtn.className = 'btn btn-primary btn-sm';
+    cBtn.textContent = '✅ تأكيد الحجز';
+    (function(booking){ cBtn.addEventListener('click', function(){
+      modal.style.display='none'; confirmBooking(booking.id, booking);
+    }); })(r);
+    actDiv.appendChild(cBtn);
+    var rBtn = document.createElement('button');
+    rBtn.className = 'btn btn-danger btn-sm';
+    rBtn.textContent = '❌ رفض';
+    (function(id){ rBtn.addEventListener('click', function(){
+      modal.style.display='none'; openRejectModal(id);
+    }); })(r.id);
+    actDiv.appendChild(rBtn);
+  }
+  var closeBtn = document.createElement('button');
+  closeBtn.className = 'btn btn-outline btn-sm';
+  closeBtn.textContent = 'إغلاق';
+  closeBtn.addEventListener('click', function(){ modal.style.display='none'; });
+  actDiv.appendChild(closeBtn);
+  inner.appendChild(actDiv);
+  modal.innerHTML = '';
+  modal.appendChild(inner);
+  modal.style.display = 'flex';
+}
+
 // ════════════════════════════════════════
 // END CALENDAR BOOKING SYSTEM
 // ════════════════════════════════════════
@@ -3159,6 +3248,7 @@ window._real_copyId = copyId;
 window._real_renderApprovalsTable = renderApprovalsTable;
 window._real_markSeenApprovals = markSeenApprovals;
 window._real_markSeenCalBookings = markSeenCalBookings;
+window._real_viewBookingDetails = viewBookingDetails;
 window._real_renderCalBookings = renderCalBookings;
 window._real_loadAvailSummary = loadAvailSummary;
 window._real_showAvailSettings = showAvailSettings;
