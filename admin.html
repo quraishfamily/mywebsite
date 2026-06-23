@@ -1573,25 +1573,61 @@ function renderRegsTable(){
 }
 function renderConsultTable(){
   document.getElementById('consult-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
-  db.collection('consulting').orderBy('time','desc').get().then(snap=>{
+  db.collection('consulting').orderBy('time','desc').get().then(function(snap){
     if(snap.empty){
       document.getElementById('consult-table').innerHTML='<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem;">لا توجد طلبات استشارة بعد.</p>';
       return;
     }
-    const rows=snap.docs.map(d=>{
-      const c=d.data();
-      return `<tr>
-        <td>${c.name||'—'}</td>
-        <td>${c.phone||'—'}</td>
-        <td>${c.email||'—'}</td>
-        <td>${c.level||'—'}</td>
-        <td>${c.goal||'—'}</td>
-        <td style="font-size:.75rem;color:var(--text-muted);">${c.time||'—'}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteDoc('consulting','${d.id}','consult-table',renderConsultTable)">حذف</button></td>
-      </tr>`;
-    }).join('');
-    document.getElementById('consult-table').innerHTML=`<table><thead><tr><th>الاسم</th><th>الجوال</th><th>البريد</th><th>المستوى</th><th>الهدف</th><th>الوقت</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
-  }).catch(()=>{
+    var tbl = document.createElement('table');
+    tbl.innerHTML = '<thead><tr><th>الاسم</th><th>الجوال</th><th>البريد</th><th>المستوى</th><th>الهدف</th><th>الوقت</th><th></th></tr></thead>';
+    var tbody = document.createElement('tbody');
+    snap.docs.forEach(function(doc){
+      var c = doc.data();
+      var tr = document.createElement('tr');
+      tr.innerHTML = [
+        '<td>'+(c.name||'—')+'</td>',
+        '<td>'+(c.phone||'—')+'</td>',
+        '<td>'+(c.email||'—')+'</td>',
+        '<td>'+(c.level||'—')+'</td>',
+        '<td>'+(c.goal||'—')+'</td>',
+        '<td style="font-size:.75rem;color:var(--text-muted);">'+(c.time||'—')+'</td>',
+        '<td></td>'
+      ].join('');
+      var td = tr.cells[6];
+
+      // Move to new bookings system
+      var moveBtn = document.createElement('button');
+      moveBtn.className = 'btn btn-sm';
+      moveBtn.style.cssText = 'margin-left:.3rem;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--gold);font-size:.78rem;';
+      moveBtn.textContent = '↩ إعادة كطلب جديد';
+      (function(d, data){ moveBtn.addEventListener('click', function(){
+        db.collection('consulting_bookings').add({
+          name: data.name||'', phone: data.phone||'', email: data.email||'',
+          field: data.field||data.level||'—', level: data.level||'', goal: data.goal||'',
+          date: '', slot: '', dateLabel: 'غير محدد', duration: 60,
+          status: 'pending', time: data.time||'', timestamp: Date.now(),
+          movedFromOld: true
+        }).then(function(){
+          toast('تم نقل الطلب لحجوزات الاستشارة ✓');
+        }).catch(function(){ toast('خطأ في النقل', true); });
+      }); })(doc.id, c);
+      td.appendChild(moveBtn);
+
+      var delBtn = document.createElement('button');
+      delBtn.className = 'btn btn-danger btn-sm';
+      delBtn.style.marginLeft = '.3rem';
+      delBtn.textContent = 'حذف';
+      (function(id){ delBtn.addEventListener('click', function(){
+        deleteDoc('consulting', id, 'consult-table', renderConsultTable);
+      }); })(doc.id);
+      td.appendChild(delBtn);
+
+      tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);
+    document.getElementById('consult-table').innerHTML = '';
+    document.getElementById('consult-table').appendChild(tbl);
+  }).catch(function(){
     document.getElementById('consult-table').innerHTML='<p style="color:var(--red);font-size:.85rem;">فشل التحميل</p>';
   });
 }
