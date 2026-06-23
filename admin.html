@@ -3000,6 +3000,16 @@ function renderCalSection(items, containerId){
       (function(id){ rejectBtn.addEventListener('click', function(){ openRejectModal(id); }); })(r.id);
       td.appendChild(rejectBtn);
     } else {
+      var resetBtn = document.createElement('button');
+      resetBtn.className = 'btn btn-sm';
+      resetBtn.style.cssText = 'margin-left:.3rem;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--gold);font-size:.78rem;';
+      resetBtn.textContent = '↩ إعادة للمعلق';
+      (function(id){ resetBtn.addEventListener('click', function(){
+        db.collection('consulting_bookings').doc(id).update({status:'pending',rejectReason:''}).then(function(){
+          toast('تم إعادة الحجز لحالة معلق ✓'); renderCalBookings();
+        }).catch(function(){ toast('خطأ في التحديث', true); });
+      }); })(r.id);
+      td.appendChild(resetBtn);
       var delBtn = document.createElement('button');
       delBtn.className = 'btn btn-sm';
       delBtn.style.cssText = 'margin-left:.3rem;background:var(--dark3);border:1px solid var(--border);color:var(--text-muted);';
