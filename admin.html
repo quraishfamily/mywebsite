@@ -1600,7 +1600,10 @@ function renderConsultTable(){
       moveBtn.className = 'btn btn-sm';
       moveBtn.style.cssText = 'margin-left:.3rem;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--gold);font-size:.78rem;';
       moveBtn.textContent = '↩ إعادة كطلب جديد';
-      (function(d, data){ moveBtn.addEventListener('click', function(){
+      (function(docId, data, btn){ moveBtn.addEventListener('click', function(){
+        btn.disabled = true;
+        btn.textContent = 'جارٍ النقل...';
+        btn.style.opacity = '.5';
         db.collection('consulting_bookings').add({
           name: data.name||'', phone: data.phone||'', email: data.email||'',
           field: data.field||data.level||'—', level: data.level||'', goal: data.goal||'',
@@ -1608,9 +1611,17 @@ function renderConsultTable(){
           status: 'pending', time: data.time||'', timestamp: Date.now(),
           movedFromOld: true
         }).then(function(){
-          toast('تم نقل الطلب لحجوزات الاستشارة ✓');
-        }).catch(function(){ toast('خطأ في النقل', true); });
-      }); })(doc.id, c);
+          return db.collection('consulting').doc(docId).delete();
+        }).then(function(){
+          toast('تم النقل وحذفه من القديمة ✓');
+          renderConsultTable();
+        }).catch(function(){
+          btn.disabled = false;
+          btn.textContent = '↩ إعادة كطلب جديد';
+          btn.style.opacity = '1';
+          toast('خطأ في النقل', true);
+        });
+      }); })(doc.id, c, moveBtn);
       td.appendChild(moveBtn);
 
       var delBtn = document.createElement('button');
