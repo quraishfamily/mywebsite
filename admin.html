@@ -347,11 +347,17 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       </div>
       <!-- المالية والمحتوى -->
       <div style="font-size:.72rem;letter-spacing:2px;color:var(--text-muted);font-weight:700;margin-bottom:.8rem;padding-right:.2rem;">📊 المالية والمحتوى</div>
-      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:2rem;">
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1rem;">
         <div class="stat-card" style="border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.05);"><div class="stat-num" id="rev-month" style="color:#4caf50;font-size:1.4rem;">0</div><div class="stat-label">إيرادات هذا الشهر (ر.س)</div></div>
         <div class="stat-card" style="border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.05);"><div class="stat-num" id="rev-year" style="color:#4caf50;font-size:1.4rem;">0</div><div class="stat-label">إيرادات هذا العام (ر.س)</div></div>
         <div class="stat-card"><div class="stat-num" id="count-news">0</div><div class="stat-label">أخبار منشورة</div></div>
         <div class="stat-card"><div class="stat-num" id="count-courses">0</div><div class="stat-label">دورات متاحة</div></div>
+      </div>
+      <!-- الزوار -->
+      <div style="font-size:.72rem;letter-spacing:2px;color:var(--text-muted);font-weight:700;margin-bottom:.8rem;padding-right:.2rem;">👥 الزوار</div>
+      <div class="stats-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:2rem;">
+        <div class="stat-card" style="border-color:rgba(99,102,241,.3);background:rgba(99,102,241,.04);"><div class="stat-num" id="count-unique-visitors" style="color:#818cf8;">0</div><div class="stat-label">زوار فريدون (Unique)</div></div>
+        <div class="stat-card" style="border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.04);"><div class="stat-num" id="count-total-visits" style="color:#a78bfa;">0</div><div class="stat-label">إجمالي الزيارات</div></div>
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">أحدث التسجيلات</span></div>
@@ -1195,6 +1201,16 @@ function renderPage(id){
 function renderDashboard(){
   // Load all counts from Firebase
   db.collection('news').get().then(s=>document.getElementById('count-news').textContent=s.size).catch(()=>{});
+  // Visitor stats
+  db.collection('site_stats').doc('visitors').get().then(function(doc){
+    if(doc.exists){
+      var d = doc.data();
+      var uv = document.getElementById('count-unique-visitors');
+      var tv = document.getElementById('count-total-visits');
+      if(uv) uv.textContent = (d.unique||0).toLocaleString('ar-SA');
+      if(tv) tv.textContent = (d.total||0).toLocaleString('ar-SA');
+    }
+  }).catch(function(){});
   db.collection('courses').get().then(s=>document.getElementById('count-courses').textContent=s.size).catch(()=>{});
   db.collection('voiceover_requests').get().then(function(snap){
     var pending=0, active=0, done=0;
@@ -3677,7 +3693,7 @@ function initInvoicePage(){
   document.getElementById('inv-due').value = dueStr;
   // Auto invoice number
   db.collection('invoices').get().then(function(snap){
-    var num = String(snap.size+1).padStart(3,'0');
+    var num = String(snap.size + 833).padStart(3,'0');
     document.getElementById('inv-number').value = 'INV-'+num;
   }).catch(function(){
     document.getElementById('inv-number').value = 'INV-001';
