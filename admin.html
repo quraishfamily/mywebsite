@@ -1173,6 +1173,7 @@ function renderPage(id){
   else if(id==='works')renderWorksTable();
   else if(id==='regs'){renderRegsTable();markSeen('regs');}
   else if(id==='consulting'){renderConsultTable();markSeen('consulting');}
+  else if(id==='cal-bookings'){renderCalBookings();loadAvailSummary();markSeenCalBookings('cal-bookings');}
   else if(id==='messages'){renderMsgsTable();markSeen('messages');}
   else if(id==='comments')renderCommentsTable();
 }
