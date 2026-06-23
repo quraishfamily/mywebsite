@@ -2944,7 +2944,7 @@ function confirmBooking(id, data){
       from_email: data.email||'',
       phone: data.phone||'',
       subject: 'تأكيد موعد الاستشارة مع أحمد قريش',
-      message: ['السلام عليكم '+(data.name||'')+',','','يسعدنا تأكيد موعد استشارتك:','','التاريخ: '+(data.dateLabel||data.date||''),'الوقت: '+(data.slot||''),'المدة: '+(data.duration||60)+' دقيقة','المجال: '+(data.field||''),'','سيتواصل معك أحمد قريش قريباً لتأكيد تفاصيل الجلسة.','واتساب: +966565909049','','شكراً لثقتك!'].join('\n'),
+      message: ['السلام عليكم '+(data.name||'')+',','','يسعدنا تأكيد موعد استشارتك:','','التاريخ: '+(data.dateLabel||data.date||''),'الوقت: '+(data.slot||''),'المدة: '+(data.duration||60)+' دقيقة','المجال: '+(data.field||''),'','سنقوم بالتواصل معك في أقرب وقت وإرسال رابط اجتماع Zoom الخاص بالجلسة.','','للاستفسار: واتساب +966565909049','','شكراً لثقتك!'].join('\n'),
       course: data.field||'', notes: data.goal||'-', time: new Date().toLocaleString('ar-SA')
     }, {publicKey:'QnIPBoSRBkpNWiNt4'}).catch(function(){});
     toast('تم تأكيد الموعد وإرسال إشعار للعميل ✅');
