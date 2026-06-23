@@ -2903,12 +2903,123 @@ var CAL_BOOKING_REJECT_ID = null;
 
 // ── RENDER BOOKINGS ──────────────────────
 function renderCalBookings(){
-  renderCalTable('pending', 'cal-pending-table');
-  renderCalTable('confirmed', 'cal-confirmed-table');
-  renderCalTable('rejected,cancelled,past', 'cal-other-table');
+  // Fetch all bookings once, then split into sections
+  var pEl = document.getElementById('cal-pending-table');
+  var cEl = document.getElementById('cal-confirmed-table');
+  var oEl = document.getElementById('cal-other-table');
+  if(pEl) pEl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem 0;">جارٍ التحميل...</p>';
+  if(cEl) cEl.innerHTML = '';
+  if(oEl) oEl.innerHTML = '';
+
+  db.collection('consulting_bookings').orderBy('timestamp','desc').get().then(function(snap){
+    var pending=[], confirmed=[], other=[];
+    snap.forEach(function(doc){
+      var d=doc.data(); d.id=doc.id;
+      var st = d.status||'pending';
+      if(st==='pending') pending.push(d);
+      else if(st==='confirmed') confirmed.push(d);
+      else other.push(d);
+    });
+    // Also try without orderBy if index missing
+    renderCalSection(pending, 'cal-pending-table');
+    renderCalSection(confirmed, 'cal-confirmed-table');
+    renderCalSection(other, 'cal-other-table');
+  }).catch(function(){
+    // Fallback: no orderBy
+    db.collection('consulting_bookings').get().then(function(snap){
+      var pending=[], confirmed=[], other=[];
+      snap.forEach(function(doc){
+        var d=doc.data(); d.id=doc.id;
+        var st = d.status||'pending';
+        if(st==='pending') pending.push(d);
+        else if(st==='confirmed') confirmed.push(d);
+        else other.push(d);
+      });
+      renderCalSection(pending, 'cal-pending-table');
+      renderCalSection(confirmed, 'cal-confirmed-table');
+      renderCalSection(other, 'cal-other-table');
+    }).catch(function(){
+      var pEl2=document.getElementById('cal-pending-table');
+      if(pEl2) pEl2.innerHTML='<p style="color:var(--red);font-size:.85rem;">خطأ في تحميل الحجوزات</p>';
+    });
+  });
+}
+
+function renderCalSection(items, containerId){
+  var container = document.getElementById(containerId);
+  if(!container) return;
+  if(!items || items.length===0){
+    container.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;padding:1rem;text-align:center;">لا توجد حجوزات</p>';
+    return;
+  }
+  items.sort(function(a,b){ return (b.timestamp||0)-(a.timestamp||0); });
+
+  // reuse renderCalTable body logic
+  var fake = { empty: false };
+  var tbl = document.createElement('table');
+  tbl.innerHTML = '<thead><tr><th>العميل</th><th>المجال</th><th>الموعد</th><th>المدة</th><th>الحالة</th><th>الوقت</th><th>إجراءات</th></tr></thead>';
+  var tbody = document.createElement('tbody');
+  items.forEach(function(r){
+    var tr = document.createElement('tr');
+    var statusLabel = (r.status||'pending')==='pending'
+      ? '<span class="badge" style="background:rgba(255,165,0,.15);color:#FFA500;">⏳ معلق</span>'
+      : r.status==='confirmed'
+      ? '<span class="badge badge-green">✅ مؤكد</span>'
+      : '<span class="badge" style="background:rgba(244,67,54,.15);color:#f44336;">❌ مرفوض</span>';
+    tr.innerHTML = [
+      '<td><strong>'+escHtml(r.name||'—')+'</strong><br><span style="font-size:.75rem;color:var(--text-muted);">'+escHtml(r.phone||'')+'</span><br><span style="font-size:.72rem;color:var(--text-muted);">'+escHtml(r.email||'')+'</span></td>',
+      '<td><span class="badge badge-gold">'+escHtml(r.field||'—')+'</span><br><span style="font-size:.75rem;color:var(--text-muted);">'+escHtml(r.level||'')+'</span></td>',
+      '<td style="font-weight:700;">'+escHtml(r.dateLabel||r.date||'—')+'<br><span style="color:var(--gold);">'+escHtml(r.slot||'')+'</span></td>',
+      '<td style="font-size:.85rem;">'+escHtml(String(r.duration||60))+' د</td>',
+      '<td>'+statusLabel+'</td>',
+      '<td style="font-size:.75rem;color:var(--text-muted);">'+escHtml(r.time||'—')+'</td>',
+      '<td></td>'
+    ].join('');
+    var td = tr.cells[6];
+
+    // View button — always shown
+    var viewBtn = document.createElement('button');
+    viewBtn.className = 'btn btn-outline btn-sm';
+    viewBtn.style.marginLeft = '.3rem';
+    viewBtn.textContent = '👁 عرض';
+    (function(booking){ viewBtn.addEventListener('click', function(){ viewBookingDetails(booking); }); })(r);
+    td.appendChild(viewBtn);
+
+    if((r.status||'pending') === 'pending'){
+      var confirmBtn = document.createElement('button');
+      confirmBtn.className = 'btn btn-primary btn-sm';
+      confirmBtn.style.marginLeft = '.3rem';
+      confirmBtn.textContent = '✅ تأكيد';
+      (function(id, data){ confirmBtn.addEventListener('click', function(){ confirmBooking(id, data); }); })(r.id, r);
+      td.appendChild(confirmBtn);
+
+      var rejectBtn = document.createElement('button');
+      rejectBtn.className = 'btn btn-danger btn-sm';
+      rejectBtn.style.marginLeft = '.3rem';
+      rejectBtn.textContent = '❌ رفض';
+      (function(id){ rejectBtn.addEventListener('click', function(){ openRejectModal(id); }); })(r.id);
+      td.appendChild(rejectBtn);
+    } else {
+      var delBtn = document.createElement('button');
+      delBtn.className = 'btn btn-sm';
+      delBtn.style.cssText = 'margin-left:.3rem;background:var(--dark3);border:1px solid var(--border);color:var(--text-muted);';
+      delBtn.textContent = 'حذف';
+      (function(id){ delBtn.addEventListener('click', function(){
+        db.collection('consulting_bookings').doc(id).delete().then(function(){
+          toast('تم الحذف'); renderCalBookings();
+        }).catch(function(){ toast('خطأ في الحذف', true); });
+      }); })(r.id);
+      td.appendChild(delBtn);
+    }
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);
+  container.innerHTML = '';
+  container.appendChild(tbl);
 }
 
 function renderCalTable(statusFilter, containerId){
+  // Legacy — replaced by renderCalSection
   var container = document.getElementById(containerId);
   if(!container) return;
   container.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;padding:.5rem 0;">جارٍ التحميل...</p>';
