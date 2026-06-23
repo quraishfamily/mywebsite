@@ -1688,6 +1688,22 @@ function applyTheme(theme){
 document.addEventListener('DOMContentLoaded', function(){
   const saved = localStorage.getItem('theme') || 'dark';
   applyTheme(saved);
+
+  // ── VISITOR TRACKING ──
+  try {
+    var visitorKey = 'vk_' + navigator.userAgent.length + '_' + screen.width + '_' + screen.colorDepth;
+    var sessionKey = 'vs_' + Date.now();
+    var isUnique = !localStorage.getItem(visitorKey);
+    if(isUnique) localStorage.setItem(visitorKey, '1');
+
+    var ref = db.collection('site_stats').doc('visitors');
+    ref.get().then(function(doc){
+      var update = { total: ((doc.exists && doc.data().total) || 0) + 1 };
+      if(isUnique) update.unique = ((doc.exists && doc.data().unique) || 0) + 1;
+      update.lastVisit = new Date().toISOString();
+      ref.set(update, { merge: true });
+    }).catch(function(){});
+  } catch(e){}
 });
 
 // SCROLL TO TOP BUTTON
