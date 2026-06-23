@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>صوتك أداة — استبيان أحمد قريش</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:       #111827;
+  --bg2:      #1a2332;
+  --bg3:      #0d1520;
+  --gold:     #f59e0b;
+  --gold-dim: rgba(245,158,11,0.12);
+  --gold-mid: rgba(245,158,11,0.25);
+  --text:     #f9fafb;
+  --text-2:   #9ca3af;
+  --text-3:   #6b7280;
+  --green:    #10b981;
+  --border:   rgba(255,255,255,0.07);
+  --radius:   12px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Tajawal', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 1rem 4rem;
+  overflow-x: hidden;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-bar-wrap {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: rgba(255,255,255,0.06);
+  z-index: 100;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), #fbbf24);
+  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  border-radius: 0 2px 2px 0;
+}
+
+/* ── STEP COUNTER ── */
+.step-counter {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: .72rem;
+  letter-spacing: 1.5px;
+  color: var(--text-3);
+  font-family: 'Cairo', sans-serif;
+  z-index: 99;
+}
+
+/* ── SCREENS ── */
+.screen {
+  width: 100%;
+  max-width: 640px;
+  min-height: 100vh;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  padding: 5rem 0 3rem;
+  animation: fadeUp 0.45s cubic-bezier(0.22,1,0.36,1) both;
+}
+.screen.active { display: flex; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── START SCREEN ── */
+.start-eyebrow {
+  font-size: .72rem;
+  letter-spacing: 3px;
+  color: var(--gold);
+  font-family: 'Cairo', sans-serif;
+  font-weight: 600;
+  margin-bottom: 1.8rem;
+}
+.start-title {
+  font-family: 'Cairo', sans-serif;
+  font-size: clamp(1.9rem, 5vw, 2.8rem);
+  font-weight: 900;
+  line-height: 1.3;
+  margin-bottom: 1.2rem;
+  letter-spacing: -.5px;
+}
+.start-title span { color: var(--gold); }
+.start-desc {
+  font-size: 1.02rem;
+  color: var(--text-2);
+  line-height: 1.85;
+  margin-bottom: 2.5rem;
+  max-width: 480px;
+}
+.wave-line {
+  width: 48px;
+  height: 3px;
+  background: var(--gold);
+  margin-bottom: 2rem;
+  border-radius: 2px;
+}
+
+/* ── QUESTION SCREEN ── */
+.q-label {
+  font-size: .7rem;
+  letter-spacing: 2.5px;
+  color: var(--text-3);
+  font-family: 'Cairo', sans-serif;
+  margin-bottom: 1rem;
+}
+.q-title {
+  font-family: 'Cairo', sans-serif;
+  font-size: clamp(1.2rem, 3.5vw, 1.55rem);
+  font-weight: 700;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+  color: var(--text);
+}
+
+.options { display: flex; flex-direction: column; gap: .65rem; }
+.opt {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: .9rem;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  text-align: right;
+}
+.opt:hover {
+  border-color: rgba(245,158,11,0.4);
+  background: rgba(245,158,11,0.05);
+  transform: translateX(-2px);
+}
+.opt.selected {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+}
+.opt-letter {
+  min-width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .72rem;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+  color: var(--text-3);
+  flex-shrink: 0;
+  margin-top: .05rem;
+  transition: all 0.2s;
+}
+.opt.selected .opt-letter {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #111;
+}
+.opt-text {
+  font-size: .92rem;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* ── BRIDGE SCREEN ── */
+.bridge-icon {
+  font-size: 2.4rem;
+  margin-bottom: 1.2rem;
+  display: block;
+}
+.bridge-title {
+  font-family: 'Cairo', sans-serif;
+  font-size: clamp(1.1rem, 3vw, 1.35rem);
+  font-weight: 700;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+.bridge-body {
+  font-size: .94rem;
+  color: var(--text-2);
+  line-height: 1.9;
+  margin-bottom: 1.5rem;
+  max-width: 520px;
+}
+.bridge-footer {
+  font-size: .78rem;
+  color: var(--text-3);
+  font-style: italic;
+  border-right: 2px solid var(--gold);
+  padding-right: .8rem;
+}
+.bridge-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.6rem 1.8rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+.bridge-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 60%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold));
+}
+
+/* ── BUTTONS ── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  background: var(--gold);
+  color: #111827;
+  font-family: 'Cairo', sans-serif;
+  font-size: .95rem;
+  font-weight: 700;
+  padding: .85rem 2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  text-decoration: none;
+}
+.btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-next {
+  margin-top: 1.5rem;
+  background: transparent;
+  color: var(--gold);
+  border: 1.5px solid var(--gold-mid);
+  padding: .75rem 1.8rem;
+  border-radius: 8px;
+  font-family: 'Cairo', sans-serif;
+  font-size: .88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+}
+.btn-next:hover {
+  background: var(--gold-dim);
+  border-color: var(--gold);
+}
+.btn-next:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+/* ── FINAL SCREEN ── */
+.result-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: var(--green);
+  font-size: .72rem;
+  font-weight: 700;
+  font-family: 'Cairo', sans-serif;
+  letter-spacing: 1.5px;
+  padding: .35rem .9rem;
+  border-radius: 100px;
+  margin-bottom: 1.5rem;
+}
+.result-title {
+  font-family: 'Cairo', sans-serif;
+  font-size: clamp(1.4rem, 4vw, 1.9rem);
+  font-weight: 900;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}
+.result-title .gold { color: var(--gold); }
+
+.path-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  background: var(--gold-dim);
+  border: 1px solid rgba(245,158,11,0.3);
+  color: var(--gold);
+  font-family: 'Cairo', sans-serif;
+  font-size: .82rem;
+  font-weight: 700;
+  padding: .4rem 1rem;
+  border-radius: 100px;
+  margin-bottom: 1.2rem;
+}
+
+.result-text {
+  font-size: .94rem;
+  color: var(--text-2);
+  line-height: 1.9;
+  margin-bottom: 2rem;
+  max-width: 520px;
+}
+
+.advisor-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.6rem;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.advisor-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #fbbf24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
+  color: #111;
+  flex-shrink: 0;
+  letter-spacing: -1px;
+}
+.advisor-name {
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+  font-size: .95rem;
+  margin-bottom: .2rem;
+}
+.advisor-title {
+  font-size: .78rem;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.session-box {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.6rem;
+  margin-bottom: 1.8rem;
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: .5rem;
+}
+.session-item { text-align: center; }
+.session-item .val {
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+  color: var(--gold);
+  font-size: .88rem;
+  margin-bottom: .2rem;
+}
+.session-item .lbl {
+  font-size: .72rem;
+  color: var(--text-3);
+}
+
+.cta-wrap { text-align: center; }
+.cta-sub {
+  font-size: .78rem;
+  color: var(--text-3);
+  margin-top: .8rem;
+}
+.cta-sub span { color: var(--gold); }
+
+@media (max-width: 480px) {
+  .session-box { grid-template-columns: 1fr 1fr 1fr; gap: .3rem; }
+  .session-item .val { font-size: .78rem; }
+  .session-item .lbl { font-size: .65rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- PROGRESS -->
+<div class="progress-bar-wrap">
+  <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+</div>
+<div class="step-counter" id="stepCounter"></div>
+
+<!-- ══ SCREEN 0: START ══ -->
+<div class="screen active" id="s0">
+  <div class="start-eyebrow">أحمد قريش · تعليق صوتي وبودكاست</div>
+  <div class="wave-line"></div>
+  <h1 class="start-title">صوتك أداة.<br><span>هل تعرف كيف تستخدمها؟</span></h1>
+  <p class="start-desc">خمسة أسئلة تكشف أين أنت الآن، وما الذي يمنعك من الوصول إلى ما تريد.</p>
+  <div>
+    <button class="btn-primary" onclick="goTo(1)">ابدأ الاستبيان ←</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN 1: Q1 ══ -->
+<div class="screen" id="s1">
+  <div class="q-label">السؤال ١ من ٥</div>
+  <h2 class="q-title">ما الذي يقربك أكثر من هدفك الآن؟</h2>
+  <div class="options" id="opts1">
+    <div class="opt" onclick="pick(1,'a',this)">
+      <div class="opt-letter">أ</div>
+      <div class="opt-text">أريد أن يصبح صوتي مصدر دخل — تعليق تجاري، دبلجة، محتوى مدفوع</div>
+    </div>
+    <div class="opt" onclick="pick(1,'b',this)">
+      <div class="opt-letter">ب</div>
+      <div class="opt-text">أريد إطلاق بودكاست يبني لي حضورًا وجمهورًا حقيقيًا</div>
+    </div>
+    <div class="opt" onclick="pick(1,'c',this)">
+      <div class="opt-letter">ج</div>
+      <div class="opt-text">الاثنان معًا — الصوت والبودكاست يكملان بعضهما في رؤيتي</div>
+    </div>
+  </div>
+  <button class="btn-next" id="next1" disabled onclick="goTo('b1')">متابعة ←</button>
+</div>
+
+<!-- ══ SCREEN B1: BRIDGE 1 ══ -->
+<div class="screen" id="sb1">
+  <div class="bridge-card">
+    <span class="bridge-icon" id="b1icon"></span>
+    <div class="bridge-title" id="b1title"></div>
+    <div class="bridge-body" id="b1body"></div>
+    <div class="bridge-footer" id="b1footer"></div>
+  </div>
+  <button class="btn-primary" onclick="goTo(2)">استمر ←</button>
+</div>
+
+<!-- ══ SCREEN 2: Q2 ══ -->
+<div class="screen" id="s2">
+  <div class="q-label">السؤال ٢ من ٥</div>
+  <h2 class="q-title">كم مضى على تفكيرك في دخول هذا المجال بجدية؟</h2>
+  <div class="options" id="opts2">
+    <div class="opt" onclick="pick(2,'a',this)">
+      <div class="opt-letter">أ</div>
+      <div class="opt-text">أقل من شهر — الفكرة جديدة وأنا في مرحلة الاستكشاف</div>
+    </div>
+    <div class="opt" onclick="pick(2,'b',this)">
+      <div class="opt-letter">ب</div>
+      <div class="opt-text">من ٣ إلى ٦ أشهر — أفكر لكن لم أتخذ خطوة فعلية بعد</div>
+    </div>
+    <div class="opt" onclick="pick(2,'c',this)">
+      <div class="opt-letter">ج</div>
+      <div class="opt-text">أكثر من سنة — أعرف ما أريد لكن ما زلت أدور في نفس المكان</div>
+    </div>
+    <div class="opt" onclick="pick(2,'d',this)">
+      <div class="opt-letter">د</div>
+      <div class="opt-text">بدأت فعلًا لكن النتائج لا تعكس الجهد الذي أبذله</div>
+    </div>
+  </div>
+  <button class="btn-next" id="next2" disabled onclick="goTo('b2')">متابعة ←</button>
+</div>
+
+<!-- ══ SCREEN B2 ══ -->
+<div class="screen" id="sb2">
+  <div class="bridge-card">
+    <span class="bridge-icon" id="b2icon"></span>
+    <div class="bridge-title" id="b2title"></div>
+    <div class="bridge-body" id="b2body"></div>
+    <div class="bridge-footer" id="b2footer"></div>
+  </div>
+  <button class="btn-primary" onclick="goTo(3)">استمر ←</button>
+</div>
+
+<!-- ══ SCREEN 3: Q3 ══ -->
+<div class="screen" id="s3">
+  <div class="q-label">السؤال ٣ من ٥</div>
+  <h2 class="q-title">أكبر عائق أمامك الآن — بصدق — هو؟</h2>
+  <div class="options" id="opts3">
+    <div class="opt" onclick="pick(3,'a',this)">
+      <div class="opt-letter">أ</div>
+      <div class="opt-text">لا أعرف من أين أبدأ أو ما الخطوة الأولى تحديدًا</div>
+    </div>
+    <div class="opt" onclick="pick(3,'b',this)">
+      <div class="opt-letter">ب</div>
+      <div class="opt-text">أشك في صوتي أو مستوى جاهزيتي للسوق</div>
+    </div>
+    <div class="opt" onclick="pick(3,'c',this)">
+      <div class="opt-letter">ج</div>
+      <div class="opt-text">لا أعرف كيف أوصل ما أقدمه إلى من يدفع مقابله</div>
+    </div>
+    <div class="opt" onclick="pick(3,'d',this)">
+      <div class="opt-letter">د</div>
+      <div class="opt-text">عندي محتوى وصوت لكن بدون هيكل أو خطة واضحة</div>
+    </div>
+  </div>
+  <button class="btn-next" id="next3" disabled onclick="goTo('b3')">متابعة ←</button>
+</div>
+
+<!-- ══ SCREEN B3 ══ -->
+<div class="screen" id="sb3">
+  <div class="bridge-card">
+    <span class="bridge-icon" id="b3icon"></span>
+    <div class="bridge-title" id="b3title"></div>
+    <div class="bridge-body" id="b3body"></div>
+    <div class="bridge-footer" id="b3footer"></div>
+  </div>
+  <button class="btn-primary" onclick="goTo(4)">استمر ←</button>
+</div>
+
+<!-- ══ SCREEN 4: Q4 ══ -->
+<div class="screen" id="s4">
+  <div class="q-label">السؤال ٤ من ٥</div>
+  <h2 class="q-title">ما الذي جربته حتى الآن للمضي قُدُمًا؟</h2>
+  <div class="options" id="opts4">
+    <div class="opt" onclick="pick(4,'a',this)">
+      <div class="opt-letter">أ</div>
+      <div class="opt-text">لم أجرب شيئًا بعد — ما زلت في مرحلة التفكير</div>
+    </div>
+    <div class="opt" onclick="pick(4,'b',this)">
+      <div class="opt-letter">ب</div>
+      <div class="opt-text">تابعت محتوى ومقاطع على الإنترنت لكن بدون تطبيق منظم</div>
+    </div>
+    <div class="opt" onclick="pick(4,'c',this)">
+      <div class="opt-letter">ج</div>
+      <div class="opt-text">اشتركت في كورسات أو قرأت كتبًا لكن النتائج لم تكن كافية</div>
+    </div>
+    <div class="opt" onclick="pick(4,'d',this)">
+      <div class="opt-letter">د</div>
+      <div class="opt-text">أجرّب بمفردي — أتعلم من أخطائي لكن التقدم بطيء</div>
+    </div>
+  </div>
+  <button class="btn-next" id="next4" disabled onclick="goTo('b4')">متابعة ←</button>
+</div>
+
+<!-- ══ SCREEN B4 ══ -->
+<div class="screen" id="sb4">
+  <div class="bridge-card">
+    <span class="bridge-icon" id="b4icon"></span>
+    <div class="bridge-title" id="b4title"></div>
+    <div class="bridge-body" id="b4body"></div>
+    <div class="bridge-footer" id="b4footer"></div>
+  </div>
+  <button class="btn-primary" onclick="goTo(5)">استمر ←</button>
+</div>
+
+<!-- ══ SCREEN 5: Q5 ══ -->
+<div class="screen" id="s5">
+  <div class="q-label">السؤال ٥ من ٥</div>
+  <h2 class="q-title">إذا حصلت الآن على خريطة طريق واضحة — ما الذي يمنعك من البدء فورًا؟</h2>
+  <div class="options" id="opts5">
+    <div class="opt" onclick="pick(5,'a',this)">
+      <div class="opt-letter">أ</div>
+      <div class="opt-text">لا شيء — هذا بالضبط ما أحتاجه للانطلاق</div>
+    </div>
+    <div class="opt" onclick="pick(5,'b',this)">
+      <div class="opt-letter">ب</div>
+      <div class="opt-text">الوقت — التزاماتي كثيرة وأحتاج أن أرتب أولوياتي</div>
+    </div>
+    <div class="opt" onclick="pick(5,'c',this)">
+      <div class="opt-letter">ج</div>
+      <div class="opt-text">الميزانية — أريد أن أتأكد أن الاستثمار سيعود عليّ</div>
+    </div>
+    <div class="opt" onclick="pick(5,'d',this)">
+      <div class="opt-letter">د</div>
+      <div class="opt-text">الخوف من الفشل أو عدم التأكد من أن هذا المجال مناسب لي</div>
+    </div>
+  </div>
+  <button class="btn-next" id="next5" disabled onclick="showResult()">عرض نتيجتي ←</button>
+</div>
+
+<!-- ══ SCREEN FINAL ══ -->
+<div class="screen" id="sfinal">
+  <div class="result-badge">✦ نتيجة استبيانك</div>
+  <h2 class="result-title">أنت على بُعد جلسة واحدة من <span class="gold">خارطة طريق حقيقية</span></h2>
+  <div class="path-chip" id="pathChip"></div>
+  <p class="result-text" id="resultText"></p>
+  <div class="advisor-card">
+    <div class="advisor-avatar">أق</div>
+    <div>
+      <div class="advisor-name">أحمد قريش</div>
+      <div class="advisor-title">متخصص في التعليق الصوتي وصناعة البودكاست<br>خبرة +١٠ سنوات · مئات المتدربين</div>
+    </div>
+  </div>
+  <div class="session-box">
+    <div class="session-item">
+      <div class="val">٣٠ دقيقة</div>
+      <div class="lbl">مدة الجلسة</div>
+    </div>
+    <div class="session-item">
+      <div class="val">تشخيص + خطة</div>
+      <div class="lbl">ما ستخرج به</div>
+    </div>
+    <div class="session-item">
+      <div class="val">مجانًا</div>
+      <div class="lbl">التكلفة</div>
+    </div>
+  </div>
+  <div class="cta-wrap">
+    <a class="btn-primary" href="https://quraishvoice.me/consulting.html" target="_blank" rel="noopener">
+      احجز جلستك المجانية ←
+    </a>
+    <p class="cta-sub">⏳ عدد الجلسات المتاحة هذا الشهر <span>محدود</span></p>
+  </div>
+</div>
+
+<script>
+var answers = {};
+
+var SCREENS = {
+  0: 's0',
+  1: 's1', 'b1': 'sb1',
+  2: 's2', 'b2': 'sb2',
+  3: 's3', 'b3': 'sb3',
+  4: 's4', 'b4': 'sb4',
+  5: 's5', 'final': 'sfinal'
+};
+
+var PROGRESS = {
+  's0': 0, 's1': 10, 'sb1': 20,
+  's2': 28, 'sb2': 40,
+  's3': 48, 'sb3': 60,
+  's4': 68, 'sb4': 80,
+  's5': 88, 'sfinal': 100
+};
+
+var STEP_LABELS = {
+  's0': '', 's1': 'السؤال ١ من ٥', 'sb1': '',
+  's2': 'السؤال ٢ من ٥', 'sb2': '',
+  's3': 'السؤال ٣ من ٥', 'sb3': '',
+  's4': 'السؤال ٤ من ٥', 'sb4': '',
+  's5': 'السؤال ٥ من ٥', 'sfinal': ''
+};
+
+var currentScreen = 's0';
+
+function goTo(id) {
+  var screenId = typeof id === 'number' ? ('s' + id) : ('sb' + id.replace('b',''));
+  if (id === 'b1') screenId = 'sb1';
+  if (id === 'b2') screenId = 'sb2';
+  if (id === 'b3') screenId = 'sb3';
+  if (id === 'b4') screenId = 'sb4';
+  if (typeof id === 'number') screenId = 's' + id;
+
+  // Populate bridge before showing
+  if (screenId === 'sb1') fillBridge(1);
+  if (screenId === 'sb2') fillBridge(2);
+  if (screenId === 'sb3') fillBridge(3);
+  if (screenId === 'sb4') fillBridge(4);
+
+  document.getElementById(currentScreen).style.display = 'none';
+  document.getElementById(currentScreen).classList.remove('active');
+
+  var next = document.getElementById(screenId);
+  next.style.display = 'flex';
+  next.classList.add('active');
+  next.style.animation = 'none';
+  next.offsetHeight; // reflow
+  next.style.animation = '';
+
+  currentScreen = screenId;
+  updateProgress(screenId);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateProgress(id) {
+  var pct = PROGRESS[id] || 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  var label = STEP_LABELS[id] || '';
+  document.getElementById('stepCounter').textContent = label;
+}
+
+function pick(q, val, el) {
+  answers[q] = val;
+  var opts = document.querySelectorAll('#opts' + q + ' .opt');
+  opts.forEach(function(o) { o.classList.remove('selected'); });
+  el.classList.add('selected');
+  var btn = document.getElementById('next' + q);
+  if (btn) btn.disabled = false;
+}
+
+// ── BRIDGE DATA ──
+var BRIDGES = {
+  1: {
+    a: { icon:'🎙️', title:'التعليق الصوتي: سوق ينمو والمقاعد لمن يبادر', body:'الطلب على الأصوات العربية في ازدياد مستمر — الإعلانات، الدبلجة، المحتوى التعليمي. من يدخل الآن بشكل صحيح يبني ميزة تنافسية حقيقية يصعب تجاوزها لاحقًا.', footer:'الوقت المناسب كان أمس · والثاني الآن' },
+    b: { icon:'📻', title:'البودكاست: من يبني جمهورًا اليوم يملك منصته غدًا', body:'البودكاست ليس ميكروفونًا وكلامًا — هو بناء علاقة مع مستمع يثق بك. هذه العلاقة أصل حقيقي يتحول إلى فرص وإيرادات لا يمكن شراؤها بأي إعلان.', footer:'الجمهور الذي تبنيه اليوم · لا يمكن شراؤه غدًا' },
+    c: { icon:'⚡', title:'الجمع بين المسارين: ذكاء — إذا رُتّب بشكل صحيح', body:'الصوت والبودكاست يعززان بعضهما بشكل طبيعي. لكن من يبدأ فيهما معًا بدون ترتيب أولويات ينهك طاقته ويبطئ وصوله. المفتاح هو التسلسل الصحيح.', footer:'القوة في التركيز أولًا · ثم التوسع' }
+  },
+  2: {
+    a: { icon:'🌱', title:'البداية المبكرة ميزة — إذا بُنيت على أساس صحيح', body:'أن تكون في بداية الطريق يعني أنك لم تبنِ عادات خاطئة بعد. هذا وقت ثمين — لكن الاستكشاف العشوائي يحوّله إلى أشهر ضائعة. التوجيه الصحيح من البداية يختصر السنين.', footer:'من بدأ صح وصل · من بدأ خطأ كرر' },
+    b: { icon:'⚠️', title:'الأشهر تمر — والتفكير وحده لا يحرك الإبرة', body:'فترة التفكير الطويلة بدون خطوة فعلية تعني غالبًا غياب وضوح الاتجاه لا غياب الرغبة. عندما يتضح المسار، التردد يختفي من تلقاء نفسه.', footer:'الوضوح يولّد الحركة · الغموض يولّد التأجيل' },
+    c: { icon:'🔄', title:'سنة كاملة في نفس المكان — هذه إشارة لا يجب تجاهلها', body:'الدوران في المكان لفترة طويلة لا يعني ضعف الإرادة — يعني غياب متغير واحد محدد يكسر الحلقة. تحديد هذا المتغير هو ما يغير كل شيء.', footer:'لا تحتاج جهدًا أكثر · تحتاج اتجاهًا أوضح' },
+    d: { icon:'📈', title:'بذلت جهدًا لكن النتائج لا تتناسب معه — هذا يُحلّ', body:'الجهد بدون عائد مناسب يشير إلى فجوة في الاستراتيجية لا في القدرة. كثيرون يعملون بجد في الاتجاه الخطأ — تصحيح المسار يضاعف الإنتاج بنصف الطاقة.', footer:'العمل الذكي يتفوق على العمل الشاق دائمًا' }
+  },
+  3: {
+    a: { icon:'🗺️', title:'غياب البداية الواضحة يكلّف أشهرًا من الدوران', body:'كثيرون ينتظرون الوقت المناسب أو مزيدًا من الاستعداد — وهذا الانتظار نفسه هو ما يعطّلهم. البداية الصحيحة لا تحتاج اكتمالًا، بل وضوحًا في الخطوة الأولى فقط.', footer:'الخطوة الأولى الصحيحة أهم من العشر التي تليها' },
+    b: { icon:'🔊', title:'الشك في الصوت نادرًا ما يكون مشكلة صوتية — هو مشكلة إطار', body:'الصوت الجيد بما يكفي موجود عند معظم من يسألون هذا السؤال. ما يغيب هو المعيار الصحيح والمسار المناسب للمستوى الحالي.', footer:'السوق لا يبحث عن الكمال · يبحث عن الأصالة والاحترافية' },
+    c: { icon:'💼', title:'صوت بدون عميل هو مشكلة تسويق لا موهبة', body:'الوصول إلى العميل المناسب يحتاج استراتيجية واضحة، ليس فقط موهبة. كثيرون يبذلون جهدًا أكثر مما يجب لأنهم يبحثون في القناة الخاطئة.', footer:'العميل يبحث عنك أيضًا — لكن ليس حيث أنت الآن' },
+    d: { icon:'🏗️', title:'المحتوى بدون هيكل يستنزف الطاقة ولا يراكم نتائج', body:'الموهبة وحدها لا تبني مسارًا مستدامًا. من يملك صوتًا ومحتوى ويضيف إليه خطة واضحة يصل أسرع بجهد أقل وبنتائج قابلة للقياس.', footer:'الهيكل يحول الطاقة إلى تقدم قابل للقياس' }
+  },
+  4: {
+    a: { icon:'🚀', title:'الورقة البيضاء ميزة — تبدأ بدون عادات خاطئة', body:'من لم يبدأ بعد يملك ميزة نادرة: لا عادات خاطئة تحتاج تصحيحًا، لا وقت ضائع في مسارات خاطئة. البداية الصحيحة من الصفر تبني أساسًا أقوى بكثير من البداية الارتجالية.', footer:'البداية الصحيحة تغني عن إعادة البناء لاحقًا' },
+    b: { icon:'📱', title:'استهلاك المحتوى بدون تطبيق = معرفة بدون نتيجة', body:'المحتوى المجاني يعطيك معلومات — لكن المعلومات وحدها لا تبني مسارًا. ما يحوّل المعرفة إلى نتائج هو التطبيق المنظم على وضعك الشخصي تحديدًا.', footer:'المعرفة بدون تطبيق موجّه = وهم التقدم' },
+    c: { icon:'📚', title:'الكورسات تعطيك مهارة — الاستشارة تعطيك مسارًا', body:'الكورسات ممتازة لبناء مهارة محددة. لكن ما يحتاجه معظم الناس ليس مهارة إضافية — بل وضوح في كيفية تطبيق ما لديهم على وضعهم الخاص وسوقهم المحدد.', footer:'المشكلة غالبًا ليست في المهارة · بل في التوجيه' },
+    d: { icon:'⚡', title:'التجربة الذاتية مُكلفة — التوجيه يختصر الطريق', body:'التعلم من الأخطاء فضيلة — لكن بعض الأخطاء تكلّف أشهرًا أو سنوات. شخص يعرف هذا المجال من الداخل يختصر عليك الطريق الطويل بجلسة واحدة.', footer:'لا تدفع ثمن التجربة مرتين · تعلّم من تجارب غيرك' }
+  }
+};
+
+function fillBridge(n) {
+  var ans = answers[n];
+  if (!ans) return;
+  var d = BRIDGES[n][ans];
+  if (!d) return;
+  document.getElementById('b' + n + 'icon').textContent = d.icon;
+  document.getElementById('b' + n + 'title').textContent = d.title;
+  document.getElementById('b' + n + 'body').textContent = d.body;
+  document.getElementById('b' + n + 'footer').textContent = d.footer;
+}
+
+// ── RESULT DATA ──
+var PATHS = {
+  a: '🎙️ مسارك: التعليق الصوتي',
+  b: '📻 مسارك: صناعة البودكاست',
+  c: '⚡ مسارك: التعليق الصوتي والبودكاست معًا'
+};
+
+var RESULT_TEXTS = {
+  a: 'إجاباتك تقول كل شيء: أنت جاهز وتنتظر الوضوح فقط. جلسة واحدة مع أحمد قريش ستعطيك بالضبط ما تحتاجه للانطلاق — بدون تخمين.',
+  b: 'الوقت لا يُجاد بالانتظار — يُجاد بتحديد الأولويات. ٣٠ دقيقة واحدة ستعطيك خارطة واضحة تجعل كل دقيقة تأتي بعدها أكثر فاعلية.',
+  c: 'الاستثمار الذي لا تعرف عائده مخيف — والذي تعرف عائده سهل. هذه الجلسة مجانية، والهدف أن تفهم بدقة ما الذي ستستثمر فيه وما الذي ستعود به.',
+  d: 'الخوف من الفشل يختفي عندما يتضح المسار. معظم من يخافون لا يخافون الفشل — يخافون المجهول. جلسة واحدة تحوّل المجهول إلى خطة.'
+};
+
+function showResult() {
+  var path = answers[1] || 'a';
+  var barrier = answers[5] || 'a';
+  document.getElementById('pathChip').textContent = PATHS[path];
+  document.getElementById('resultText').textContent = RESULT_TEXTS[barrier];
+  goTo('final');
+}
+
+// Override goTo for 'final'
+var _origGoTo = goTo;
+goTo = function(id) {
+  if (id === 'final') {
+    document.getElementById(currentScreen).style.display = 'none';
+    document.getElementById(currentScreen).classList.remove('active');
+    var next = document.getElementById('sfinal');
+    next.style.display = 'flex';
+    next.classList.add('active');
+    next.style.animation = 'none';
+    next.offsetHeight;
+    next.style.animation = '';
+    currentScreen = 'sfinal';
+    updateProgress('sfinal');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  _origGoTo(id);
+};
+
+// Map goTo calls for bridge screens
+var _goTo2 = goTo;
+goTo = function(id) {
+  if (id === 'b1') {
+    fillBridge(1);
+    document.getElementById(currentScreen).style.display = 'none';
+    document.getElementById(currentScreen).classList.remove('active');
+    var n = document.getElementById('sb1');
+    n.style.display = 'flex'; n.classList.add('active');
+    n.style.animation = 'none'; n.offsetHeight; n.style.animation = '';
+    currentScreen = 'sb1';
+    updateProgress('sb1');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (id === 'b2') {
+    fillBridge(2);
+    document.getElementById(currentScreen).style.display = 'none';
+    document.getElementById(currentScreen).classList.remove('active');
+    var n = document.getElementById('sb2');
+    n.style.display = 'flex'; n.classList.add('active');
+    n.style.animation = 'none'; n.offsetHeight; n.style.animation = '';
+    currentScreen = 'sb2';
+    updateProgress('sb2');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (id === 'b3') {
+    fillBridge(3);
+    document.getElementById(currentScreen).style.display = 'none';
+    document.getElementById(currentScreen).classList.remove('active');
+    var n = document.getElementById('sb3');
+    n.style.display = 'flex'; n.classList.add('active');
+    n.style.animation = 'none'; n.offsetHeight; n.style.animation = '';
+    currentScreen = 'sb3';
+    updateProgress('sb3');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (id === 'b4') {
+    fillBridge(4);
+    document.getElementById(currentScreen).style.display = 'none';
+    document.getElementById(currentScreen).classList.remove('active');
+    var n = document.getElementById('sb4');
+    n.style.display = 'flex'; n.classList.add('active');
+    n.style.animation = 'none'; n.offsetHeight; n.style.animation = '';
+    currentScreen = 'sb4';
+    updateProgress('sb4');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  _goTo2(id);
+};
+</script>
+</body>
+</html>
