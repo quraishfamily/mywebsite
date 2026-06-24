@@ -131,13 +131,25 @@ function showToast(msg,err){
 }
 
 
+function generateRequestId(prefix){
+  var now=new Date();
+  var yy=String(now.getFullYear()).slice(2);
+  var mm=String(now.getMonth()+1).padStart(2,'0');
+  var dd=String(now.getDate()).padStart(2,'0');
+  var chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var rand='';for(var i=0;i<4;i++)rand+=chars[Math.floor(Math.random()*chars.length)];
+  return prefix+'-'+yy+mm+dd+'-'+rand;
+}
+
 async function submitEvent(e){
   e.preventDefault();
+  var requestId = generateRequestId('EV');
   var evDate = document.getElementById('ev-date').value;
   var months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   var dateAr='';
   if(evDate){var d=new Date(evDate);dateAr=d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+' — '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
   var data={
+    requestId: requestId,
     name:document.getElementById('ev-name').value,
     phone:document.getElementById('ev-phone').value,
     email:document.getElementById('ev-email').value,
@@ -147,14 +159,16 @@ async function submitEvent(e){
     date:dateAr,dateRaw:evDate,
     location:document.getElementById('ev-location').value,
     notes:document.getElementById('ev-notes').value,
-    time:new Date().toLocaleString('ar-SA')
+    time:new Date().toLocaleString('ar-SA'),
+    timestamp:Date.now()
   };
   db.collection('event_requests').add(data).catch(function(){});
   try{
     await emailjs.send('service_6g3odwb','bozx1s3',{
       from_name:data.name,from_email:data.email,phone:data.phone,
-      subject:'طلب تقديم حفل — '+data.title,
-      message:'الحفل: '+data.title+'\nالنوع: '+data.audience+'\nالساعات: '+data.hours+'\nالتاريخ: '+data.date+'\nالمكان: '+data.location+'\nملاحظات: '+data.notes,
+      subject:'طلب تقديم حفل — '+data.title+' ('+requestId+')',
+      message:['رقم الطلب: '+requestId,'الحفل: '+data.title,'النوع: '+data.audience,'الساعات: '+data.hours,'التاريخ: '+data.date,'المكان: '+data.location,'ملاحظات: '+data.notes].join('
+'),
       course:data.title,notes:data.notes||'-',time:data.time
     },{publicKey:'QnIPBoSRBkpNWiNt4'});
   }catch(err){}
