@@ -3004,7 +3004,7 @@ function renderCalSection(items, containerId){
   // reuse renderCalTable body logic
   var fake = { empty: false };
   var tbl = document.createElement('table');
-  tbl.innerHTML = '<thead><tr><th>العميل</th><th>المجال</th><th>الموعد</th><th>المدة</th><th>الحالة</th><th>الوقت</th><th>إجراءات</th></tr></thead>';
+  tbl.innerHTML = '<thead><tr><th>رقم الطلب</th><th>العميل</th><th>المجال</th><th>الموعد</th><th>الحالة</th><th>إجراءات</th></tr></thead>';
   var tbody = document.createElement('tbody');
   items.forEach(function(r){
     var tr = document.createElement('tr');
@@ -3014,12 +3014,11 @@ function renderCalSection(items, containerId){
       ? '<span class="badge badge-green">✅ مؤكد</span>'
       : '<span class="badge" style="background:rgba(244,67,54,.15);color:#f44336;">❌ مرفوض</span>';
     tr.innerHTML = [
+      '<td><span style="font-family:monospace;font-size:.78rem;color:var(--gold);font-weight:700;background:rgba(201,168,76,.08);padding:.2rem .5rem;border-radius:3px;">'+escHtml(r.bookingId||'—')+'</span></td>',
       '<td><strong>'+escHtml(r.name||'—')+'</strong><br><span style="font-size:.75rem;color:var(--text-muted);">'+escHtml(r.phone||'')+'</span><br><span style="font-size:.72rem;color:var(--text-muted);">'+escHtml(r.email||'')+'</span></td>',
       '<td><span class="badge badge-gold">'+escHtml(r.field||'—')+'</span><br><span style="font-size:.75rem;color:var(--text-muted);">'+escHtml(r.level||'')+'</span></td>',
       '<td style="font-weight:700;">'+escHtml(r.dateLabel||r.date||'—')+'<br><span style="color:var(--gold);">'+escHtml(r.slot||'')+'</span></td>',
-      '<td style="font-size:.85rem;">'+escHtml(String(r.duration||60))+' د</td>',
       '<td>'+statusLabel+'</td>',
-      '<td style="font-size:.75rem;color:var(--text-muted);">'+escHtml(r.time||'—')+'</td>',
       '<td></td>'
     ].join('');
     var td = tr.cells[6];
@@ -3092,7 +3091,7 @@ function renderCalTable(statusFilter, containerId){
     items.sort(function(a,b){ return (a.timestamp||0)-(b.timestamp||0); });
 
     var tbl = document.createElement('table');
-    tbl.innerHTML = '<thead><tr><th>العميل</th><th>المجال</th><th>الموعد</th><th>المدة</th><th>الحالة</th><th>الوقت</th><th>إجراءات</th></tr></thead>';
+    tbl.innerHTML = '<thead><tr><th>رقم الطلب</th><th>العميل</th><th>المجال</th><th>الموعد</th><th>الحالة</th><th>إجراءات</th></tr></thead>';
     var tbody = document.createElement('tbody');
     items.forEach(function(r){
       var tr = document.createElement('tr');
