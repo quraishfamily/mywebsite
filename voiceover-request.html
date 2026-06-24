@@ -140,9 +140,21 @@ function showToast(msg,err){
 }
 
 
+function generateRequestId(prefix){
+  var now=new Date();
+  var yy=String(now.getFullYear()).slice(2);
+  var mm=String(now.getMonth()+1).padStart(2,'0');
+  var dd=String(now.getDate()).padStart(2,'0');
+  var chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var rand='';for(var i=0;i<4;i++)rand+=chars[Math.floor(Math.random()*chars.length)];
+  return prefix+'-'+yy+mm+dd+'-'+rand;
+}
+
 async function submitVO(e){
   e.preventDefault();
+  var requestId = generateRequestId('VO');
   var data={
+    requestId: requestId,
     name:document.getElementById('vo-name').value,
     phone:document.getElementById('vo-phone').value,
     email:document.getElementById('vo-email').value,
@@ -152,14 +164,16 @@ async function submitVO(e){
     desc:document.getElementById('vo-desc').value,
     script:document.getElementById('vo-script').value,
     notes:document.getElementById('vo-notes').value,
-    time:new Date().toLocaleString('ar-SA')
+    time:new Date().toLocaleString('ar-SA'),
+    timestamp:Date.now()
   };
   db.collection('voiceover_requests').add(data).catch(function(){});
   try{
     await emailjs.send('service_6g3odwb','bozx1s3',{
       from_name:data.name,from_email:data.email,phone:data.phone,
-      subject:'طلب تعليق صوتي — '+data.type,
-      message:'النوع: '+data.type+'\nالموعد: '+data.deadline+'\nالكلمات: '+data.words+'\nالوصف: '+data.desc+'\nالسكريبت: '+data.script,
+      subject:'طلب تعليق صوتي — '+data.type+' ('+requestId+')',
+      message:['رقم الطلب: '+requestId,'النوع: '+data.type,'الموعد: '+data.deadline,'الكلمات: '+data.words,'الوصف: '+data.desc,'السكريبت: '+data.script].join('
+'),
       course:data.type,notes:data.notes||'-',time:data.time
     },{publicKey:'QnIPBoSRBkpNWiNt4'});
   }catch(err){}
