@@ -1852,7 +1852,7 @@ function renderVOTable(){
     var rows = snap.docs.map(function(d){
       var r = d.data();
       var status = r.status || 'pending';
-      var shortId = d.id.substring(0,10)+'...';
+      var shortId = r.requestId || (d.id.substring(0,8)+'...');
 
       // Status badge
       var statusBadge = '';
@@ -3509,7 +3509,7 @@ function renderEventsTable(){
       var codeEl = document.createElement('code');
       codeEl.style.cssText = 'font-size:.7rem;color:var(--gold);cursor:pointer;background:rgba(201,168,76,.08);padding:.2rem .4rem;border-radius:3px;';
       codeEl.title = d.id;
-      codeEl.textContent = d.id.substring(0,10)+'... 📋';
+      codeEl.textContent = r.requestId || (d.id.substring(0,8)+'...');
       (function(id){ codeEl.addEventListener('click', function(){ copyId(id); }); })(d.id);
       tdId.appendChild(codeEl);
       tr.appendChild(tdId);
