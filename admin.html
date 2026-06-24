@@ -2958,7 +2958,7 @@ function renderCalBookings(){
   if(cEl) cEl.innerHTML = '';
   if(oEl) oEl.innerHTML = '';
 
-  db.collection('consulting_bookings').orderBy('timestamp','desc').get().then(function(snap){
+  db.collection('consulting_bookings').get().then(function(snap){
     var pending=[], confirmed=[], other=[];
     snap.forEach(function(doc){
       var d=doc.data(); d.id=doc.id;
