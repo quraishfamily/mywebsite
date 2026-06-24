@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حجز استشارة | Quraish Voice</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SZMRCRHTTM"></script>
 <script>
@@ -9,74 +13,138 @@
   gtag('js', new Date());
   gtag('config', 'G-SZMRCRHTTM');
 </script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>طلب استشارة | Quraish Voice</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-<style>:root{
-  --gold:#C9A84C;--gold-light:#E8C96A;--gold-dim:#8B6914;
-  --black:#0A0A0A;--dark:#111111;--dark2:#1A1A1A;--dark3:#222222;
-  --text:#E8E0D0;--text-muted:#888880;--border:rgba(201,168,76,0.2);
-}
-[data-theme="light"]{
-  --black:#F5F0E8;--dark:#EEEBE3;--dark2:#E8E4DA;--dark3:#DDD9CF;
-  --text:#1A1A1A;--text-muted:#666660;--border:rgba(201,168,76,0.3);
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
+<style>
+:root{--gold:#C9A84C;--gold-light:#E8C96A;--black:#0A0A0A;--dark:#111111;--dark2:#1A1A1A;--dark3:#222222;--text:#E8E0D0;--text-muted:#888880;--border:rgba(201,168,76,0.2);--green:#4caf50;--red:#f44336;--blue:#2196F3;}
+[data-theme="light"]{--black:#F5F0E8;--dark:#EEEBE3;--dark2:#E8E4DA;--dark3:#DDD9CF;--text:#1A1A1A;--text-muted:#666660;--border:rgba(201,168,76,0.3);}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
 body{font-family:'Tajawal',sans-serif;background:var(--black);color:var(--text);}
 nav{position:fixed;top:0;right:0;left:0;z-index:900;padding:1rem 3rem;display:flex;align-items:center;gap:1rem;background:rgba(10,10,10,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
 .back-btn{margin-right:auto;font-size:.85rem;color:var(--text-muted);text-decoration:none;transition:color .3s;}
 .back-btn:hover{color:var(--gold);}
 .theme-btn{width:36px;height:36px;background:var(--dark2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;color:var(--text);}
-.main{max-width:900px;margin:0 auto;padding:7rem 2rem 5rem;}
-.page-header{margin-bottom:3rem;text-align:center;}
+.main{max-width:860px;margin:0 auto;padding:7rem 2rem 5rem;}
+.page-header{margin-bottom:2.5rem;text-align:center;}
 .sec-label{font-size:.72rem;letter-spacing:3px;color:var(--gold);font-weight:700;margin-bottom:.6rem;display:block;}
 .page-title{font-family:'Cairo',sans-serif;font-size:clamp(1.8rem,4vw,2.4rem);font-weight:900;margin-bottom:.8rem;}
 .page-desc{font-size:.92rem;color:var(--text-muted);line-height:1.9;max-width:600px;margin:0 auto;}
 .sec-line{width:50px;height:2px;background:var(--gold);margin:.8rem auto 0;}
-.form-box{background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:2.5rem;}
-.contact-form{display:flex;flex-direction:column;gap:1rem;}
+.steps{display:flex;gap:0;margin-bottom:2.5rem;justify-content:center;}
+.step{display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--text-muted);}
+.step-num{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;}
+.step.active .step-num{background:var(--gold);border-color:var(--gold);color:#000;}
+.step.done .step-num{background:var(--green);border-color:var(--green);color:#fff;}
+.step.active{color:var(--text);}
+.step-line{width:40px;height:2px;background:var(--border);margin:0 .3rem;}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;}
+.cal-title{font-family:'Cairo',sans-serif;font-weight:700;font-size:1.1rem;}
+.cal-nav{width:34px;height:34px;background:var(--dark3);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;color:var(--text);transition:all .2s;}
+.cal-nav:hover{border-color:var(--gold);color:var(--gold);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-day-name{text-align:center;font-size:.7rem;color:var(--text-muted);padding:.3rem 0;font-weight:600;}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:.88rem;cursor:default;border:1px solid transparent;transition:all .2s;}
+.cal-day.available{cursor:pointer;border-color:var(--border);background:var(--dark3);}
+.cal-day.available:hover{border-color:var(--gold);color:var(--gold);}
+.cal-day.selected{background:var(--gold);color:#000;font-weight:700;}
+.cal-day.today{border-color:var(--blue);color:var(--blue);}
+.cal-day.past,.cal-day.unavailable{opacity:.25;}
+.slots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:.5rem;margin-top:1rem;}
+.slot{padding:.55rem .8rem;background:var(--dark3);border:1px solid var(--border);border-radius:6px;text-align:center;font-size:.85rem;cursor:pointer;transition:all .2s;}
+.slot:hover{border-color:var(--gold);color:var(--gold);}
+.slot.selected{background:var(--gold);color:#000;font-weight:700;border-color:var(--gold);}
+.slot.booked{opacity:.3;cursor:not-allowed;text-decoration:line-through;}
+.form-card{background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:2rem;}
+.fg{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem;}
+.fg label{font-size:.82rem;color:var(--text-muted);font-weight:600;}
+.fg input,.fg textarea,.fg select{background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.7rem 1rem;color:var(--text);font-family:'Tajawal',sans-serif;font-size:.9rem;outline:none;transition:border-color .3s;width:100%;}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--gold);}
+.fg select option{background:var(--dark3);}
+.fg textarea{resize:vertical;min-height:80px;}
 .f-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
-.fg{display:flex;flex-direction:column;gap:.4rem;}
-label{font-size:.82rem;color:var(--text-muted);font-weight:600;}
-input,textarea,select{background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.75rem 1rem;color:var(--text);font-family:'Tajawal',sans-serif;font-size:.9rem;outline:none;transition:border-color .3s;width:100%;}
-input:focus,textarea:focus,select:focus{border-color:var(--gold);}
-select option{background:var(--dark3);}
-textarea{resize:vertical;min-height:100px;}
-.btn{display:inline-block;padding:.85rem 2rem;background:var(--gold);color:var(--black);font-family:'Tajawal',sans-serif;font-size:.95rem;font-weight:700;border-radius:4px;border:none;cursor:pointer;transition:all .3s;text-align:center;text-decoration:none;}
-.btn:hover{background:#E8C96A;}
-.btn-full{width:100%;}
-.toast-msg{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--dark2);border:1px solid var(--gold);border-radius:4px;padding:.8rem 1.5rem;font-size:.85rem;color:var(--text);z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.8rem 2rem;background:var(--gold);color:#000;font-family:'Tajawal',sans-serif;font-size:.95rem;font-weight:700;border-radius:4px;border:none;cursor:pointer;transition:all .3s;}
+.btn:hover{background:var(--gold-light);}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+.btn-full{width:100%;justify-content:center;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.summary-box{background:rgba(201,168,76,.06);border:1px solid var(--border);border-radius:8px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:.3rem 0;font-size:.88rem;}
+.summary-row span:first-child{color:var(--text-muted);}
+.summary-row strong{color:var(--gold);}
+.result-box{text-align:center;padding:3rem 2rem;background:var(--dark2);border:1px solid var(--border);border-radius:8px;}
+.result-box .icon{font-size:3.5rem;margin-bottom:1rem;}
+.result-box h2{font-family:'Cairo',sans-serif;margin-bottom:.8rem;}
+.result-box p{font-size:.9rem;color:var(--text-muted);line-height:1.9;max-width:500px;margin:0 auto 1.5rem;}
+.booking-ref{display:inline-block;background:rgba(201,168,76,.1);border:1px solid var(--border);border-radius:4px;padding:.4rem 1rem;font-family:'Cairo',sans-serif;font-weight:700;color:var(--gold);font-size:1rem;letter-spacing:1px;margin-bottom:1rem;}
+.toast-msg{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--dark2);border:1px solid var(--gold);border-radius:4px;padding:.8rem 1.5rem;font-size:.85rem;color:var(--text);z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;}
 .toast-msg.show{opacity:1;}
-@media(max-width:768px){nav{padding:1rem 1.5rem;}.main{padding:5rem 1.2rem 4rem;}.f-row{grid-template-columns:1fr;}.form-box{padding:1.5rem;}}
+@media(max-width:680px){nav{padding:1rem 1.2rem;}.main{padding:5rem 1rem 4rem;}.f-row{grid-template-columns:1fr;}.form-card{padding:1.2rem;}.step-line{width:20px;}}
 </style>
 </head>
 <body>
 <nav>
-  <a href="index.html"><img src="data:image/png;base64,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" alt="Quraish Voice" style="height:44px;width:auto;"></a>
+  <a href="index.html"><img src="data:image/png;base64,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" alt="Quraish Voice" style="height:44px;width:auto;"></a>
   <a href="index.html" class="back-btn">← الرئيسية</a>
   <button class="theme-btn" id="themeToggle" onclick="toggleTheme()">🌙</button>
 </nav>
 <div class="toast-msg" id="toastMsg"></div>
 <main class="main">
-
 <div class="page-header">
-  <span class="sec-label">احجز موعدك</span>
-  <h1 class="page-title">طلب استشارة تدريبية</h1>
-  <p class="page-desc">استشارة متخصصة مع أحمد قريش في مجالات التعليق الصوتي وصناعة البودكاست والإلقاء</p>
+  <span class="sec-label">الاستشارات التدريبية</span>
+  <h1 class="page-title">احجز موعد استشارتك</h1>
+  <p class="page-desc">اختر الوقت المناسب لك واحجز جلستك مع أحمد قريش</p>
   <div class="sec-line"></div>
 </div>
-<div class="form-box">
-  <form class="contact-form" onsubmit="submitConsulting(event)">
-    <div class="f-row">
-      <div class="fg"><label>الاسم *</label><input type="text" id="c-name" required placeholder="اسمك الكريم"></div>
-      <div class="fg"><label>الجوال *</label><input type="tel" id="c-phone" required placeholder="+966 5X XXX XXXX"></div>
+<div class="steps" id="steps-bar">
+  <div class="step active" id="step1"><div class="step-num">1</div><span>اختر اليوم</span></div>
+  <div class="step-line"></div>
+  <div class="step" id="step2"><div class="step-num">2</div><span>اختر الوقت</span></div>
+  <div class="step-line"></div>
+  <div class="step" id="step3"><div class="step-num">3</div><span>بياناتك</span></div>
+  <div class="step-line"></div>
+  <div class="step" id="step4"><div class="step-num">4</div><span>تأكيد</span></div>
+</div>
+<div id="loading-msg" style="text-align:center;padding:3rem;color:var(--text-muted);">جارٍ تحميل المواعيد المتاحة...</div>
+<div id="unavailable-msg" style="display:none;" class="result-box">
+  <div class="icon">📅</div>
+  <h2>لا توجد مواعيد متاحة حالياً</h2>
+  <p>يعمل أحمد قريش على تحديد مواعيد جديدة قريباً. تواصل معه مباشرة عبر واتساب لتحديد موعد مناسب.</p>
+  <a href="https://wa.me/966565909049" target="_blank" class="btn" style="display:inline-flex;">💬 تواصل عبر واتساب</a>
+</div>
+<div id="section-calendar" style="display:none;">
+  <div class="form-card">
+    <div class="cal-header">
+      <button class="cal-nav" id="prev-month">→</button>
+      <div class="cal-title" id="cal-title"></div>
+      <button class="cal-nav" id="next-month">←</button>
     </div>
-    <div class="fg"><label>البريد الإلكتروني *</label><input type="email" id="c-email" required placeholder="email@example.com"></div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+</div>
+<div id="section-slots" style="display:none;">
+  <div class="form-card">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+      <button class="btn btn-outline" style="padding:.5rem 1rem;font-size:.82rem;" onclick="goStep(1)">→ تغيير اليوم</button>
+      <div><div style="font-size:.8rem;color:var(--text-muted);">اليوم المختار</div><div style="font-weight:700;" id="selected-date-label"></div></div>
+    </div>
+    <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:.5rem;">اختر الوقت المناسب:</div>
+    <div class="slots-grid" id="slots-grid"></div>
+  </div>
+</div>
+<div id="section-form" style="display:none;">
+  <div class="summary-box">
+    <div class="summary-row"><span>📅 الموعد</span><strong id="sum-datetime"></strong></div>
+    <div class="summary-row"><span>⏱ المدة</span><strong id="sum-duration"></strong></div>
+    <button class="btn btn-outline" style="padding:.4rem .8rem;font-size:.78rem;margin-top:.5rem;" onclick="goStep(1)">تغيير الموعد</button>
+  </div>
+  <div class="form-card">
+    <div class="f-row">
+      <div class="fg"><label>الاسم *</label><input type="text" id="b-name" required placeholder="اسمك الكريم"></div>
+      <div class="fg"><label>الجوال *</label><input type="tel" id="b-phone" required placeholder="+966 5X XXX XXXX"></div>
+    </div>
+    <div class="fg"><label>البريد الإلكتروني *</label><input type="email" id="b-email" required placeholder="email@example.com"></div>
     <div class="fg">
       <label>مجال الاستشارة *</label>
-      <select id="c-field" required>
+      <select id="b-field" required>
         <option value="">اختر المجال...</option>
         <option>التعليق الصوتي</option>
         <option>صناعة البودكاست</option>
@@ -85,75 +153,215 @@ textarea{resize:vertical;min-height:100px;}
     </div>
     <div class="fg">
       <label>مستواك الحالي</label>
-      <select id="c-level">
+      <select id="b-level">
         <option value="">اختر...</option>
         <option>مبتدئ تماماً</option>
         <option>لدي خبرة بسيطة</option>
         <option>محترف أريد التطوير</option>
       </select>
     </div>
-    <div class="fg"><label>هدفك من الاستشارة</label><textarea id="c-goal" placeholder="ما الذي تريد تحقيقه؟"></textarea></div>
-    <button type="submit" class="btn btn-full">إرسال الطلب ✉️</button>
-  </form>
+    <div class="fg"><label>ما الذي تريد تحقيقه من هذه الجلسة؟</label><textarea id="b-goal" placeholder="اشرح لنا هدفك بإيجاز..."></textarea></div>
+    <button class="btn btn-full" onclick="submitBooking()" id="submit-btn">تأكيد الحجز ✓</button>
+  </div>
+</div>
+<div id="section-result" style="display:none;">
+  <div class="result-box" id="result-box">
+    <div class="icon">⏳</div>
+    <h2>تم استلام طلب الحجز!</h2>
+    <div class="booking-ref" id="booking-ref-display"></div>
+    <p id="result-desc">سيتم مراجعة طلبك وإرسال التأكيد على بريدك الإلكتروني قريباً.</p>
+  </div>
 </div>
 </main>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
+var firebaseConfig={apiKey:"AIzaSyBCheHz_5vWYWJdnTpaYstOVKUgvR5tCPQ",authDomain:"ahmed-quraish.firebaseapp.com",projectId:"ahmed-quraish",storageBucket:"ahmed-quraish.firebasestorage.app",messagingSenderId:"777596990140",appId:"1:777596990140:web:8f336a1f2336a450a416b9"};
+var app=firebase.initializeApp(firebaseConfig);
+var db=firebase.firestore();
 
-var firebaseConfig = {
-  apiKey: "AIzaSyBCheHz_5vWYWJdnTpaYstOVKUgvR5tCPQ",
-  authDomain: "ahmed-quraish.firebaseapp.com",
-  projectId: "ahmed-quraish",
-  storageBucket: "ahmed-quraish.firebasestorage.app",
-  messagingSenderId: "777596990140",
-  appId: "1:777596990140:web:8f336a1f2336a450a416b9"
-};
-var app = firebase.initializeApp(firebaseConfig);
-var db = firebase.firestore();
-function toggleTheme(){
-  var cur=document.documentElement.getAttribute('data-theme');
-  var next=cur==='light'?'dark':'light';
-  if(next==='light'){document.documentElement.setAttribute('data-theme','light');document.getElementById('themeToggle').textContent='☀️';}
-  else{document.documentElement.removeAttribute('data-theme');document.getElementById('themeToggle').textContent='🌙';}
-  localStorage.setItem('theme',next);
+// ── BOOKING ID GENERATOR ──────────────────────
+function generateBookingId(){
+  var now = new Date();
+  var yy = String(now.getFullYear()).slice(2);
+  var mm = String(now.getMonth()+1).padStart(2,'0');
+  var dd = String(now.getDate()).padStart(2,'0');
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var rand = '';
+  for(var i=0;i<4;i++) rand += chars[Math.floor(Math.random()*chars.length)];
+  return 'CON-' + yy + mm + dd + '-' + rand;
 }
+
+var state={settings:null,bookedSlots:{},currentMonth:new Date(),selectedDate:null,selectedSlot:null};
+
 document.addEventListener('DOMContentLoaded',function(){
   if(localStorage.getItem('theme')==='light'){document.documentElement.setAttribute('data-theme','light');document.getElementById('themeToggle').textContent='☀️';}
+  loadAvailability();
 });
+
+function toggleTheme(){
+  var cur=document.documentElement.getAttribute('data-theme');
+  if(cur==='light'){document.documentElement.removeAttribute('data-theme');document.getElementById('themeToggle').textContent='🌙';localStorage.setItem('theme','dark');}
+  else{document.documentElement.setAttribute('data-theme','light');document.getElementById('themeToggle').textContent='☀️';localStorage.setItem('theme','light');}
+}
+
 function showToast(msg,err){
   var t=document.getElementById('toastMsg');
   t.textContent=msg;t.style.borderColor=err?'#cc4444':'var(--gold)';
-  t.classList.add('show');
-  setTimeout(function(){t.classList.remove('show');},3500);
+  t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3500);
 }
 
+function loadAvailability(){
+  var settingsPromise=db.collection('consulting_settings').doc('availability').get();
+  var bookingsPromise=db.collection('consulting_bookings').where('status','in',['pending','confirmed']).get();
+  Promise.all([settingsPromise,bookingsPromise]).then(function(results){
+    var settingsDoc=results[0];var bookingsSnap=results[1];
+    document.getElementById('loading-msg').style.display='none';
+    if(!settingsDoc.exists||!settingsDoc.data().enabled){document.getElementById('unavailable-msg').style.display='block';return;}
+    state.settings=settingsDoc.data();
+    bookingsSnap.forEach(function(doc){
+      var d=doc.data();
+      if(d.date&&d.slot){if(!state.bookedSlots[d.date])state.bookedSlots[d.date]=[];state.bookedSlots[d.date].push(d.slot);}
+    });
+    document.getElementById('section-calendar').style.display='block';
+    renderCalendar();
+  }).catch(function(){document.getElementById('loading-msg').textContent='تعذّر تحميل المواعيد. يرجى تحديث الصفحة.';});
+}
 
-async function submitConsulting(e){
-  e.preventDefault();
-  var data={
-    name:document.getElementById('c-name').value,
-    phone:document.getElementById('c-phone').value,
-    email:document.getElementById('c-email').value,
-    field:document.getElementById('c-field').value,
-    level:document.getElementById('c-level').value,
-    goal:document.getElementById('c-goal').value,
-    time:new Date().toLocaleString('ar-SA')
+function goStep(n){
+  document.getElementById('section-calendar').style.display=n===1?'block':'none';
+  document.getElementById('section-slots').style.display=n===2?'block':'none';
+  document.getElementById('section-form').style.display=n===3?'block':'none';
+  document.getElementById('section-result').style.display=n===4?'block':'none';
+  [1,2,3,4].forEach(function(i){
+    var el=document.getElementById('step'+i);
+    el.className='step'+(i===n?' active':i<n?' done':'');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+var DAYS_AR=['أحد','اثن','ثلا','أرب','خمس','جمع','سبت'];
+var MONTHS_AR=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+document.getElementById('prev-month').addEventListener('click',function(){state.currentMonth=new Date(state.currentMonth.getFullYear(),state.currentMonth.getMonth()-1,1);renderCalendar();});
+document.getElementById('next-month').addEventListener('click',function(){state.currentMonth=new Date(state.currentMonth.getFullYear(),state.currentMonth.getMonth()+1,1);renderCalendar();});
+
+function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+function isDayAvailable(d){
+  if(!state.settings)return false;
+  var today=new Date();today.setHours(0,0,0,0);
+  if(d<today)return false;
+  var dayName=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][d.getDay()];
+  return !!(state.settings.days||{})[dayName];
+}
+
+function renderCalendar(){
+  var m=state.currentMonth;
+  document.getElementById('cal-title').textContent=MONTHS_AR[m.getMonth()]+' '+m.getFullYear();
+  var grid=document.getElementById('cal-grid');grid.innerHTML='';
+  DAYS_AR.forEach(function(d){var el=document.createElement('div');el.className='cal-day-name';el.textContent=d;grid.appendChild(el);});
+  var firstDay=new Date(m.getFullYear(),m.getMonth(),1).getDay();
+  var daysInMonth=new Date(m.getFullYear(),m.getMonth()+1,0).getDate();
+  var today=new Date();today.setHours(0,0,0,0);
+  for(var i=0;i<firstDay;i++){var empty=document.createElement('div');empty.className='cal-day';grid.appendChild(empty);}
+  for(var day=1;day<=daysInMonth;day++){
+    var d=new Date(m.getFullYear(),m.getMonth(),day);
+    var el=document.createElement('div');el.textContent=day;
+    var classes=['cal-day'];
+    if(d.getTime()===today.getTime())classes.push('today');
+    if(isDayAvailable(d)){
+      classes.push('available');
+      if(state.selectedDate&&dateKey(d)===dateKey(state.selectedDate))classes.push('selected');
+      (function(date){el.addEventListener('click',function(){state.selectedDate=date;renderCalendar();showSlots(date);});})(d);
+    } else {classes.push(d<today?'past':'unavailable');}
+    el.className=classes.join(' ');grid.appendChild(el);
+  }
+}
+
+function showSlots(date){
+  var s=state.settings;
+  var dayName=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][date.getDay()];
+  var dayConf=(s.days||{})[dayName];
+  var start=dayConf&&dayConf.start?dayConf.start:(s.startTime||'09:00');
+  var end=dayConf&&dayConf.end?dayConf.end:(s.endTime||'17:00');
+  var duration=parseInt(s.duration)||60;
+  var maxPerSlot=parseInt(s.maxPerSlot)||1;
+  var key=dateKey(date);var booked=state.bookedSlots[key]||[];
+  var bookedCount={};booked.forEach(function(sl){bookedCount[sl]=(bookedCount[sl]||0)+1;});
+  var slots=[];var cur=timeToMins(start);var endM=timeToMins(end);
+  while(cur+duration<=endM){slots.push(minsToTime(cur));cur+=duration;}
+  var dayNames=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  var label=dayNames[date.getDay()]+' '+date.getDate()+' '+MONTHS_AR[date.getMonth()]+' '+date.getFullYear();
+  document.getElementById('selected-date-label').textContent=label;
+  var grid=document.getElementById('slots-grid');grid.innerHTML='';
+  if(slots.length===0){grid.innerHTML='<p style="color:var(--text-muted);font-size:.85rem;">لا توجد أوقات في هذا اليوم</p>';} 
+  else {
+    slots.forEach(function(sl){
+      var count=bookedCount[sl]||0;var isFull=count>=maxPerSlot;
+      var el=document.createElement('div');
+      el.className='slot'+(isFull?' booked':'')+(sl===state.selectedSlot?' selected':'');
+      el.textContent=sl;
+      if(!isFull){(function(slot){el.addEventListener('click',function(){state.selectedSlot=slot;document.querySelectorAll('.slot').forEach(function(s){s.classList.remove('selected');});el.classList.add('selected');setTimeout(function(){fillSummary(date,slot,duration);goStep(3);},300);});})(sl);}
+      grid.appendChild(el);
+    });
+  }
+  goStep(2);
+}
+
+function fillSummary(date,slot,duration){
+  var dayNames=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  var label=dayNames[date.getDay()]+' '+date.getDate()+' '+MONTHS_AR[date.getMonth()]+' '+date.getFullYear()+' — '+slot;
+  document.getElementById('sum-datetime').textContent=label;
+  document.getElementById('sum-duration').textContent=duration+' دقيقة';
+}
+
+function timeToMins(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);}
+function minsToTime(m){return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+
+async function submitBooking(){
+  var name=document.getElementById('b-name').value.trim();
+  var phone=document.getElementById('b-phone').value.trim();
+  var email=document.getElementById('b-email').value.trim();
+  var field=document.getElementById('b-field').value;
+  var level=document.getElementById('b-level').value;
+  var goal=document.getElementById('b-goal').value.trim();
+  if(!name||!phone||!email||!field){showToast('يرجى تعبئة جميع الحقول الإلزامية *',true);return;}
+  if(!state.selectedDate||!state.selectedSlot){showToast('يرجى اختيار موعد أولاً',true);return;}
+  var btn=document.getElementById('submit-btn');
+  btn.disabled=true;btn.textContent='جارٍ الإرسال...';
+  var key=dateKey(state.selectedDate);
+  var dayNames=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  var dateLabel=dayNames[state.selectedDate.getDay()]+' '+state.selectedDate.getDate()+' '+MONTHS_AR[state.selectedDate.getMonth()]+' '+state.selectedDate.getFullYear();
+  var bookingId = generateBookingId();
+  var bookingData={
+    bookingId: bookingId,
+    name:name,phone:phone,email:email,
+    field:field,level:level,goal:goal,
+    date:key,dateLabel:dateLabel,
+    slot:state.selectedSlot,
+    duration:parseInt(state.settings.duration)||60,
+    status:'pending',
+    time:new Date().toLocaleString('ar-SA'),
+    timestamp:Date.now()
   };
-  db.collection('consulting').add(data).catch(function(){});
   try{
+    await db.collection('consulting_bookings').add(bookingData);
     await emailjs.send('service_6g3odwb','bozx1s3',{
-      from_name:data.name,from_email:data.email,phone:data.phone,
-      subject:'طلب استشارة — '+data.field,
-      message:'المجال: '+data.field+'\nالمستوى: '+data.level+'\nالهدف: '+data.goal,
-      course:data.field,notes:data.goal,time:data.time
+      from_name:name,from_email:email,phone:phone,
+      subject:'طلب حجز استشارة — '+field,
+      message:['اسم: '+name,'جوال: '+phone,'مجال: '+field,'الموعد: '+dateLabel+' الساعة '+state.selectedSlot,'رقم الطلب: '+bookingId,'المستوى: '+level,'الهدف: '+goal].join('\n'),
+      course:field,notes:goal||'—',time:bookingData.time
     },{publicKey:'QnIPBoSRBkpNWiNt4'});
-  }catch(err){}
-  showToast('تم إرسال طلبك! سنتواصل معك قريباً ✓');
-  e.target.reset();
+    document.getElementById('booking-ref-display').textContent=bookingId;
+    document.getElementById('result-desc').innerHTML='موعدك المقترح: <strong>'+dateLabel+' — '+state.selectedSlot+'</strong><br><br>رقم طلبك: <strong style="color:var(--gold)">'+bookingId+'</strong><br><br>سيتم مراجعة طلبك وإرسال تأكيد على بريدك <strong>'+email+'</strong> قريباً.';
+    goStep(4);
+  }catch(err){
+    btn.disabled=false;btn.textContent='تأكيد الحجز ✓';
+    showToast('حدث خطأ، يرجى المحاولة مجدداً',true);
+  }
 }
-
 </script>
 </body>
 </html>
