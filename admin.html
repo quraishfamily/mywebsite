@@ -263,6 +263,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function saveSocials(){ _wcall("saveSocials", Array.prototype.slice.call(arguments)); }
   function saveYT(){ _wcall("saveYT", Array.prototype.slice.call(arguments)); }
   function sendNewsletter(){ _wcall("sendNewsletter", Array.prototype.slice.call(arguments)); }
+  function sendTestNewsletter(){ _wcall("sendTestNewsletter", Array.prototype.slice.call(arguments)); }
   function sendQuote(){ _wcall("sendQuote", Array.prototype.slice.call(arguments)); }
   function sendRejection(){ _wcall("sendRejection", Array.prototype.slice.call(arguments)); }
   function showPage(){ _wcall("showPage", Array.prototype.slice.call(arguments)); }
@@ -445,8 +446,11 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
           <div class="fg fg-full"><label>نص النشرة</label><textarea id="nl-body" placeholder="اكتب محتوى النشرة هنا..." style="min-height:140px;"></textarea></div>
           <div class="fg"><label>رابط (اختياري)</label><input type="url" id="nl-link" placeholder="https://..."></div>
         </div>
+          <div class="fg"><label>إيميل تجريبي</label><input type="email" id="nl-test-email" placeholder="بريدك للتجربة قبل الإرسال الكامل"></div>
+        </div>
         <div class="form-actions">
           <button class="btn btn-primary btn-sm" onclick="sendNewsletter()">📤 إرسال للمشتركين</button>
+          <button class="btn btn-outline btn-sm" onclick="sendTestNewsletter()">🧪 إرسال تجريبي لي</button>
           <button class="btn btn-outline btn-sm" onclick="loadNewsletterSubscribers()">🔄 تحديث القائمة</button>
         </div>
         <div id="nl-send-progress" style="margin-top:1rem;"></div>
@@ -2560,6 +2564,50 @@ async function sendNewsletter(){
   db.collection('newsletter_history').add({subject:subject,sent:sent,failed:failed,link:link||'',time:new Date().toLocaleString('ar-SA')});
 }
 
+async function sendTestNewsletter(){
+  var subject = document.getElementById('nl-subject').value.trim();
+  var body = document.getElementById('nl-body').value.trim();
+  var linkEl = document.getElementById('nl-link');
+  var link = linkEl ? linkEl.value.trim() : '';
+  var testEmail = document.getElementById('nl-test-email').value.trim();
+  if(!subject||!body){toast('أدخل العنوان والمحتوى',true);return;}
+  if(!testEmail||!testEmail.includes('@')){toast('أدخل إيميلك التجريبي',true);return;}
+  var linkBlock = '';
+  if(link){
+    linkBlock = '<div style="text-align:center;margin:24px 0;">'
+      + '<a href="'+link+'" style="display:inline-block;background:#C9A84C;color:#111;font-family:Arial,sans-serif;font-weight:700;font-size:15px;padding:12px 28px;border-radius:6px;text-decoration:none;">اقرأ المقال كاملاً ←</a>'
+      + '</div>'
+      + '<p style="text-align:center;font-size:12px;color:#888;">الرابط: <a href="'+link+'" style="color:#C9A84C;">'+link+'</a></p>';
+  }
+  var bodyFormatted = body.replace(/\n/g,'<br>');
+  var htmlMsg = '<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"></head>'
+    + '<body style="margin:0;padding:0;background:#0f0f0f;font-family:Arial,sans-serif;direction:rtl;">'
+    + '<div style="max-width:580px;margin:0 auto;padding:20px;">'
+    + '<div style="background:#2a1a00;border-radius:10px 10px 0 0;padding:12px 20px;text-align:center;border-bottom:2px solid #C9A84C;">'
+    + '<span style="font-size:11px;color:#C9A84C;font-weight:700;letter-spacing:2px;">🧪 نسخة تجريبية</span>'
+    + '</div>'
+    + '<div style="background:#1a1a1a;border-radius:0 0 10px 10px;padding:24px 28px;">'
+    + '<span style="font-size:20px;font-weight:900;color:#C9A84C;">أحمد قريش</span>'
+    + '<p style="color:#888;font-size:12px;margin:4px 0 16px;">النشرة البريدية</p>'
+    + '<h2 style="color:#E8E0D0;font-size:20px;margin:0 0 16px;line-height:1.4;">'+subject+'</h2>'
+    + '<div style="color:#9A9288;font-size:15px;line-height:1.9;">'+bodyFormatted+'</div>'
+    + linkBlock
+    + '<hr style="border:none;border-top:1px solid #2a2a2a;margin:24px 0;">'
+    + '<p style="color:#555;font-size:12px;text-align:center;">قراشvoice.me</p>'
+    + '</div></div></body></html>';
+  toast('جارٍ الإرسال التجريبي...');
+  try {
+    await emailjs.send('service_6g3odwb','bozx1s3',{
+      from_name:'أحمد قريش',from_email:testEmail,
+      subject:'[تجريبي] '+subject,message:htmlMsg,
+      phone:'-',course:'-',notes:link||'-',
+      time:new Date().toLocaleString('ar-SA')
+    },{publicKey:'QnIPBoSRBkpNWiNt4'});
+    toast('✅ وصل التجريبي لـ '+testEmail);
+  } catch(e){ toast('خطأ: '+(e.text||e),true); }
+}
+
+
 function exportEmails(){
   db.collection('newsletter').where('active','==',true).get().then(function(snap){
     var emails = snap.docs.map(function(d){ return d.data().email; }).join('\n');
@@ -3493,6 +3541,7 @@ window._real_markSeen = markSeen;
 window._real_loadNewsletterSubscribers = loadNewsletterSubscribers;
 window._real_toggleSubscriber = toggleSubscriber;
 window._real_sendNewsletter = sendNewsletter;
+window._real_sendTestNewsletter = sendTestNewsletter;
 window._real_exportEmails = exportEmails;
 window._real_toggleSchedule = toggleSchedule;
 window._real_switchQuoteTab = switchQuoteTab;
