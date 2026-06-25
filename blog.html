@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مكتبة المحتوى | أحمد قريش — تعليق صوتي وبودكاست</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SZMRCRHTTM"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-SZMRCRHTTM');</script>
+<meta name="description" content="مقالات وأدلة عملية في التعليق الصوتي وصناعة البودكاست — كيف تبدأ، المعدات، السوق، وأكثر. بقلم أحمد قريش.">
+<meta property="og:title" content="مكتبة المحتوى | أحمد قريش">
+<meta property="og:description" content="أدلة عملية في التعليق الصوتي وصناعة البودكاست">
+<link rel="canonical" href="https://quraishvoice.me/blog.html">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#C9A84C;--gold-dim:rgba(201,168,76,.1);--gold-mid:rgba(201,168,76,.25);--black:#0A0A0A;--dark:#111;--dark2:#171717;--dark3:#1E1E1E;--text:#E8E0D0;--text-2:#9A9288;--text-3:#5A5550;--border:rgba(201,168,76,.14);--border-2:rgba(255,255,255,.06);}
+[data-theme="light"]{--black:#F5F0E8;--dark:#EEEBE3;--dark2:#E8E4DA;--dark3:#DDD9CF;--text:#1A1A1A;--text-2:#666660;--text-3:#999990;--border:rgba(201,168,76,.25);--border-2:rgba(0,0,0,.06);}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:'Tajawal',sans-serif;background:var(--black);color:var(--text);}
+nav{position:fixed;top:0;right:0;left:0;z-index:900;padding:1rem 3rem;display:flex;align-items:center;gap:1rem;background:rgba(10,10,10,.94);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+.nav-logo{height:40px;}
+.nav-back{margin-right:auto;font-size:.82rem;color:var(--text-2);text-decoration:none;transition:color .3s;}
+.nav-back:hover{color:var(--gold);}
+.theme-btn{width:34px;height:34px;background:var(--dark3);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem;}
+.hero{padding:9rem 2rem 4rem;max-width:900px;margin:0 auto;text-align:center;}
+.eyebrow{font-size:.68rem;letter-spacing:3.5px;color:var(--gold);font-weight:700;margin-bottom:1.2rem;display:block;}
+.hero h1{font-family:'Cairo',sans-serif;font-size:clamp(1.8rem,4vw,2.6rem);font-weight:900;margin-bottom:.8rem;}
+.hero h1 em{color:var(--gold);font-style:normal;}
+.hero p{font-size:.95rem;color:var(--text-2);line-height:1.9;max-width:540px;margin:0 auto;}
+.divider{width:44px;height:2px;background:var(--gold);margin:1.8rem auto;}
+/* FILTER */
+.filter-wrap{max-width:900px;margin:0 auto 2.5rem;padding:0 2rem;display:flex;gap:.5rem;flex-wrap:wrap;}
+.filter-btn{font-size:.78rem;font-family:'Cairo',sans-serif;font-weight:700;padding:.4rem 1rem;border-radius:20px;border:1px solid var(--border-2);background:var(--dark3);color:var(--text-2);cursor:pointer;transition:all .2s;}
+.filter-btn:hover,.filter-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);}
+/* ARTICLES */
+.articles{max-width:900px;margin:0 auto;padding:0 2rem 6rem;display:grid;gap:1.5rem;}
+.article-card{background:var(--dark2);border:1px solid var(--border-2);border-radius:12px;padding:1.8rem 2rem;display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:start;text-decoration:none;color:inherit;transition:border-color .3s,transform .25s;}
+.article-card:hover{border-color:var(--border);transform:translateX(-3px);}
+.art-cat{font-size:.65rem;letter-spacing:2px;font-weight:700;padding:.25rem .7rem;border-radius:20px;display:inline-block;margin-bottom:.8rem;}
+.cat-beginner{background:rgba(74,222,128,.1);color:#4ade80;}
+.cat-gear{background:rgba(96,165,250,.1);color:#60a5fa;}
+.cat-market{background:rgba(251,146,60,.1);color:#fb923c;}
+.art-title{font-family:'Cairo',sans-serif;font-weight:900;font-size:1.18rem;margin-bottom:.5rem;line-height:1.4;}
+.art-desc{font-size:.85rem;color:var(--text-2);line-height:1.8;margin-bottom:1rem;}
+.art-meta{display:flex;align-items:center;gap:1rem;font-size:.75rem;color:var(--text-3);}
+.art-meta span{display:flex;align-items:center;gap:.3rem;}
+.art-arrow{font-size:1.6rem;color:var(--gold);opacity:.5;align-self:center;transition:opacity .3s,transform .25s;}
+.article-card:hover .art-arrow{opacity:1;transform:translateX(-4px);}
+/* NEWSLETTER */
+.nl-section{max-width:900px;margin:0 auto;padding:0 2rem 6rem;}
+.nl-box{background:var(--dark2);border:1px solid var(--border);border-radius:12px;padding:2.5rem;text-align:center;}
+.nl-title{font-family:'Cairo',sans-serif;font-weight:900;font-size:1.3rem;margin-bottom:.6rem;}
+.nl-desc{font-size:.88rem;color:var(--text-2);line-height:1.8;max-width:440px;margin:0 auto 1.4rem;}
+.nl-form{display:flex;gap:.6rem;max-width:400px;margin:0 auto;justify-content:center;}
+.nl-form input{flex:1;background:var(--dark3);border:1px solid var(--border-2);border-radius:4px;padding:.7rem 1rem;color:var(--text);font-family:'Tajawal',sans-serif;font-size:.88rem;outline:none;transition:border-color .3s;}
+.nl-form input:focus{border-color:var(--gold);}
+.nl-form button{background:var(--gold);color:#000;border:none;border-radius:4px;padding:.7rem 1.2rem;font-family:'Cairo',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap;}
+@media(max-width:680px){nav{padding:1rem 1.2rem;}.hero,.articles,.nl-section,.filter-wrap{padding-right:1.2rem;padding-left:1.2rem;}.hero{padding-top:6.5rem;}.article-card{grid-template-columns:1fr;gap:.8rem;}.art-arrow{display:none;}.nl-form{flex-direction:column;}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html"><img class="nav-logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAIAAAABc2X6AAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAAkq0lEQVR42qV8d5glVZXvWnvvc87NdStX0TnnQGrARmiGJChKMIyCT5/gMPgMIxg+1OdDn44TzCP6nHHGGcWAow/nG1BAfEJLA9KEzrnoVDncuvmEvfda649TXV1U6oY5f9R36tyzz9lrhxV+67cOplIpRISzO+I7mXnSxfjK+K/jV6Y2mfjTtA8/4zHePH7R1POZbo5P1EyvmekR00o45enjdwIiIgKclhEBkYGJGRhe3xF3YGL3Zu/qxN6qaccDx7oJE2+dOrczzZUABiEA2RprImOIiWFMaAEChRKopJQKAZgJY9Fnn+Xxn85+PU68f1xyNe3Uve4DAYQUWuugHjFzNpfp7Ey2N6bbGtOZlMOA9Vo4VKwOjQZDI7VCxUcQCQ+VlEzTvPgsO3PGbk8cIzVp/GY5n22q42cJNJaq5XpDQ+byTQuv2LzsvGUtaxY1NqYlEEVhxNYSWWP0cCna2zW899jo1p0DLx3sK5WCREIpiUQw0/xNu4mmnp9x/jGdTp/xvll/ZWZAECi4UvVzucw7rzv3z69bfcHy1oacHBws//GFo9t39x06OTJSNcjUnJUL2nPrFuXPXZzPppzBKh3uLj/yfPdjz52s1INUwgVimDKssyukSdJO1aCvGrJ0On02e2AmlcbMApGYavXoqjeuvfeOzectybgShouBBw/v/dmj+w4cL1hrX7XBAVyJy+Zl33zJ3Ted1+YKDA0e6K098Luu5w8MJTwn3nRnVNSTRJp9VY/bjv+SwAwsAI21luHu26+8+13rhKkJKV84MPqZb/3+hX39ypUpzwEBwMDMCHErQUxBqI2lC5Y13/mW5QsaRaTJovrltsEHn+pypUQBDDyT2P8VgaXrutMKOVXOqXtbIGpDjlJfv/emD924rDI65CWTjz3bffvnH+nqH23IeI4SxMA8plQYkDnuGSspXc85MVDevn9o2dzG1qzwq8H5yzLZdOLFIyOAgKgAaFqZpzUi0/Z5fDjG/0rHcWa3Y7NMNTEBwrc+c+O7tswpDI1m8/k/vNB9x32P+CZKJxxrgBlOWeFJbZGZESDhqnJonz9YWLcg05R3R4vBqjlJqRI7uwrKwVkW9kzbe6rYk/6VrutOK23cctrnMrAAgQi+H/2vj93w/qvnDQ6NZJKJVwZqH/z8w0U/SrqutQg4NvxCCCkkCiEQBcZKXYj4jMGVqhroI73+hYsbXEHVQC/vTAxXuGug5ijBTDN1b9rzqV7gpIaTl/RU+z5pSQAAgpACStXo3Tdc+Ok/X14YLXvCRVd84mtPvnBgIJN2yCeign3bB7Y+a9O0+w2mnT3XHV0H1Ke5n/UYfqVp5b8Q3LcWHe+0E0t5WE3yEtWV3fP3jHX4q+QT1wQPBVBFBTbGDqxOIJBa6zqRlQ5rFpJdUGXV/6Ytp/DF7BuR9MlJZn2NrQXE9MWc4PgUOEp3OVZ8Oc0+TdZq1e9GYwJy00YY28zSiaSalGEpv8hB7f9K3S+/Uv9s+f5kOZqpWB+qKQEbpFBBmkzBjfWc6TH5IGFY1+ztB2YEJiWVF2Ux+7B+zY7jaTFRKA2zJYkNZikuVPJjSmjAHjx6mzz8V5Dj1amRV0v7Hixe3UGNfC9s7CcfnIkGNx8saBqT/B3rkjULmFJfNpJxfAYEZ7VlN9QFhFdHE+prVzJSN80ABuDKuvLRt8aw0Cfe4FxSzMVPCMmPuHQr7Jn7qcqMYe4lfNUSg9YwqDgBe5JYq7wn7gQzDe0u7/dTAnX4SHfA2A0Nxr0UjBjxF8YKdLYHi5cIMSbPqWk7mBk2VFRt23MIhHMbO4s6EjUF5ZqGnGJrVoI8y/ARzwH2RtgpJLHGrMVtekIBDmAbJyU8i2LOxQ/HVsOqhXq+xPm4r+r8J9E6H6S5Q2kYLXRpgYrqBQAAAABJRU5ErkJggg==" alt="Quraish Voice"></a>
+  <a href="index.html" class="nav-back">← الرئيسية</a>
+  <button class="theme-btn" onclick="toggleTheme()">🌙</button>
+</nav>
+
+<div class="hero">
+  <span class="eyebrow">المكتبة الصوتية</span>
+  <h1>تعلّم من <em>تجربة حقيقية</em></h1>
+  <p>أدلة عملية وتجارب مباشرة في التعليق الصوتي وصناعة البودكاست — كتبها أحمد قريش من سنوات في الميدان.</p>
+  <div class="divider"></div>
+</div>
+
+<div class="filter-wrap">
+  <button class="filter-btn active" onclick="filterArticles('all',this)">الكل</button>
+  <button class="filter-btn" onclick="filterArticles('beginner',this)">🌱 للمبتدئين</button>
+  <button class="filter-btn" onclick="filterArticles('gear',this)">🎙️ المعدات</button>
+  <button class="filter-btn" onclick="filterArticles('market',this)">💼 السوق والعمل</button>
+</div>
+
+<div class="articles">
+
+  <a href="article-start-voiceover.html" class="article-card" data-cat="beginner">
+    <div>
+      <span class="art-cat cat-beginner">🌱 للمبتدئين</span>
+      <div class="art-title">كيف تبدأ في التعليق الصوتي من الصفر؟</div>
+      <p class="art-desc">دليل شامل لكل من يريد دخول مجال التعليق الصوتي — من تقييم صوتك وحتى أول عميل. خطوات واضحة بدون تعقيد.</p>
+      <div class="art-meta">
+        <span>⏱ 8 دقائق</span>
+        <span>🌱 مبتدئ</span>
+      </div>
+    </div>
+    <div class="art-arrow">←</div>
+  </a>
+
+  <a href="article-microphone-guide.html" class="article-card" data-cat="gear">
+    <div>
+      <span class="art-cat cat-gear">🎙️ المعدات</span>
+      <div class="art-title">أي ميكروفون تختار للتعليق الصوتي؟ دليل عملي شامل</div>
+      <p class="art-desc">المكثف أم الديناميكي؟ USB أم XLR؟ ما الميزانية المناسبة؟ كل ما تحتاج معرفته قبل أي قرار شراء — بتوصيات حقيقية من الميدان.</p>
+      <div class="art-meta">
+        <span>⏱ 6 دقائق</span>
+        <span>🎙️ معدات</span>
+      </div>
+    </div>
+    <div class="art-arrow">←</div>
+  </a>
+
+  <a href="article-voiceover-market.html" class="article-card" data-cat="market">
+    <div>
+      <span class="art-cat cat-market">💼 السوق والعمل</span>
+      <div class="art-title">كيف تربح من التعليق الصوتي؟ السوق العربي والفرص الحقيقية</div>
+      <p class="art-desc">واقع سوق التعليق الصوتي في السعودية والخليج — أين الطلب، كيف تسعّر، وما القنوات التي تجلب العملاء الجادين فعلاً.</p>
+      <div class="art-meta">
+        <span>⏱ 10 دقائق</span>
+        <span>💼 سوق العمل</span>
+      </div>
+    </div>
+    <div class="art-arrow">←</div>
+  </a>
+
+</div>
+
+<div class="nl-section">
+  <div class="nl-box">
+    <div class="nl-title">📬 لا تفوتك المقالات القادمة</div>
+    <p class="nl-desc">اشترك في النشرة البريدية وصلك كل مقال جديد مباشرة — محتوى حصري في التعليق الصوتي والبودكاست.</p>
+    <div class="nl-form">
+      <input type="email" placeholder="بريدك الإلكتروني">
+      <button onclick="subscribeNL()">اشترك</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleTheme(){var c=document.documentElement.getAttribute('data-theme');if(c==='light'){document.documentElement.removeAttribute('data-theme');document.querySelector('.theme-btn').textContent='🌙';localStorage.setItem('theme','dark');}else{document.documentElement.setAttribute('data-theme','light');document.querySelector('.theme-btn').textContent='☀️';localStorage.setItem('theme','light');}}
+if(localStorage.getItem('theme')==='light'){document.documentElement.setAttribute('data-theme','light');document.querySelector('.theme-btn').textContent='☀️';}
+function filterArticles(cat,btn){
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.querySelectorAll('.article-card').forEach(function(card){
+    card.style.display=(cat==='all'||card.dataset.cat===cat)?'grid':'none';
+  });
+}
+function subscribeNL(){
+  var input=document.querySelector('.nl-form input');
+  var email=input.value.trim();
+  if(!email||!email.includes('@')){input.style.borderColor='#f44336';return;}
+  input.value='';
+  document.querySelector('.nl-box').innerHTML='<div class="nl-title">✅ تم الاشتراك!</div><p class="nl-desc">شكراً — ستصلك المقالات القادمة مباشرة على بريدك.</p>';
+}
+</script>
+</body>
+</html>
