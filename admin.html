@@ -2504,19 +2504,51 @@ function toggleSubscriber(id, currentStatus){
 async function sendNewsletter(){
   var subject = document.getElementById('nl-subject').value.trim();
   var body = document.getElementById('nl-body').value.trim();
+  var linkEl = document.getElementById('nl-link');
+  var link = linkEl ? linkEl.value.trim() : '';
   if(!subject||!body){toast('أدخل العنوان والمحتوى',true);return;}
   var snap = await db.collection('newsletter').where('active','==',true).get();
   var emails = snap.docs.map(function(d){ return d.data().email; });
   if(!emails.length){toast('لا يوجد مشتركون نشطون',true);return;}
   var progress = document.getElementById('nl-send-progress');
   progress.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ الإرسال لـ '+emails.length+' مشترك...</p>';
+
+  // Build HTML email
+  var linkBlock = '';
+  if(link){
+    linkBlock = '<div style="text-align:center;margin:24px 0;">'
+      + '<a href="'+link+'" style="display:inline-block;background:#C9A84C;color:#111;font-family:Arial,sans-serif;font-weight:700;font-size:15px;padding:12px 28px;border-radius:6px;text-decoration:none;">اقرأ المقال كاملاً ←</a>'
+      + '</div>'
+      + '<p style="text-align:center;font-size:12px;color:#888;">الرابط: <a href="'+link+'" style="color:#C9A84C;">'+link+'</a></p>';
+  }
+
+  var bodyFormatted = body.replace(/\n/g,'<br>');
+
+  var htmlMsg = '<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"></head>'
+    + '<body style="margin:0;padding:0;background:#0f0f0f;font-family:Arial,sans-serif;direction:rtl;">'
+    + '<div style="max-width:580px;margin:0 auto;padding:20px;">'
+    + '<div style="background:#1a1a1a;border-radius:10px 10px 0 0;padding:24px 28px;border-bottom:2px solid #C9A84C;text-align:center;">'
+    + '<span style="font-size:22px;font-weight:900;color:#C9A84C;">أحمد قريش</span>'
+    + '<p style="color:#888;font-size:12px;margin:4px 0 0;">النشرة البريدية</p>'
+    + '</div>'
+    + '<div style="background:#1a1a1a;padding:28px;border-radius:0 0 10px 10px;">'
+    + '<h2 style="color:#E8E0D0;font-size:20px;margin:0 0 16px;line-height:1.4;">'+subject+'</h2>'
+    + '<div style="color:#9A9288;font-size:15px;line-height:1.9;">'+bodyFormatted+'</div>'
+    + linkBlock
+    + '<hr style="border:none;border-top:1px solid #2a2a2a;margin:24px 0;">'
+    + '<p style="color:#555;font-size:12px;text-align:center;margin:0;">'
+    + 'وصلتك هذه الرسالة لأنك مشترك في نشرة أحمد قريش البريدية.<br>'
+    + '<a href="https://quraishvoice.me" style="color:#C9A84C;">quraishvoice.me</a>'
+    + '</p>'
+    + '</div></div></body></html>';
+
   var sent=0, failed=0;
   for(var i=0;i<emails.length;i++){
     try {
       await emailjs.send('service_6g3odwb','bozx1s3',{
         from_name:'أحمد قريش',from_email:emails[i],
-        subject:subject,message:body,
-        phone:'-',course:'-',notes:'-',
+        subject:subject,message:htmlMsg,
+        phone:'-',course:'-',notes:link||'-',
         time:new Date().toLocaleString('ar-SA')
       },{publicKey:'QnIPBoSRBkpNWiNt4'});
       sent++;
@@ -2525,7 +2557,7 @@ async function sendNewsletter(){
     await new Promise(function(r){setTimeout(r,300);});
   }
   toast('تم الإرسال لـ '+sent+' مشترك ✓');
-  db.collection('newsletter_history').add({subject:subject,sent:sent,failed:failed,time:new Date().toLocaleString('ar-SA')});
+  db.collection('newsletter_history').add({subject:subject,sent:sent,failed:failed,link:link||'',time:new Date().toLocaleString('ar-SA')});
 }
 
 function exportEmails(){
