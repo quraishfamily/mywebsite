@@ -3247,7 +3247,6 @@ function renderCalTable(statusFilter, containerId){
 
 function confirmBooking(id, data){
   db.collection('consulting_bookings').doc(id).update({status:'confirmed'}).then(function(){
-    // Send confirmation email to client
     emailjs.send('service_6g3odwb','bozx1s3',{
       from_name: data.name||'',
       from_email: data.email||'',
@@ -3256,10 +3255,34 @@ function confirmBooking(id, data){
       message: ['السلام عليكم '+(data.name||'')+',','','يسعدنا تأكيد موعد استشارتك:','','التاريخ: '+(data.dateLabel||data.date||''),'الوقت: '+(data.slot||''),'المدة: '+(data.duration||60)+' دقيقة','المجال: '+(data.field||''),'','سنقوم بالتواصل معك في أقرب وقت وإرسال رابط اجتماع Zoom الخاص بالجلسة.','','للاستفسار: واتساب +966565909049','','شكراً لثقتك!'].join('\n'),
       course: data.field||'', notes: data.goal||'-', time: new Date().toLocaleString('ar-SA')
     }, {publicKey:'QnIPBoSRBkpNWiNt4'}).catch(function(){});
-    toast('تم تأكيد الموعد وإرسال إشعار للعميل ✅');
+
+    var gcalLink = buildGCalLink(data);
+    var t = document.getElementById('toastMsg');
+    t.innerHTML = '✅ تم التأكيد | <a href="'+gcalLink+'" target="_blank" style="color:var(--gold);font-weight:700;margin-right:.4rem;">📅 أضف لـ Google Calendar</a>';
+    t.style.borderColor = 'var(--gold)';
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 6000);
+
     renderCalBookings();
     updateBadges();
   }).catch(function(){ toast('خطأ في التأكيد', true); });
+}
+
+function buildGCalLink(data){
+  var dateStr = data.date || '';
+  var slot = data.slot || '09:00';
+  var duration = parseInt(data.duration||60);
+  var startDT = '', endDT = '';
+  try {
+    var p = dateStr.split('-'), sp = slot.split(':');
+    var s = new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]),parseInt(sp[0]),parseInt(sp[1]),0);
+    var e = new Date(s.getTime() + duration*60000);
+    function fmt(d){ return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00'; }
+    startDT = fmt(s); endDT = fmt(e);
+  } catch(ex) { return '#'; }
+  var title = encodeURIComponent('استشارة: '+(data.name||'')+' — '+(data.field||''));
+  var details = encodeURIComponent(['العميل: '+(data.name||''),'الجوال: '+(data.phone||''),'البريد: '+(data.email||''),'المجال: '+(data.field||''),'الهدف: '+(data.goal||'—')].join('\n'));
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+title+'&dates='+startDT+'/'+endDT+'&details='+details+'&sf=true&output=xml';
 }
 
 function openRejectModal(id){
@@ -3559,6 +3582,7 @@ window._real_loadAvailSummary = loadAvailSummary;
 window._real_showAvailSettings = showAvailSettings;
 window._real_saveAvailability = saveAvailability;
 window._real_confirmBooking = confirmBooking;
+window._real_buildGCalLink = buildGCalLink;
 window._real_openRejectModal = openRejectModal;
 window._real_doRejectBooking = doRejectBooking;
 window._real_fillRejectReason = fillRejectReason;
