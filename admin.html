@@ -3318,7 +3318,7 @@ function showAvailSettings(){
       ].join('');
       grid.appendChild(row);
     });
-    document.getElementById('availModal').style.display = 'flex';
+    var am=document.getElementById('availModal');am.style.display='flex';am.style.pointerEvents='auto';
   }).catch(function(){ toast('خطأ في التحميل', true); });
 }
 
@@ -3336,7 +3336,7 @@ function saveAvailability(){
     }
   });
   db.collection('consulting_settings').doc('availability').set({enabled:enabled, duration:duration, maxPerSlot:maxPerSlot, days:days}).then(function(){
-    document.getElementById('availModal').style.display = 'none';
+    var am2=document.getElementById('availModal');am2.style.display='none';am2.style.pointerEvents='none';
     toast('تم حفظ إعدادات التوفر ✓');
     loadAvailSummary();
   }).catch(function(){ toast('خطأ في الحفظ', true); });
@@ -3355,8 +3355,8 @@ function markSeenCalBookings(type){
 // Close modals via data-action
 document.addEventListener('click', function(e){
   var action = e.target.getAttribute && e.target.getAttribute('data-action');
-  if(action === 'closeAvailModal'){ var m=document.getElementById('availModal'); if(m) m.style.display='none'; }
-  if(action === 'closeRejectModal'){ var m=document.getElementById('rejectModal'); if(m) m.style.display='none'; }
+  if(action === 'closeAvailModal'){ var m=document.getElementById('availModal'); if(m){m.style.display='none';m.style.pointerEvents='none';} }
+  if(action === 'closeRejectModal'){ var m=document.getElementById('rejectModal'); if(m){m.style.display='none';m.style.pointerEvents='none';} }
 });
 
 function viewBookingDetails(r){
@@ -5136,7 +5136,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
 
 
 <!-- AVAIL SETTINGS MODAL -->
-    <div id="availModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;">
+    <div id="availModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;pointer-events:none;">
       <div style="background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:2rem;width:90%;max-width:560px;max-height:85vh;overflow-y:auto;">
         <h3 style="font-family:Cairo,sans-serif;color:var(--gold);margin-bottom:1.2rem;">⚙️ إعدادات التوفر</h3>
         <div class="fg" style="margin-bottom:1rem;">
@@ -5159,7 +5159,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
       </div>
     </div>
     <!-- REJECT REASON MODAL -->
-    <div id="rejectModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;">
+    <div id="rejectModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;pointer-events:none;">
       <div style="background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:2rem;width:90%;max-width:440px;">
         <h3 style="font-family:Cairo,sans-serif;color:var(--gold);margin-bottom:1rem;">❌ سبب الرفض</h3>
         <div class="fg">
