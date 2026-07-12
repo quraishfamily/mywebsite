@@ -970,7 +970,8 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
         <input type="hidden" id="cm-img">
         <div id="cm-img-preview"></div>
       </div>
-      <div class="fg fg-full"><label>وصف الدورة</label><textarea id="cm-desc" placeholder="اكتب وصف الدورة..."></textarea></div>
+      <div class="fg fg-full"><label>ملخص قصير (يظهر في الصفحة الرئيسية)</label><input type="text" id="cm-summary" placeholder="ملخص مختصر..." maxlength="120" style="background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem 1rem;color:var(--text);font-family:Tajawal,sans-serif;width:100%;"></div>
+      <div class="fg fg-full"><label>الوصف الكامل (يظهر في صفحة الدورة)</label><textarea id="cm-desc" placeholder="اكتب وصف الدورة..."></textarea></div>
       <div class="fg fg-full"><label>محاور الدورة (سطر لكل محور)</label><textarea id="cm-outline" placeholder="المحور الأول: مقدمة في التعليق الصوتي&#10;المحور الثاني: تقنيات الأداء&#10;المحور الثالث: التسجيل والإنتاج" style="min-height:120px;"></textarea></div>
       <div class="fg fg-full"><label>المميزات (سطر لكل ميزة — اتركه فارغاً إن لم تكن هناك مميزات)</label><textarea id="cm-features" placeholder="شهادة حضور معتمدة&#10;مواد تدريبية شاملة" style="min-height:80px;"></textarea></div>
       <div class="fg fg-full"><label>المميزات (سطر لكل ميزة — اتركه فارغاً إن لم تكن هناك مميزات)</label><textarea id="cm-features" placeholder="شهادة حضور معتمدة&#10;مواد تدريبية شاملة" style="min-height:80px;"></textarea></div>
@@ -1413,13 +1414,14 @@ function openCourseModal(id=''){
     document.getElementById('cm-badge').value=c.badge||'';
     document.getElementById('cm-img').value=c.img||'';
     document.getElementById('cm-img-preview').innerHTML = c.img ? '<img src="'+c.img+'" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:.5rem;">' : '';
+    if(document.getElementById('cm-summary'))document.getElementById('cm-summary').value=c.summary||'';
     document.getElementById('cm-desc').value=c.desc||'';
     document.getElementById('cm-outline').value=c.outline||'';
     document.getElementById('cm-outcomes').value=c.outcomes||'';
     document.getElementById('cm-reglink').value=c.reglink||'';
     document.getElementById('course-modal-title').textContent='تعديل الدورة';
   } else {
-    ['cm-title','cm-icon','cm-price','cm-dur','cm-sess','cm-lvl','cm-badge','cm-desc'].forEach(x=>document.getElementById(x).value='');
+    ['cm-title','cm-icon','cm-price','cm-dur','cm-sess','cm-lvl','cm-badge','cm-summary','cm-desc'].forEach(x=>{var el=document.getElementById(x);if(el)el.value='';});
     document.getElementById('course-modal-title').textContent='إضافة دورة';
   }
   console.log('calling openModal courseModal');
@@ -1448,6 +1450,7 @@ function saveCourse(){
     sess:document.getElementById('cm-sess').value,
     lvl:document.getElementById('cm-lvl').value,
     badge:document.getElementById('cm-badge').value,
+    summary:document.getElementById('cm-summary')?document.getElementById('cm-summary').value.trim():'',
     desc:document.getElementById('cm-desc').value,
     outline:document.getElementById('cm-outline').value,
     outcomes:document.getElementById('cm-outcomes').value,
