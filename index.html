@@ -1517,7 +1517,7 @@ function renderCourses(courses=null){
       <div class="c-img">${c.img ? '<img src="'+c.img+'" alt="'+c.title+'">' : (c.icon||'📚')}</div>
       <div class="c-body">
         <h3>${c.title}</h3>
-        <p>${c.desc}</p>
+        <p>${c.summary || (c.desc ? c.desc.substring(0,100)+(c.desc.length>100?'...':'') : '')}</p>
         <div class="c-meta">
           <span>⏱ <b>${c.dur||c.duration}</b></span>
           <span>📅 <b>${c.sess||c.sessions}</b></span>
