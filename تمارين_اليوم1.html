@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تمارين اليوم 1 — الأسس النظرية والتخطيط الاستراتيجي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0D1B2A;
+    --text:#334155;
+    --muted:#64748B;
+    --bg:#F4F7FA;
+    --white:#FFFFFF;
+    --accent:#1B5E99;
+    --accent-dark:#123F68;
+    --accent-light:#D4E8FA;
+    --accent-pale:#EEF6FD;
+    --good:#0F7A5A;
+    --good-light:#DCF3EA;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  html,body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Tajawal',sans-serif;
+    line-height:1.65;
+  }
+  .page{
+    max-width:920px;
+    margin:0 auto;
+    padding:28px 20px 80px;
+  }
+  header.top{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:28px;
+  }
+  .day-badge{
+    background:var(--accent);
+    color:var(--white);
+    font-weight:800;
+    font-size:22px;
+    width:56px;
+    height:56px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    box-shadow:0 6px 16px -6px rgba(27,94,153,.5);
+  }
+  .top-text .eyebrow{
+    font-size:13px;
+    color:var(--accent);
+    font-weight:700;
+    letter-spacing:.02em;
+    margin-bottom:2px;
+  }
+  .top-text h1{
+    margin:0;
+    font-size:22px;
+    font-weight:800;
+    color:var(--ink);
+  }
+  nav.tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:22px;
+    overflow-x:auto;
+    padding-bottom:4px;
+  }
+  nav.tabs button{
+    font-family:'Tajawal',sans-serif;
+    border:none;
+    background:var(--white);
+    color:var(--muted);
+    padding:12px 18px;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    white-space:nowrap;
+    border:1px solid #E3E9F0;
+    transition:.15s ease;
+  }
+  nav.tabs button.active{
+    background:var(--accent);
+    color:var(--white);
+    border-color:var(--accent);
+  }
+  nav.tabs button:focus-visible{
+    outline:3px solid var(--accent-light);
+    outline-offset:2px;
+  }
+  .card{
+    background:var(--white);
+    border-radius:var(--radius);
+    padding:28px 26px;
+    box-shadow:0 10px 30px -18px rgba(13,27,42,.35);
+    display:none;
+  }
+  .card.active{display:block;}
+  .card h2{
+    margin:0 0 6px;
+    font-size:20px;
+    font-weight:800;
+    color:var(--ink);
+  }
+  .card p.lede{
+    margin:0 0 24px;
+    color:var(--muted);
+    font-size:15px;
+  }
+
+  /* Quiz */
+  .q-progress{
+    display:flex;
+    gap:6px;
+    margin-bottom:20px;
+  }
+  .q-progress span{
+    height:5px;
+    flex:1;
+    border-radius:4px;
+    background:#E7EEF5;
+  }
+  .q-progress span.done{background:var(--accent);}
+  .q-block .q-text{
+    font-weight:700;
+    color:var(--ink);
+    font-size:17px;
+    margin-bottom:14px;
+  }
+  .opt{
+    display:block;
+    width:100%;
+    text-align:right;
+    font-family:'Tajawal',sans-serif;
+    background:var(--accent-pale);
+    border:1.5px solid transparent;
+    color:var(--text);
+    padding:14px 16px;
+    border-radius:12px;
+    margin-bottom:10px;
+    font-size:15px;
+    cursor:pointer;
+    transition:.15s ease;
+  }
+  .opt:hover{border-color:var(--accent-light);}
+  .opt:focus-visible{outline:3px solid var(--accent-light);}
+  .opt.picked{background:var(--accent);color:var(--white);}
+  .quiz-nav{display:flex;justify-content:space-between;margin-top:18px;}
+  .btn{
+    font-family:'Tajawal',sans-serif;
+    border:none;
+    padding:12px 22px;
+    border-radius:12px;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    background:var(--accent);
+    color:var(--white);
+  }
+  .btn.ghost{
+    background:transparent;
+    color:var(--muted);
+    border:1.5px solid #E3E9F0;
+  }
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .result{display:none;}
+  .result.show{display:block;}
+  .result-hero{
+    background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+    color:var(--white);
+    border-radius:14px;
+    padding:22px;
+    margin-bottom:18px;
+  }
+  .result-hero .tag{font-size:13px;opacity:.85;font-weight:700;}
+  .result-hero h3{margin:6px 0 8px;font-size:24px;font-weight:800;}
+  .result-hero p{margin:0;font-size:14.5px;opacity:.95;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  @media (max-width:560px){.two-col{grid-template-columns:1fr;}}
+  .pill-box{background:var(--accent-pale);border-radius:12px;padding:16px;}
+  .pill-box.warn{background:#FDEEE4;}
+  .pill-box h4{margin:0 0 8px;font-size:14px;font-weight:800;color:var(--ink);}
+  .pill-box ul{margin:0;padding-right:18px;font-size:13.5px;color:var(--text);}
+  .pill-box li{margin-bottom:4px;}
+  .examples{font-size:13.5px;color:var(--muted);margin-top:10px;}
+
+  /* Niche calculator */
+  .field{margin-bottom:20px;}
+  .field label{display:block;font-weight:700;color:var(--ink);font-size:14px;margin-bottom:8px;}
+  .field input[type=text]{
+    width:100%;
+    font-family:'Tajawal',sans-serif;
+    padding:13px 14px;
+    border-radius:10px;
+    border:1.5px solid #E3E9F0;
+    font-size:15px;
+    background:var(--bg);
+  }
+  .check-list{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
+  .check-item{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    background:var(--bg);
+    padding:14px 16px;
+    border-radius:12px;
+    cursor:pointer;
+    border:1.5px solid transparent;
+  }
+  .check-item.on{background:var(--accent-pale);border-color:var(--accent-light);}
+  .check-item input{margin-top:3px;accent-color:var(--accent);width:18px;height:18px;flex-shrink:0;}
+  .check-item .ct{font-size:14.5px;color:var(--text);}
+  .check-item .ct b{color:var(--ink);}
+  .score-meter{
+    height:14px;
+    border-radius:999px;
+    background:#E7EEF5;
+    overflow:hidden;
+    margin-bottom:10px;
+  }
+  .score-meter i{
+    display:block;
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--accent),var(--good));
+    transition:width .4s ease;
+  }
+  .score-label{font-weight:800;color:var(--ink);font-size:16px;margin-bottom:16px;}
+  .reflect{background:var(--bg);border-radius:12px;padding:16px;margin-top:6px;}
+  .reflect h4{margin:0 0 10px;font-size:14px;font-weight:800;color:var(--ink);}
+  .reflect p{margin:0 0 8px;font-size:13.5px;color:var(--muted);}
+
+  /* Ordering game */
+  .chip-pool{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+  .chip{
+    font-family:'Tajawal',sans-serif;
+    background:var(--accent-pale);
+    border:1.5px solid var(--accent-light);
+    color:var(--ink);
+    padding:11px 16px;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .chip:disabled{opacity:.35;cursor:not-allowed;}
+  .order-slots{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;min-height:60px;}
+  .slot{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:var(--bg);
+    border:1.5px dashed #CBD5E1;
+    border-radius:10px;
+    padding:12px 14px;
+    font-size:14px;
+    color:var(--muted);
+    min-height:20px;
+  }
+  .slot.filled{
+    border-style:solid;
+    border-color:var(--accent-light);
+    background:var(--white);
+    color:var(--ink);
+    font-weight:700;
+  }
+  .slot .num{
+    background:var(--accent);
+    color:#fff;
+    width:24px;height:24px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;
+    flex-shrink:0;
+  }
+  .order-actions{display:flex;gap:10px;margin-bottom:6px;}
+  .feedback{
+    margin-top:16px;
+    border-radius:12px;
+    padding:16px;
+    font-size:14px;
+    display:none;
+  }
+  .feedback.show{display:block;}
+  .feedback.correct{background:var(--good-light);color:#0B5A41;}
+  .feedback.wrong{background:#FDEEE4;color:#8A3B0C;}
+  .stage-detail{margin-top:16px;display:flex;flex-direction:column;gap:8px;}
+  .stage-detail .row{display:flex;gap:10px;font-size:13.5px;background:var(--bg);border-radius:10px;padding:10px 12px;}
+  .stage-detail .row b{color:var(--accent);flex-shrink:0;}
+
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:12.5px;
+    margin-top:36px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="top">
+    <div class="day-badge">1</div>
+    <div class="top-text">
+      <div class="eyebrow">دورة صناعة البودكاست — تمارين تفاعلية</div>
+      <h1>الأسس النظرية والتخطيط الاستراتيجي</h1>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-target="ex1">أي نوع بودكاست يناسبك؟</button>
+    <button class="tab-btn" data-target="ex2">معادلة اختيار التخصص</button>
+    <button class="tab-btn" data-target="ex3">رحلة الحلقة — رتّب المراحل</button>
+  </nav>
+
+  <!-- EXERCISE 1: Podcast type quiz -->
+  <section class="card active" id="ex1">
+    <h2>أي نوع بودكاست يناسبك؟</h2>
+    <p class="lede">أربعة أسئلة سريعة تحدد النوع الأقرب لشخصيتك وظروفك — فردي، حواري، جماعي، أو روائي.</p>
+
+    <div id="quiz-flow">
+      <div class="q-progress" id="q-progress"></div>
+      <div class="q-block" id="q-block"></div>
+      <div class="quiz-nav">
+        <button class="btn ghost" id="q-restart" style="display:none;">إعادة البدء</button>
+        <span></span>
+      </div>
+    </div>
+
+    <div class="result" id="quiz-result">
+      <div class="result-hero">
+        <div class="tag">النتيجة</div>
+        <h3 id="res-title"></h3>
+        <p id="res-desc"></p>
+      </div>
+      <div class="two-col">
+        <div class="pill-box">
+          <h4>المزايا</h4>
+          <ul id="res-pros"></ul>
+        </div>
+        <div class="pill-box warn">
+          <h4>التحديات</h4>
+          <ul id="res-cons"></ul>
+        </div>
+      </div>
+      <div class="examples" id="res-examples"></div>
+      <div class="quiz-nav" style="margin-top:20px;">
+        <button class="btn ghost" onclick="quizRestart()">أعد الاختبار</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXERCISE 2: Niche score calculator -->
+  <section class="card" id="ex2">
+    <h2>معادلة اختيار التخصص (Niche)</h2>
+    <p class="lede">موضوع تحبه + تعرفه بعمق + يحتاجه جمهور محدد + المنافسة فيه محدودة. اكتب موضوعك وقيّمه على المعادلة.</p>
+
+    <div class="field">
+      <label for="niche-input">موضوع البودكاست الذي تفكر فيه</label>
+      <input type="text" id="niche-input" placeholder="مثال: التمويل الشخصي للموظفين الجدد">
+    </div>
+
+    <div class="check-list" id="niche-checks">
+      <label class="check-item">
+        <input type="checkbox" data-w="1">
+        <span class="ct"><b>تحبه فعلاً</b> — تقدر تتحدث عنه لساعات دون ملل.</span>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" data-w="1">
+        <span class="ct"><b>تعرفه بعمق</b> — يكفي لإنتاج محتوى مستمر دون نفاد أفكار.</span>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" data-w="1">
+        <span class="ct"><b>يحتاجه جمهور محدد</b> — ليس موضوعاً عاماً جداً كـ"التطوير الذاتي".</span>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" data-w="1">
+        <span class="ct"><b>المنافسة عليه محدودة</b> — بالعربية خاصة.</span>
+      </label>
+    </div>
+
+    <div class="score-meter"><i id="niche-bar"></i></div>
+    <div class="score-label" id="niche-label">0 من 4 — عبّي المعايير الأربعة بالأعلى</div>
+
+    <div class="reflect">
+      <h4>أسئلة تساعدك تحسم القرار</h4>
+      <p>ما المشكلة التي يحلها بودكاستك بشكل محدد؟</p>
+      <p>من هو المستمع المثالي؟ عمره، مهنته، مشكلته اليومية؟</p>
+      <p>هل يوجد بودكاست مشابه بالعربية؟ إن لم يوجد فهذه فرصة، وإن وُجد فما الذي تضيفه أنت؟</p>
+    </div>
+  </section>
+
+  <!-- EXERCISE 3: Episode journey ordering -->
+  <section class="card" id="ex3">
+    <h2>رحلة الحلقة — من الفكرة إلى النشر</h2>
+    <p class="lede">اضغط على المراحل بالترتيب الصحيح الذي تمر به كل حلقة ناجحة، من الست مراحل.</p>
+
+    <div class="chip-pool" id="chip-pool"></div>
+
+    <div class="order-slots" id="order-slots"></div>
+
+    <div class="order-actions">
+      <button class="btn" id="check-order">تحقق من الترتيب</button>
+      <button class="btn ghost" id="reset-order">إعادة</button>
+    </div>
+
+    <div class="feedback" id="order-feedback"></div>
+  </section>
+
+  <footer>دورة صناعة البودكاست · اليوم 1 من 4</footer>
+</div>
+
+<script>
+/* ---------- Tabs ---------- */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.target).classList.add('active');
+  });
+});
+
+/* ---------- Exercise 1: Quiz ---------- */
+const questions = [
+  {
+    text: "كيف تفضل العمل على المحتوى؟",
+    opts: [
+      {t:"أفضل العمل بمفردي وقيادة المحتوى بنفسي", v:"solo"},
+      {t:"أستمتع باستضافة أشخاص ومحاورتهم", v:"interview"},
+      {t:"أحب النقاش الجماعي مع شريك أو أكثر", v:"panel"},
+      {t:"أحب كتابة قصص وتحقيقات مركبة", v:"narrative"},
+    ]
+  },
+  {
+    text: "وش أكثر شيء يشدّك في صناعة المحتوى؟",
+    opts: [
+      {t:"التحكم الكامل في المحتوى والتوقيت", v:"solo"},
+      {t:"تنوّع الضيوف وقصصهم الجديدة كل حلقة", v:"interview"},
+      {t:"ديناميكية الحوار بين أكثر من صوت", v:"panel"},
+      {t:"صناعة تجربة استماع سينمائية محكمة", v:"narrative"},
+    ]
+  },
+  {
+    text: "وش أقرب لنقطة قوتك؟",
+    opts: [
+      {t:"طاقة صوتية عالية وقدرة على الحديث منفرداً لفترات طويلة", v:"solo"},
+      {t:"مهارات التواصل وطرح الأسئلة العميقة", v:"interview"},
+      {t:"التنسيق بين عدة أشخاص وجداولهم", v:"panel"},
+      {t:"الكتابة الصحفية والسرد القصصي", v:"narrative"},
+    ]
+  },
+  {
+    text: "وش وضع وقتك المتاح للإنتاج حالياً؟",
+    opts: [
+      {t:"محدود — أبحث عن أسهل مسار للانطلاق", v:"solo"},
+      {t:"معقول — أقدر أنسّق مسبقاً مع ضيوف", v:"interview"},
+      {t:"جيد لكن يحتاج شريك يتحمّل الإنتاج معي", v:"panel"},
+      {t:"كبير — الإنتاج المُحكم يستحق الانتظار", v:"narrative"},
+    ]
+  }
+];
+
+const results = {
+  solo: {
+    title:"البودكاست الفردي",
+    desc:"يقدّمه شخص واحد بصوته دون ضيوف أو محاورين، ويعتمد على قدرتك في الإمساك بانتباه المستمع لفترات طويلة.",
+    pros:["تحكم كامل في المحتوى والتوقيت","تكلفة إنتاج أقل","بناء شخصية العلامة الشخصية بقوة"],
+    cons:["يتطلب صوتاً وطاقة عالية","لا يوجد حوار طبيعي يُحرّك الإيقاع","يُصيب بالإرهاق على المدى الطويل"],
+    examples:"أمثلة ناجحة: بودكاست \"فنجان\" في بدايته، \"ثمانية\" لبعض حلقاته."
+  },
+  interview: {
+    title:"البودكاست الحواري",
+    desc:"يقوم على ضيف واحد في كل حلقة يتحاور معه المضيف — النموذج الأكثر انتشاراً عالمياً.",
+    pros:["تنوع طبيعي في كل حلقة","الضيوف يُحضرون جمهورهم معهم","يُغطي زوايا لا يستطيع المضيف وحده تغطيتها"],
+    cons:["يعتمد على جودة الضيوف","يحتاج تنسيقاً مسبقاً","الضيف الضعيف يُضعف الحلقة كاملة"],
+    examples:"نصيحة: أعدّ قائمة أسئلة مسبقاً لكل ضيف بناءً على بحث حقيقي، لا تكتفِ بالأسئلة العامة."
+  },
+  panel: {
+    title:"البودكاست الجماعي",
+    desc:"يضم مضيفين اثنين أو أكثر يتداولون الحديث بشكل منتظم — يُشبه برامج النقاش.",
+    pros:["ديناميكية حوارية طبيعية","لا يتعب أحد المضيفين بمفرده","تعدد وجهات النظر يُثري المحتوى"],
+    cons:["يحتاج تنسيق جداول متعددة","خطر التحدث في نفس الوقت","قد يفتقر للاتجاه الواضح دون قائد للحلقة"],
+    examples:""
+  },
+  narrative: {
+    title:"البودكاست الروائي",
+    desc:"يعتمد على السرد القصصي المُحكم — تحقيقات، وثائقيات صوتية، أو قصص مُركّبة. الأصعب إنتاجاً لكنه الأعلى قيمة.",
+    pros:["أعلى معدلات الاحتفاظ بالجمهور","مواد إنتاجية يمكن إعادة توزيعها بأشكال متعددة"],
+    cons:["يحتاج وقت إنتاج أطول بكثير","يستلزم مهارات صحفية وكتابية","لا يناسب وتيرة نشر متسارعة"],
+    examples:""
+  }
+};
+
+let qIndex = 0;
+const answers = [];
+
+function renderProgress(){
+  const wrap = document.getElementById('q-progress');
+  wrap.innerHTML = '';
+  questions.forEach((_,i)=>{
+    const s = document.createElement('span');
+    if(i < qIndex) s.classList.add('done');
+    wrap.appendChild(s);
+  });
+}
+
+function renderQuestion(){
+  const block = document.getElementById('q-block');
+  const q = questions[qIndex];
+  block.innerHTML = '<div class="q-text">'+ (qIndex+1) + '. ' + q.text + '</div>';
+  q.opts.forEach(opt=>{
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.textContent = opt.t;
+    b.addEventListener('click',()=>{
+      answers[qIndex] = opt.v;
+      qIndex++;
+      if(qIndex < questions.length){
+        renderProgress();
+        renderQuestion();
+      }else{
+        renderProgress();
+        showResult();
+      }
+    });
+    block.appendChild(b);
+  });
+}
+
+function showResult(){
+  document.getElementById('quiz-flow').style.display = 'none';
+  const tally = {};
+  answers.forEach(a=>tally[a]=(tally[a]||0)+1);
+  let best = 'solo', bestCount = -1;
+  Object.keys(tally).forEach(k=>{ if(tally[k]>bestCount){bestCount=tally[k]; best=k;} });
+  const r = results[best];
+  document.getElementById('res-title').textContent = r.title;
+  document.getElementById('res-desc').textContent = r.desc;
+  document.getElementById('res-pros').innerHTML = r.pros.map(p=>'<li>'+p+'</li>').join('');
+  document.getElementById('res-cons').innerHTML = r.cons.map(p=>'<li>'+p+'</li>').join('');
+  document.getElementById('res-examples').textContent = r.examples;
+  document.getElementById('quiz-result').classList.add('show');
+}
+
+function quizRestart(){
+  qIndex = 0;
+  answers.length = 0;
+  document.getElementById('quiz-result').classList.remove('show');
+  document.getElementById('quiz-flow').style.display = 'block';
+  renderProgress();
+  renderQuestion();
+}
+
+renderProgress();
+renderQuestion();
+
+/* ---------- Exercise 2: Niche score ---------- */
+const checks = document.querySelectorAll('#niche-checks input[type=checkbox]');
+const nicheBar = document.getElementById('niche-bar');
+const nicheLabel = document.getElementById('niche-label');
+
+function updateNiche(){
+  let score = 0;
+  checks.forEach(c=>{
+    c.closest('.check-item').classList.toggle('on', c.checked);
+    if(c.checked) score++;
+  });
+  nicheBar.style.width = (score/4*100)+'%';
+  const topic = document.getElementById('niche-input').value.trim();
+  const topicLabel = topic ? '"'+topic+'"' : 'موضوعك';
+  let msg;
+  if(score===4) msg = topicLabel+' — تخصص قوي (4 من 4). جاهز للانطلاق فعلياً.';
+  else if(score===3) msg = topicLabel+' — تخصص جيد (3 من 4). راجع المعيار الناقص قبل البدء.';
+  else if(score===2) msg = topicLabel+' — يحتاج تحسيناً (2 من 4). ضيّق الفكرة أكثر.';
+  else msg = topicLabel+' — ('+score+' من 4) رجّع لقاعدة: كل ما ضاق التخصص كان الجمهور أوفى وأقل تشتتاً.';
+  nicheLabel.textContent = msg;
+}
+checks.forEach(c=>c.addEventListener('change',updateNiche));
+document.getElementById('niche-input').addEventListener('input',updateNiche);
+updateNiche();
+
+/* ---------- Exercise 3: Episode journey ordering ---------- */
+const stages = [
+  {id:1, t:"الاختيار والبحث", d:"تحديد موضوع الحلقة وزاوية المعالجة — ما السؤال الذي تجيب عليه هذه الحلقة بالضبط؟"},
+  {id:2, t:"الإعداد والكتابة", d:"كتابة outline أو سكريبت كامل — السكريبت يناسب المبتدئ، والـ outline يمنح المحترف مرونة."},
+  {id:3, t:"التسجيل", d:"تنفيذ الحلقة صوتياً أو مرئياً."},
+  {id:4, t:"التحرير", d:"قطع الصمت الطويل، إزالة الأخطاء، معالجة الصوت، وإضافة الجينغل."},
+  {id:5, t:"النشر", d:"رفع الحلقة عبر الوسيط مع metadata كاملة: عنوان، وصف، فصول، صورة."},
+  {id:6, t:"التسويق", d:"توزيع المحتوى المشتق على شبكات التواصل، إخطار المشتركين، والتفاعل مع التعليقات."}
+];
+
+let placed = [];
+let shuffled = [];
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function renderOrderGame(){
+  placed = [];
+  shuffled = shuffle(stages);
+  document.getElementById('order-feedback').classList.remove('show','correct','wrong');
+  renderChips();
+  renderSlots();
+}
+
+function renderChips(){
+  const pool = document.getElementById('chip-pool');
+  pool.innerHTML = '';
+  shuffled.forEach(stage=>{
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.textContent = stage.t;
+    b.disabled = placed.includes(stage.id);
+    b.addEventListener('click',()=>{
+      if(placed.length>=6) return;
+      placed.push(stage.id);
+      renderChips();
+      renderSlots();
+    });
+    pool.appendChild(b);
+  });
+}
+
+function renderSlots(){
+  const slots = document.getElementById('order-slots');
+  slots.innerHTML = '';
+  for(let i=0;i<6;i++){
+    const div = document.createElement('div');
+    const stageId = placed[i];
+    if(stageId){
+      const st = stages.find(s=>s.id===stageId);
+      div.className = 'slot filled';
+      div.innerHTML = '<span class="num">'+(i+1)+'</span><span>'+st.t+'</span>';
+    }else{
+      div.className = 'slot';
+      div.innerHTML = '<span class="num" style="background:#CBD5E1;">'+(i+1)+'</span><span>اضغط على المرحلة التالية بالأعلى</span>';
+    }
+    slots.appendChild(div);
+  }
+}
+
+document.getElementById('check-order').addEventListener('click',()=>{
+  const fb = document.getElementById('order-feedback');
+  if(placed.length < 6){
+    fb.className = 'feedback show wrong';
+    fb.textContent = 'رتّب كل المراحل الستة أولاً.';
+    return;
+  }
+  const correct = placed.every((id,i)=> id === stages[i].id);
+  if(correct){
+    fb.className = 'feedback show correct';
+    fb.innerHTML = '<b>ترتيب صحيح 🎉</b><div class="stage-detail">'+
+      stages.map((s,i)=>'<div class="row"><b>'+(i+1)+'.</b><span>'+s.d+'</span></div>').join('')+
+      '</div>';
+  }else{
+    fb.className = 'feedback show wrong';
+    fb.textContent = 'الترتيب غير صحيح — اضغط "إعادة" وجرّب مرة أخرى.';
+  }
+});
+
+document.getElementById('reset-order').addEventListener('click', renderOrderGame);
+
+renderOrderGame();
+</script>
+</body>
+</html>

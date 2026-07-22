@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دورة صناعة البودكاست | أحمد قريش</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0A;--dark:#111;--dark2:#181818;--dark3:#222;
+  --gold:#C9A84C;--gold-dim:rgba(201,168,76,.12);--gold-mid:rgba(201,168,76,.3);
+  --text:#E8E0D0;--text-2:#9A9288;--text-3:#5A5550;
+  --border:rgba(201,168,76,.15);--border-2:rgba(255,255,255,.06);
+  --green:#4ade80;--blue:#60a5fa;--orange:#fb923c;--purple:#a78bfa;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+.topbar{background:var(--dark2);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between;}
+.topbar-brand{font-family:'Cairo',sans-serif;font-weight:900;font-size:1rem;color:var(--gold);}
+.topbar-sub{font-size:.75rem;color:var(--text-3);}
+
+.hero{max-width:760px;margin:0 auto;padding:4rem 2rem 2rem;text-align:center;}
+.eyebrow{font-size:.65rem;letter-spacing:3px;color:var(--gold);font-weight:700;margin-bottom:1rem;display:block;}
+.hero h1{font-family:'Cairo',sans-serif;font-size:clamp(1.8rem,5vw,2.5rem);font-weight:900;line-height:1.3;margin-bottom:.8rem;}
+.hero h1 em{color:var(--gold);font-style:normal;}
+.hero p{font-size:.92rem;color:var(--text-2);line-height:1.9;max-width:500px;margin:0 auto;}
+
+.progress-wrap{max-width:760px;margin:1.8rem auto;padding:0 2rem;}
+.progress-label{font-size:.72rem;color:var(--text-3);margin-bottom:.5rem;display:flex;justify-content:space-between;}
+.progress-track{height:4px;background:var(--dark3);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),#e8c96a);border-radius:2px;transition:width .8s;}
+
+.info-box{max-width:760px;margin:0 auto 1.5rem;padding:0 2rem;}
+.info-inner{background:var(--gold-dim);border:1px solid var(--gold-mid);border-radius:8px;padding:1rem 1.4rem;font-size:.82rem;color:var(--text-2);line-height:1.8;display:flex;gap:.8rem;}
+.info-icon{font-size:1.1rem;flex-shrink:0;}
+
+.days-grid{max-width:760px;margin:0 auto;padding:0 2rem 5rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+
+.day-card{border-radius:12px;border:1.5px solid var(--border-2);overflow:hidden;transition:border-color .3s,transform .25s;position:relative;}
+.day-card.unlocked{cursor:pointer;}
+.day-card.unlocked:hover{transform:translateY(-3px);border-color:var(--border);}
+.day-card.locked{opacity:.55;cursor:not-allowed;}
+.day-card.completed{border-color:rgba(74,222,128,.3);}
+
+.day-card-top{padding:1.4rem 1.4rem 1rem;background:var(--dark2);}
+.day-num{font-size:.65rem;letter-spacing:2px;font-weight:700;margin-bottom:.5rem;}
+.day-title{font-family:'Cairo',sans-serif;font-weight:700;font-size:.95rem;line-height:1.4;margin-bottom:.5rem;}
+.day-topics{font-size:.78rem;color:var(--text-2);line-height:1.65;}
+
+.day-card-footer{padding:.85rem 1.4rem;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border-2);}
+.day-status{font-size:.72rem;font-weight:700;display:flex;align-items:center;gap:.35rem;}
+.day-date{font-size:.7rem;color:var(--text-3);}
+.day-btn{font-family:'Cairo',sans-serif;font-weight:700;font-size:.75rem;padding:.4rem .9rem;border-radius:6px;border:none;cursor:pointer;}
+.day-btn.btn-go{background:var(--gold);color:#111;}
+.day-btn.btn-lock{background:var(--dark3);color:var(--text-3);cursor:not-allowed;}
+.day-btn.btn-done{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2);}
+
+.day-1 .day-num{color:var(--blue);}
+.day-1 .day-card-top{background:linear-gradient(135deg,#0d1a2e,var(--dark2));}
+.day-2 .day-num{color:var(--green);}
+.day-2 .day-card-top{background:linear-gradient(135deg,#0a1f16,var(--dark2));}
+.day-3 .day-num{color:var(--orange);}
+.day-3 .day-card-top{background:linear-gradient(135deg,#1f120a,var(--dark2));}
+.day-4 .day-num{color:var(--purple);}
+.day-4 .day-card-top{background:linear-gradient(135deg,#13101f,var(--dark2));}
+
+.lock-overlay{position:absolute;top:12px;left:12px;font-size:1.2rem;opacity:.35;}
+
+/* ADMIN MODAL */
+.admin-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999;align-items:center;justify-content:center;}
+.admin-modal-bg.open{display:flex;}
+.admin-modal{background:var(--dark2);border:1px solid var(--border);border-radius:12px;padding:1.8rem;width:90%;max-width:440px;}
+.admin-modal h4{font-family:'Cairo',sans-serif;font-size:1rem;color:var(--gold);margin-bottom:.4rem;}
+.admin-modal p{font-size:.78rem;color:var(--text-3);margin-bottom:1.2rem;}
+.admin-field{margin-bottom:.8rem;}
+.admin-field label{font-size:.75rem;color:var(--text-2);display:block;margin-bottom:.4rem;}
+.admin-dt{display:flex;gap:.4rem;}
+.admin-dt input{flex:1;background:var(--dark3);border:1px solid var(--border-2);border-radius:4px;padding:.45rem .7rem;color:var(--text);font-family:'Tajawal',sans-serif;font-size:.8rem;outline:none;}
+.admin-dt input:focus{border-color:var(--gold);}
+.admin-modal-actions{display:flex;gap:.5rem;margin-top:1.2rem;}
+.admin-modal-actions button{flex:1;padding:.55rem;border-radius:6px;font-family:'Cairo',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;border:none;}
+.btn-save{background:var(--gold);color:#111;}
+.btn-cancel{background:var(--dark3);color:var(--text-2);}
+.admin-pw-wrap{margin-bottom:1rem;}
+.admin-pw-wrap input{width:100%;background:var(--dark3);border:1px solid var(--border-2);border-radius:4px;padding:.55rem 1rem;color:var(--text);font-family:'Tajawal',sans-serif;font-size:.88rem;outline:none;}
+.admin-pw-wrap input:focus{border-color:var(--gold);}
+.pw-error{color:#f44336;font-size:.75rem;margin-top:.3rem;display:none;}
+
+/* SECRET TRIGGER: tap top-left corner 5 times */
+.secret-area{position:fixed;top:0;left:0;width:60px;height:60px;z-index:998;}
+
+@media(max-width:540px){
+  .days-grid{grid-template-columns:1fr;}
+  .hero,.progress-wrap,.info-box,.days-grid{padding-right:1.2rem;padding-left:1.2rem;}
+  .hero{padding-top:2.5rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-brand">🎙️ دورة صناعة البودكاست</div>
+    <div class="topbar-sub">أحمد قريش</div>
+  </div>
+  <div style="font-size:.75rem;color:var(--text-3);" id="today-label"></div>
+</div>
+
+<div class="hero">
+  <span class="eyebrow">مواد الدورة التفاعلية</span>
+  <h1>تمارين <em>صناعة البودكاست</em></h1>
+  <p>تمارين كل يوم تُفتح في يوم الحصة المحدد — أكمل كل يوم قبل الانتقال للتالي.</p>
+</div>
+
+<div class="info-box">
+  <div class="info-inner">
+    <span class="info-icon">💡</span>
+    <span>تُفتح تمارين كل يوم <strong style="color:var(--gold)">في موعد الحصة فقط</strong>. إذا لم تتمكن من الوصول لليوم التالي فهو لم يحِن موعده بعد.</span>
+  </div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-label">
+    <span>التقدم في الدورة</span>
+    <span id="progress-text">0 من 4 أيام</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+</div>
+
+<div class="days-grid" id="days-grid"></div>
+
+<!-- Secret tap area (top-left corner) -->
+<div class="secret-area" id="secretArea"></div>
+
+<!-- ADMIN MODAL -->
+<div class="admin-modal-bg" id="adminModalBg">
+  <div class="admin-modal">
+    <h4>⚙️ إعدادات المدرب</h4>
+    <p>أدخل كلمة المرور للمتابعة</p>
+    <div id="pw-step">
+      <div class="admin-pw-wrap">
+        <input type="password" id="admin-pw" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')checkPw()">
+      </div>
+      <div class="pw-error" id="pw-error">كلمة المرور غير صحيحة</div>
+      <div class="admin-modal-actions">
+        <button class="btn-save" onclick="checkPw()">دخول</button>
+        <button class="btn-cancel" onclick="closeAdmin()">إلغاء</button>
+      </div>
+    </div>
+    <div id="dates-step" style="display:none;">
+      <div class="admin-field">
+        <label>اليوم الأول — التاريخ والساعة</label>
+        <div class="admin-dt">
+          <input type="date" id="date-1">
+          <input type="time" id="time-1" value="09:00">
+        </div>
+      </div>
+      <div class="admin-field">
+        <label>اليوم الثاني — التاريخ والساعة</label>
+        <div class="admin-dt">
+          <input type="date" id="date-2">
+          <input type="time" id="time-2" value="09:00">
+        </div>
+      </div>
+      <div class="admin-field">
+        <label>اليوم الثالث — التاريخ والساعة</label>
+        <div class="admin-dt">
+          <input type="date" id="date-3">
+          <input type="time" id="time-3" value="09:00">
+        </div>
+      </div>
+      <div class="admin-field">
+        <label>اليوم الرابع — التاريخ والساعة</label>
+        <div class="admin-dt">
+          <input type="date" id="date-4">
+          <input type="time" id="time-4" value="09:00">
+        </div>
+      </div>
+      <div class="admin-modal-actions">
+        <button class="btn-save" onclick="saveDates()">💾 حفظ</button>
+        <button class="btn-cancel" onclick="closeAdmin()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── ADMIN PASSWORD (change this) ──
+var ADMIN_PASS = 'quraish2025';
+
+// ── DAY DATA ──
+var DAYS = [
+  {num:1, title:'الأسس النظرية والتخطيط الاستراتيجي', topics:'مفهوم البودكاست · تحديد الهوية · دراسة الجمهور · التخطيط', file:'تمارين_اليوم1.html', color:'day-1', accent:'#60a5fa'},
+  {num:2, title:'الصوت والاستوديو المنزلي', topics:'الميكروفون · المعالجة الصوتية · بيئة التسجيل · الأداء', file:'تمارين_اليوم2.html', color:'day-2', accent:'#4ade80'},
+  {num:3, title:'البودكاست المرئي والإنتاج', topics:'الكاميرا · المونتاج · الجرافيك · النشر', file:'تمارين_اليوم3.html', color:'day-3', accent:'#fb923c'},
+  {num:4, title:'النمو والاستثمار والتسويق', topics:'استراتيجية النمو · تحقيق الدخل · التسويق · خطة العمل', file:'تمارين_اليوم4.html', color:'day-4', accent:'#a78bfa'}
+];
+
+// ── SCHEDULE (stored in localStorage, set by admin only) ──
+function getSchedule(){
+  var s = localStorage.getItem('pc_schedule');
+  return s ? JSON.parse(s) : {};
+}
+
+function getProgress(){
+  var p = localStorage.getItem('pc_progress');
+  return p ? JSON.parse(p) : [];
+}
+
+function saveProgress(arr){
+  localStorage.setItem('pc_progress', JSON.stringify(arr));
+}
+
+function nowISO(){
+  return new Date().toISOString(); // e.g. "2025-07-10T09:00:00"
+}
+
+function isUnlocked(dayNum){
+  var schedule = getSchedule();
+  var key = 'd' + dayNum;
+  if(!schedule[key]) return false; // locked until admin sets date
+  return new Date() >= new Date(schedule[key]);
+}
+
+function isCompleted(dayNum){
+  return getProgress().indexOf(dayNum) !== -1;
+}
+
+function markCompleted(dayNum){
+  var p = getProgress();
+  if(p.indexOf(dayNum) === -1){ p.push(dayNum); saveProgress(p); }
+}
+
+function formatDT(isoStr){
+  if(!isoStr) return '';
+  var d = new Date(isoStr);
+  return d.toLocaleDateString('ar-SA',{weekday:'short',month:'short',day:'numeric'}) + ' ' + d.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ── RENDER ──
+function render(){
+  var now = new Date();
+  document.getElementById('today-label').textContent = now.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  var done = getProgress().length;
+  document.getElementById('progress-text').textContent = done + ' من 4 أيام';
+  document.getElementById('progress-fill').style.width = (done/4*100) + '%';
+
+  var schedule = getSchedule();
+  var html = '';
+  DAYS.forEach(function(day){
+    var unlocked = isUnlocked(day.num);
+    var completed = isCompleted(day.num);
+    var key = 'd' + day.num;
+    var dtLabel = schedule[key] ? formatDT(schedule[key]) : '';
+
+    var statusHtml = completed
+      ? '<span class="day-status" style="color:#4ade80;">✓ مكتمل</span>'
+      : unlocked
+        ? '<span class="day-status" style="color:'+day.accent+';">● متاح الآن</span>'
+        : '<span class="day-status" style="color:var(--text-3);">🔒 مقفل</span>';
+
+    var btnHtml = completed
+      ? '<button class="day-btn btn-done" onclick="event.stopPropagation();goToDay('+day.num+')">مراجعة</button>'
+      : unlocked
+        ? '<button class="day-btn btn-go" onclick="event.stopPropagation();goToDay('+day.num+')">ابدأ التمارين ←</button>'
+        : '<button class="day-btn btn-lock" disabled>'+(dtLabel||'قريباً')+'</button>';
+
+    html += '<div class="day-card '+day.color+(unlocked?' unlocked':' locked')+(completed?' completed':'')+'" onclick="'+(unlocked?'goToDay('+day.num+')':'showLockedMsg('+day.num+')')+'">';
+    if(!unlocked) html += '<div class="lock-overlay">🔒</div>';
+    html += '<div class="day-card-top">';
+    html += '<div class="day-num">اليوم ' + day.num + '</div>';
+    html += '<div class="day-title">' + day.title + '</div>';
+    html += '<div class="day-topics">' + day.topics + '</div>';
+    html += '</div>';
+    html += '<div class="day-card-footer">';
+    html += statusHtml;
+    if(dtLabel && !unlocked) html += '<div class="day-date">' + dtLabel + '</div>';
+    html += btnHtml;
+    html += '</div></div>';
+  });
+  document.getElementById('days-grid').innerHTML = html;
+}
+
+function goToDay(num){
+  if(!isUnlocked(num)){showLockedMsg(num);return;}
+  markCompleted(num);
+  window.location.href = DAYS[num-1].file;
+}
+
+function showLockedMsg(num){
+  var schedule = getSchedule();
+  var key = 'd' + num;
+  var msg = schedule[key]
+    ? 'يُفتح في ' + formatDT(schedule[key])
+    : 'لم يُحدد موعده بعد';
+  toast('🔒 اليوم ' + num + ' — ' + msg);
+}
+
+function toast(msg){
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:2rem;right:50%;transform:translateX(50%);background:#1a1a1a;border:1px solid rgba(201,168,76,.3);border-radius:6px;padding:.7rem 1.4rem;font-size:.82rem;color:#E8E0D0;z-index:9999;direction:rtl;font-family:Tajawal,sans-serif;white-space:nowrap;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},3500);
+}
+
+// ── SECRET TRIGGER: tap corner 5 times fast ──
+var tapCount = 0, tapTimer = null;
+document.getElementById('secretArea').addEventListener('click', function(){
+  tapCount++;
+  clearTimeout(tapTimer);
+  tapTimer = setTimeout(function(){ tapCount = 0; }, 2000);
+  if(tapCount >= 5){ tapCount = 0; openAdmin(); }
+});
+
+function openAdmin(){
+  document.getElementById('pw-step').style.display = 'block';
+  document.getElementById('dates-step').style.display = 'none';
+  document.getElementById('admin-pw').value = '';
+  document.getElementById('pw-error').style.display = 'none';
+  document.getElementById('adminModalBg').classList.add('open');
+  setTimeout(function(){ document.getElementById('admin-pw').focus(); }, 100);
+}
+
+function closeAdmin(){
+  document.getElementById('adminModalBg').classList.remove('open');
+}
+
+function checkPw(){
+  var pw = document.getElementById('admin-pw').value;
+  if(pw === ADMIN_PASS){
+    document.getElementById('pw-step').style.display = 'none';
+    document.getElementById('dates-step').style.display = 'block';
+    // Load existing schedule
+    var schedule = getSchedule();
+    for(var i=1;i<=4;i++){
+      var key = 'd' + i;
+      if(schedule[key]){
+        var dt = new Date(schedule[key]);
+        var ymd = dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+        var hm = String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+        var dateEl = document.getElementById('date-'+i);
+        var timeEl = document.getElementById('time-'+i);
+        if(dateEl) dateEl.value = ymd;
+        if(timeEl) timeEl.value = hm;
+      }
+    }
+  } else {
+    document.getElementById('pw-error').style.display = 'block';
+    document.getElementById('admin-pw').value = '';
+    document.getElementById('admin-pw').focus();
+  }
+}
+
+function saveDates(){
+  var schedule = {};
+  for(var i=1;i<=4;i++){
+    var dateEl = document.getElementById('date-'+i);
+    var timeEl = document.getElementById('time-'+i);
+    if(dateEl && dateEl.value){
+      var time = (timeEl && timeEl.value) ? timeEl.value : '09:00';
+      schedule['d'+i] = dateEl.value + 'T' + time + ':00';
+    }
+  }
+  localStorage.setItem('pc_schedule', JSON.stringify(schedule));
+  closeAdmin();
+  render();
+  toast('✅ تم حفظ المواعيد');
+}
+
+// Close on background click
+document.getElementById('adminModalBg').addEventListener('click', function(e){
+  if(e.target === this) closeAdmin();
+});
+
+render();
+// Auto-refresh every minute to update unlock status
+setInterval(render, 60000);
+</script>
+</body>
+</html>

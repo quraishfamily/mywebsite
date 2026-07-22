@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تمارين اليوم 2 — الصوت والاستوديو المنزلي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0D1B2A;
+    --text:#334155;
+    --muted:#64748B;
+    --bg:#F4F7FA;
+    --white:#FFFFFF;
+    --accent:#0F7A5A;
+    --accent-dark:#0B5A41;
+    --accent-light:#C8EDE3;
+    --accent-pale:#EAF8F3;
+    --warn-light:#FDEEE4;
+    --warn-text:#8A3B0C;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  html,body{background:var(--bg);color:var(--text);font-family:'Tajawal',sans-serif;line-height:1.65;}
+  .page{max-width:920px;margin:0 auto;padding:28px 20px 80px;}
+  header.top{display:flex;align-items:center;gap:16px;margin-bottom:28px;}
+  .day-badge{background:var(--accent);color:var(--white);font-weight:800;font-size:22px;width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px -6px rgba(15,122,90,.5);}
+  .top-text .eyebrow{font-size:13px;color:var(--accent);font-weight:700;letter-spacing:.02em;margin-bottom:2px;}
+  .top-text h1{margin:0;font-size:22px;font-weight:800;color:var(--ink);}
+  nav.tabs{display:flex;gap:8px;margin-bottom:22px;overflow-x:auto;padding-bottom:4px;}
+  nav.tabs button{font-family:'Tajawal',sans-serif;background:var(--white);color:var(--muted);padding:12px 18px;border-radius:999px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid #E3E9F0;transition:.15s ease;}
+  nav.tabs button.active{background:var(--accent);color:var(--white);border-color:var(--accent);}
+  nav.tabs button:focus-visible{outline:3px solid var(--accent-light);outline-offset:2px;}
+  .card{background:var(--white);border-radius:var(--radius);padding:28px 26px;box-shadow:0 10px 30px -18px rgba(13,27,42,.35);display:none;}
+  .card.active{display:block;}
+  .card h2{margin:0 0 6px;font-size:20px;font-weight:800;color:var(--ink);}
+  .card p.lede{margin:0 0 24px;color:var(--muted);font-size:15px;}
+  .btn{font-family:'Tajawal',sans-serif;border:none;padding:12px 22px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;background:var(--accent);color:var(--white);}
+  .btn.ghost{background:transparent;color:var(--muted);border:1.5px solid #E3E9F0;}
+
+  /* Exercise 1: budget slider */
+  .slider-wrap{margin-bottom:26px;}
+  .slider-wrap label{display:block;font-weight:700;color:var(--ink);font-size:14px;margin-bottom:10px;}
+  input[type=range]{width:100%;accent-color:var(--accent);height:6px;}
+  .budget-value{text-align:center;font-size:28px;font-weight:800;color:var(--accent);margin:12px 0 24px;}
+  .tier-card{background:var(--accent-pale);border-radius:14px;padding:20px;display:none;}
+  .tier-card.show{display:block;}
+  .tier-card .tier-name{font-size:12.5px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;}
+  .tier-card h3{margin:0 0 12px;font-size:20px;font-weight:800;color:var(--ink);}
+  .tier-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;}
+  @media (max-width:560px){.tier-grid{grid-template-columns:1fr;}}
+  .tier-grid .item{background:var(--white);border-radius:10px;padding:12px 14px;font-size:13.5px;}
+  .tier-grid .item b{display:block;color:var(--ink);font-size:12px;margin-bottom:4px;}
+  .tier-note{font-size:13px;color:var(--muted);margin-top:10px;}
+
+  /* Exercise 2: room diagnostic */
+  .diag-list{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
+  .diag-item{display:flex;align-items:flex-start;gap:12px;background:var(--bg);padding:14px 16px;border-radius:12px;cursor:pointer;border:1.5px solid transparent;}
+  .diag-item.on{background:var(--accent-pale);border-color:var(--accent-light);}
+  .diag-item input{margin-top:3px;accent-color:var(--accent);width:18px;height:18px;flex-shrink:0;}
+  .diag-item .ct{font-size:14.5px;color:var(--text);}
+  .score-meter{height:14px;border-radius:999px;background:#E7EEF5;overflow:hidden;margin-bottom:10px;}
+  .score-meter i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#DC5B2E,var(--accent));transition:width .4s ease;}
+  .score-label{font-weight:800;color:var(--ink);font-size:16px;margin-bottom:16px;}
+  .tips{background:var(--bg);border-radius:12px;padding:16px;}
+  .tips h4{margin:0 0 10px;font-size:14px;font-weight:800;color:var(--ink);}
+  .tips ul{margin:0;padding-right:18px;font-size:13.5px;color:var(--text);}
+  .tips li{margin-bottom:6px;}
+
+  /* Exercise 3: host matcher */
+  .pref-group{margin-bottom:20px;}
+  .pref-group > label{display:block;font-weight:700;color:var(--ink);font-size:14px;margin-bottom:10px;}
+  .pref-opts{display:flex;flex-wrap:wrap;gap:8px;}
+  .pref-opts button{font-family:'Tajawal',sans-serif;background:var(--bg);border:1.5px solid #E3E9F0;color:var(--text);padding:9px 14px;border-radius:999px;font-size:13.5px;cursor:pointer;}
+  .pref-opts button.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .host-result{margin-top:24px;padding:20px;border-radius:14px;background:var(--accent-pale);display:none;}
+  .host-result.show{display:block;}
+  .host-result .hname{font-size:20px;font-weight:800;color:var(--ink);margin-bottom:10px;}
+  .host-result .hrow{display:flex;gap:10px;font-size:13.5px;margin-bottom:6px;}
+  .host-result .hrow b{color:var(--accent);flex-shrink:0;}
+  footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:36px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="top">
+    <div class="day-badge">2</div>
+    <div class="top-text">
+      <div class="eyebrow">دورة صناعة البودكاست — تمارين تفاعلية</div>
+      <h1>الصوت والاستوديو المنزلي</h1>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-target="ex1">حاسبة ميزانية المعدات</button>
+    <button class="tab-btn" data-target="ex2">تشخيص جاهزية الغرفة</button>
+    <button class="tab-btn" data-target="ex3">اختر وسيط بودكاست</button>
+  </nav>
+
+  <!-- EXERCISE 1: Budget calculator -->
+  <section class="card active" id="ex1">
+    <h2>حاسبة ميزانية المعدات</h2>
+    <p class="lede">حرّك المؤشر بميزانيتك التقريبية بالدولار، وشوف أنسب مستوى معدات لك.</p>
+
+    <div class="slider-wrap">
+      <label for="budget-range">ميزانيتك للمعدات</label>
+      <input type="range" id="budget-range" min="50" max="2000" step="10" value="150">
+    </div>
+    <div class="budget-value" id="budget-value">150 $</div>
+
+    <div class="tier-card" id="tier-beginner">
+      <div class="tier-name">مستوى مبتدئ</div>
+      <h3>50 – 150 دولار</h3>
+      <div class="tier-grid">
+        <div class="item"><b>الميكروفون</b>Samson Q2U أو الهاتف بسماعات</div>
+        <div class="item"><b>إضافات أساسية</b>حامل + واقي ريح</div>
+      </div>
+      <div class="tier-note">نقطة انطلاق مثالية — لا تنتظر المعدة المثالية، سجّل حلقتك الأولى بما لديك.</div>
+    </div>
+
+    <div class="tier-card" id="tier-mid">
+      <div class="tier-name">مستوى متوسط</div>
+      <h3>200 – 500 دولار</h3>
+      <div class="tier-grid">
+        <div class="item"><b>الميكروفون</b>Shure MV7 أو Blue Yeti</div>
+        <div class="item"><b>إضافات أساسية</b>كرت صوت + هيدفون</div>
+      </div>
+      <div class="tier-note">خيار متوازن بين الجودة والسعر لمن قرر الاستمرار في البودكاست.</div>
+    </div>
+
+    <div class="tier-card" id="tier-pro">
+      <div class="tier-name">مستوى احترافي</div>
+      <h3>700 – 2000 دولار</h3>
+      <div class="tier-grid">
+        <div class="item"><b>الميكروفون</b>Shure SM7B + Focusrite</div>
+        <div class="item"><b>إضافات أساسية</b>كرت XLR + معالج صوت</div>
+      </div>
+      <div class="tier-note">للجاهزين على استثمار طويل الأمد بجودة صوت استوديو كاملة.</div>
+    </div>
+  </section>
+
+  <!-- EXERCISE 2: Room diagnostic -->
+  <section class="card" id="ex2">
+    <h2>تشخيص جاهزية غرفتك للتسجيل</h2>
+    <p class="lede">علّم كل ما ينطبق على غرفتك المخصصة للتسجيل، وشوف تقييم الجاهزية.</p>
+
+    <div class="diag-list" id="diag-list">
+      <label class="diag-item"><input type="checkbox" data-dir="bad"><span class="ct">فيها نوافذ كبيرة مواجهة لشارع مزدحم</span></label>
+      <label class="diag-item"><input type="checkbox" data-dir="bad"><span class="ct">جدرانها وأرضها صلبة وفارغة تقريباً (بدون سجاد أو ستائر)</span></label>
+      <label class="diag-item"><input type="checkbox" data-dir="good"><span class="ct">فيها خزانة ملابس أو رفوف كتب مليئة</span></label>
+      <label class="diag-item"><input type="checkbox" data-dir="good"><span class="ct">فيها ستائر ثقيلة على الأقل على نافذة واحدة</span></label>
+      <label class="diag-item"><input type="checkbox" data-dir="good"><span class="ct">عند التصفيق بداخلها، الصدى يخفت بسرعة</span></label>
+      <label class="diag-item"><input type="checkbox" data-dir="bad"><span class="ct">هي حمام أو مطبخ أو غرفة بأسطح صلبة عاكسة</span></label>
+    </div>
+
+    <div class="score-meter"><i id="room-bar"></i></div>
+    <div class="score-label" id="room-label">علّم الخيارات المطابقة لغرفتك بالأعلى</div>
+
+    <div class="tips" id="room-tips" style="display:none;">
+      <h4>حلول عزل صوتي منخفضة التكلفة</h4>
+      <ul>
+        <li>ستائر ثقيلة — تُقلل الصدى وتعزل الضوضاء الخارجية.</li>
+        <li>جدار من الكتب أمامك أو خلفك يُقلل الصدى بشكل ملحوظ.</li>
+        <li>لوحات الإسفنج (Foam Panels) رخيصة ومؤثرة — تُثبّت خلفك وعلى الجانبين.</li>
+        <li>الخيمة الصوتية: خزانة ملابس مفتوحة تعمل كحل مؤقت مدهش.</li>
+        <li>سجّل في ساعات الهدوء — فجراً أو وقتاً متأخراً من الليل.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- EXERCISE 3: Host matcher -->
+  <section class="card" id="ex3">
+    <h2>وش وسيط البودكاست الأنسب لك؟</h2>
+    <p class="lede">حدد أولوياتك الثلاث، ونرشّح لك الوسيط الأقرب من بين خمسة وسطاء رئيسيين.</p>
+
+    <div class="pref-group">
+      <label>الأهم عندك بالسعر؟</label>
+      <div class="pref-opts" data-group="price">
+        <button data-val="free">مجاني تماماً</button>
+        <button data-val="low">أرخص خيار مدفوع</button>
+        <button data-val="any">لا يهمني، المهم الجودة</button>
+      </div>
+    </div>
+
+    <div class="pref-group">
+      <label>وش الأهم لك في الوسيط؟</label>
+      <div class="pref-opts" data-group="feature">
+        <button data-val="ease">سهولة الاستخدام والدعم</button>
+        <button data-val="analytics">تحليلات (Analytics) تفصيلية</button>
+        <button data-val="control">تحكم كامل بملكية المحتوى</button>
+        <button data-val="wp">أنا مستخدم WordPress</button>
+      </div>
+    </div>
+
+    <div class="host-result" id="host-result">
+      <div class="hname" id="host-name"></div>
+      <div class="hrow"><b>المزايا:</b><span id="host-pros"></span></div>
+      <div class="hrow"><b>العيوب:</b><span id="host-cons"></span></div>
+      <div class="hrow"><b>السعر:</b><span id="host-price"></span></div>
+    </div>
+  </section>
+
+  <footer>دورة صناعة البودكاست · اليوم 2 من 4</footer>
+</div>
+
+<script>
+/* Tabs */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.target).classList.add('active');
+  });
+});
+
+/* Exercise 1: budget */
+const range = document.getElementById('budget-range');
+const valueLabel = document.getElementById('budget-value');
+const tiers = {
+  beginner: document.getElementById('tier-beginner'),
+  mid: document.getElementById('tier-mid'),
+  pro: document.getElementById('tier-pro'),
+};
+function updateBudget(){
+  const v = parseInt(range.value,10);
+  valueLabel.textContent = v + ' $';
+  Object.values(tiers).forEach(t=>t.classList.remove('show'));
+  if(v <= 150) tiers.beginner.classList.add('show');
+  else if(v <= 500) tiers.mid.classList.add('show');
+  else tiers.pro.classList.add('show');
+}
+range.addEventListener('input', updateBudget);
+updateBudget();
+
+/* Exercise 2: room diagnostic */
+const diagItems = document.querySelectorAll('#diag-list input[type=checkbox]');
+function updateRoom(){
+  let score = 0, total = diagItems.length;
+  diagItems.forEach(c=>{
+    c.closest('.diag-item').classList.toggle('on', c.checked);
+    if(c.checked){
+      score += (c.dataset.dir === 'good') ? 1 : -1;
+    }
+  });
+  // normalize -3..3 to 0..100
+  const pct = Math.max(0, Math.min(100, ((score+3)/6)*100));
+  document.getElementById('room-bar').style.width = pct + '%';
+  const label = document.getElementById('room-label');
+  const tips = document.getElementById('room-tips');
+  if(score >= 2){
+    label.textContent = 'غرفتك جاهزة بشكل جيد للتسجيل 👍';
+    tips.style.display = 'none';
+  }else if(score >= 0){
+    label.textContent = 'غرفتك مقبولة، وبعض التحسينات البسيطة ستفيدك';
+    tips.style.display = 'block';
+  }else{
+    label.textContent = 'غرفتك تحتاج عزلاً صوتياً قبل التسجيل';
+    tips.style.display = 'block';
+  }
+}
+diagItems.forEach(c=>c.addEventListener('change',updateRoom));
+updateRoom();
+
+/* Exercise 3: host matcher */
+const prefState = {price:null, feature:null};
+document.querySelectorAll('.pref-opts').forEach(group=>{
+  group.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      group.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));
+      btn.classList.add('sel');
+      prefState[group.dataset.group] = btn.dataset.val;
+      matchHost();
+    });
+  });
+});
+
+const hosts = {
+  libsyn: {name:"Libsyn", pros:"موثوقية عالية، analytics تفصيلية", cons:"واجهة قديمة", price:"من 7 دولار شهرياً"},
+  buzzsprout: {name:"Buzzsprout", pros:"واجهة سهلة، دعم ممتاز", cons:"تحذف الملفات القديمة مجاناً", price:"مجاني محدود / 12 دولار"},
+  anchor: {name:"Anchor (Spotify)", pros:"مجاني كلياً، نشر مدمج", cons:"Spotify تملك المحتوى جزئياً", price:"مجاني"},
+  podbean: {name:"Podbean", pros:"خيارات خزن جيدة، نموذج monetization", cons:"analytics أقل تفصيلاً", price:"من 9 دولار شهرياً"},
+  castos: {name:"Castos", pros:"مثالي لمستخدمي WordPress", cons:"مكلف نسبياً", price:"من 19 دولار شهرياً"},
+};
+
+function matchHost(){
+  if(!prefState.price || !prefState.feature) return;
+  let pick = 'buzzsprout';
+  if(prefState.feature === 'wp') pick = 'castos';
+  else if(prefState.price === 'free') pick = 'anchor';
+  else if(prefState.feature === 'analytics') pick = 'libsyn';
+  else if(prefState.feature === 'control') pick = 'podbean';
+  else if(prefState.feature === 'ease') pick = 'buzzsprout';
+
+  const h = hosts[pick];
+  document.getElementById('host-name').textContent = h.name;
+  document.getElementById('host-pros').textContent = h.pros;
+  document.getElementById('host-cons').textContent = h.cons;
+  document.getElementById('host-price').textContent = h.price;
+  document.getElementById('host-result').classList.add('show');
+}
+</script>
+</body>
+</html>

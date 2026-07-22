@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تمارين اليوم 4 — النمو والاستثمار والتسويق</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0D1B2A;
+    --text:#334155;
+    --muted:#64748B;
+    --bg:#F4F7FA;
+    --white:#FFFFFF;
+    --accent:#C05E0E;
+    --accent-dark:#8F4409;
+    --accent-light:#FAE0C5;
+    --accent-pale:#FDF1E6;
+    --good-light:#DCF3EA;
+    --good-text:#0B5A41;
+    --warn-light:#FDEEE4;
+    --warn-text:#8A3B0C;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  html,body{background:var(--bg);color:var(--text);font-family:'Tajawal',sans-serif;line-height:1.65;}
+  .page{max-width:920px;margin:0 auto;padding:28px 20px 80px;}
+  header.top{display:flex;align-items:center;gap:16px;margin-bottom:28px;}
+  .day-badge{background:var(--accent);color:var(--white);font-weight:800;font-size:22px;width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px -6px rgba(192,94,14,.5);}
+  .top-text .eyebrow{font-size:13px;color:var(--accent);font-weight:700;letter-spacing:.02em;margin-bottom:2px;}
+  .top-text h1{margin:0;font-size:22px;font-weight:800;color:var(--ink);}
+  nav.tabs{display:flex;gap:8px;margin-bottom:22px;overflow-x:auto;padding-bottom:4px;}
+  nav.tabs button{font-family:'Tajawal',sans-serif;background:var(--white);color:var(--muted);padding:12px 18px;border-radius:999px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid #E3E9F0;transition:.15s ease;}
+  nav.tabs button.active{background:var(--accent);color:var(--white);border-color:var(--accent);}
+  nav.tabs button:focus-visible{outline:3px solid var(--accent-light);outline-offset:2px;}
+  .card{background:var(--white);border-radius:var(--radius);padding:28px 26px;box-shadow:0 10px 30px -18px rgba(13,27,42,.35);display:none;}
+  .card.active{display:block;}
+  .card h2{margin:0 0 6px;font-size:20px;font-weight:800;color:var(--ink);}
+  .card p.lede{margin:0 0 24px;color:var(--muted);font-size:15px;}
+  .btn{font-family:'Tajawal',sans-serif;border:none;padding:12px 22px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;background:var(--accent);color:var(--white);}
+  .btn.ghost{background:transparent;color:var(--muted);border:1.5px solid #E3E9F0;}
+
+  /* Exercise 1: SEO title checker */
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-weight:700;color:var(--ink);font-size:14px;margin-bottom:8px;}
+  .field input[type=text]{width:100%;font-family:'Tajawal',sans-serif;padding:13px 14px;border-radius:10px;border:1.5px solid #E3E9F0;font-size:15px;background:var(--bg);}
+  .check-rows{display:flex;flex-direction:column;gap:8px;margin-top:18px;}
+  .check-row{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:10px;padding:12px 14px;font-size:14px;}
+  .check-row .dot{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:800;}
+  .check-row .dot.pass{background:var(--good-text);}
+  .check-row .dot.fail{background:var(--warn-text);}
+  .example-box{margin-top:20px;background:var(--accent-pale);border-radius:12px;padding:16px;font-size:13.5px;}
+  .example-box b{color:var(--accent);}
+
+  /* Exercise 2: roadmap tracker */
+  .week-block{background:var(--bg);border-radius:14px;padding:16px 18px;margin-bottom:12px;}
+  .week-block .whead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .week-block .wname{font-weight:800;color:var(--ink);font-size:15px;}
+  .week-block .wtag{font-size:12px;background:var(--accent-light);color:var(--accent-dark);padding:3px 10px;border-radius:999px;font-weight:700;}
+  .week-block p{margin:0;font-size:13.5px;color:var(--muted);}
+  .week-block.done{background:var(--good-light);}
+  .week-block.done .wtag{background:#B7E7D4;color:var(--good-text);}
+  .week-block label{display:flex;align-items:flex-start;gap:10px;cursor:pointer;}
+  .week-block input{margin-top:3px;accent-color:var(--accent);width:18px;height:18px;flex-shrink:0;}
+  .roadmap-progress{margin-bottom:20px;}
+  .roadmap-bar{height:14px;border-radius:999px;background:#E7EEF5;overflow:hidden;margin-bottom:8px;}
+  .roadmap-bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#F2C14E,var(--accent));transition:width .4s ease;}
+  .roadmap-label{font-weight:800;color:var(--ink);font-size:15px;}
+  .roadmap-actions{margin-top:10px;text-align:left;}
+
+  /* Exercise 3: revenue calculator */
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+  @media (max-width:560px){.field-row{grid-template-columns:1fr;}}
+  .ad-type-tabs{display:flex;gap:8px;margin-bottom:18px;}
+  .ad-type-tabs button{font-family:'Tajawal',sans-serif;flex:1;background:var(--bg);border:1.5px solid #E3E9F0;color:var(--text);padding:10px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;}
+  .ad-type-tabs button.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .revenue-result{background:var(--accent-pale);border-radius:14px;padding:20px;text-align:center;}
+  .revenue-result .amount{font-size:32px;font-weight:800;color:var(--accent);margin-bottom:6px;}
+  .revenue-result .note{font-size:13px;color:var(--muted);}
+
+  footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:36px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="top">
+    <div class="day-badge">4</div>
+    <div class="top-text">
+      <div class="eyebrow">دورة صناعة البودكاست — تمارين تفاعلية</div>
+      <h1>النمو والاستثمار والتسويق</h1>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-target="ex1">محرر عنوان الحلقة (SEO)</button>
+    <button class="tab-btn" data-target="ex2">خارطة طريق 90 يوماً</button>
+    <button class="tab-btn" data-target="ex3">حاسبة الإيراد التقديري</button>
+  </nav>
+
+  <!-- EXERCISE 1: SEO title checker -->
+  <section class="card active" id="ex1">
+    <h2>محرر عنوان الحلقة</h2>
+    <p class="lede">معظم المستمعين الجدد يجدون البودكاست عبر البحث. اكتب عنوان حلقتك وشوف تقييمه.</p>
+
+    <div class="field">
+      <label for="title-input">عنوان الحلقة</label>
+      <input type="text" id="title-input" placeholder="مثال: التسويق الرقمي: 7 استراتيجيات لزيادة المبيعات">
+    </div>
+
+    <div class="check-rows" id="title-checks"></div>
+
+    <div class="example-box">
+      <b>مثال جيد:</b> "التسويق الرقمي: 7 استراتيجيات لزيادة المبيعات"<br>
+      <b>مثال ضعيف:</b> "حلقة 45: نتحدث عن التسويق"
+    </div>
+  </section>
+
+  <!-- EXERCISE 2: 90-day roadmap tracker -->
+  <section class="card" id="ex2">
+    <h2>خارطة طريق 90 يوماً</h2>
+    <p class="lede">أنجز كل مرحلة وعلّمها — تقدمك يُحفظ تلقائياً في هذا المتصفح.</p>
+
+    <div class="roadmap-progress">
+      <div class="roadmap-bar"><i id="roadmap-bar"></i></div>
+      <div class="roadmap-label" id="roadmap-label"></div>
+    </div>
+
+    <div id="roadmap-weeks"></div>
+
+    <div class="roadmap-actions">
+      <button class="btn ghost" id="roadmap-reset">تصفير التقدم</button>
+    </div>
+  </section>
+
+  <!-- EXERCISE 3: revenue calculator -->
+  <section class="card" id="ex3">
+    <h2>حاسبة الإيراد التقديري من الإعلانات</h2>
+    <p class="lede">أدخل عدد التنزيلات لكل حلقة، واختر نوع الإعلان، لتقدير الإيراد.</p>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="downloads-input">تنزيلات الحلقة (Downloads per Episode)</label>
+        <input type="text" id="downloads-input" placeholder="مثال: 2000" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label for="cpm-input">سعر CPM بالدولار (اختياري)</label>
+        <input type="text" id="cpm-input" placeholder="افتراضي حسب النوع" inputmode="numeric">
+      </div>
+    </div>
+
+    <div class="ad-type-tabs">
+      <button data-type="host" class="sel">Host-Read</button>
+      <button data-type="prog">Programmatic</button>
+      <button data-type="sponsor">Sponsorship</button>
+    </div>
+
+    <div class="revenue-result">
+      <div class="amount" id="revenue-amount">$0</div>
+      <div class="note" id="revenue-note"></div>
+    </div>
+  </section>
+
+  <footer>دورة صناعة البودكاست · اليوم 4 من 4</footer>
+</div>
+
+<script>
+/* Tabs */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.target).classList.add('active');
+  });
+});
+
+/* Exercise 1: SEO title checker */
+const titleInput = document.getElementById('title-input');
+function updateTitleChecks(){
+  const v = titleInput.value.trim();
+  const words = v.length ? v.split(/\s+/) : [];
+  const hasNumber = /\d/.test(v);
+  const startsWithKeywordPattern = v.length>0 && !/^حلقة/i.test(v.trim());
+  const goodLength = v.length >= 15 && v.length <= 70;
+  const notGeneric = v.length>0 && !/^حلقة\s*\d+/.test(v.trim());
+
+  const checks = [
+    {ok: v.length>0 && startsWithKeywordPattern, label:"الكلمة المفتاحية أو الموضوع في أول العنوان (وليس \"حلقة رقم..\")"},
+    {ok: goodLength, label:"طول مناسب (بين 15 و70 حرفاً تقريباً)"},
+    {ok: hasNumber, label:"يحتوي رقماً أو نتيجة ملموسة (مثل: 7 استراتيجيات) — يزيد نسبة النقر"},
+    {ok: notGeneric, label:"لا يعتمد على رقم الحلقة كمعرّف وحيد"},
+  ];
+
+  const wrap = document.getElementById('title-checks');
+  if(!v){
+    wrap.innerHTML = '<div class="check-row"><span>ابدأ بكتابة عنوان الحلقة بالأعلى لترى التقييم.</span></div>';
+    return;
+  }
+  wrap.innerHTML = checks.map(c=>
+    '<div class="check-row"><span class="dot '+(c.ok?'pass':'fail')+'">'+(c.ok?'✓':'!')+'</span><span>'+c.label+'</span></div>'
+  ).join('');
+}
+titleInput.addEventListener('input', updateTitleChecks);
+updateTitleChecks();
+
+/* Exercise 2: 90-day roadmap tracker */
+const weeks = [
+  {id:'w1', tag:'الأسبوع 1-2', title:'التخصص والهوية', desc:'حدد التخصص النهائي، اسم البودكاست، الجمهور المستهدف، وتيرة النشر.'},
+  {id:'w2', tag:'الأسبوع 3-4', title:'المعدات والتجربة', desc:'اشترِ المعدات اللازمة، جهّز مكان التسجيل، سجّل 3 حلقات تجريبية.'},
+  {id:'w3', tag:'الأسبوع 5-6', title:'الإعداد التقني', desc:'أنشئ حساباً في وسيط البودكاست، قدّم لمنصات الاستماع الرئيسية، صمّم الغلاف.'},
+  {id:'w4', tag:'الأسبوع 7-8', title:'الإطلاق', desc:'أطلق الحلقات الأولى الثلاث في نفس اليوم، ابدأ التسويق على شبكات التواصل.'},
+  {id:'w5', tag:'الأسبوع 9-12', title:'الاستمرارية', desc:'استمر في النشر المنتظم، راقب الأرقام، اجمع feedback، طوّر الجودة تدريجياً.'},
+];
+
+const STORAGE_KEY = 'podcast_course_roadmap_progress';
+
+function loadProgress(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function saveProgress(state){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+let progress = loadProgress();
+
+function renderRoadmap(){
+  const wrap = document.getElementById('roadmap-weeks');
+  wrap.innerHTML = '';
+  weeks.forEach(w=>{
+    const done = !!progress[w.id];
+    const div = document.createElement('div');
+    div.className = 'week-block' + (done ? ' done' : '');
+    div.innerHTML =
+      '<label>'+
+        '<input type="checkbox" '+(done?'checked':'')+' data-id="'+w.id+'">'+
+        '<span>'+
+          '<span class="whead"><span class="wname">'+w.title+'</span><span class="wtag">'+w.tag+'</span></span>'+
+          '<p>'+w.desc+'</p>'+
+        '</span>'+
+      '</label>';
+    wrap.appendChild(div);
+  });
+  wrap.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change',()=>{
+      progress[cb.dataset.id] = cb.checked;
+      saveProgress(progress);
+      renderRoadmap();
+      updateRoadmapBar();
+    });
+  });
+}
+
+function updateRoadmapBar(){
+  const doneCount = weeks.filter(w=>progress[w.id]).length;
+  const pct = (doneCount/weeks.length)*100;
+  document.getElementById('roadmap-bar').style.width = pct+'%';
+  document.getElementById('roadmap-label').textContent = doneCount+' من '+weeks.length+' مراحل مكتملة';
+}
+
+document.getElementById('roadmap-reset').addEventListener('click',()=>{
+  progress = {};
+  saveProgress(progress);
+  renderRoadmap();
+  updateRoadmapBar();
+});
+
+renderRoadmap();
+updateRoadmapBar();
+
+/* Exercise 3: revenue calculator */
+const adTypes = {
+  host: {label:'Host-Read Ads', defaultCpm:35, note:'الأعلى تحويلاً لأن الجمهور يثق بصوت مضيفه المفضل. يُقاس بـ CPM.'},
+  prog: {label:'Programmatic Ads', defaultCpm:15, note:'إعلانات مؤتمتة تُضاف تلقائياً — أقل في العائد لكن بلا جهد.'},
+  sponsor: {label:'Sponsorship مباشر', defaultCpm:50, note:'رعاية كاملة لموسم أو فترة — الأعلى قيمة مالية والأفضل للاستدامة.'},
+};
+let selectedAdType = 'host';
+
+document.querySelectorAll('.ad-type-tabs button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.ad-type-tabs button').forEach(b=>b.classList.remove('sel'));
+    btn.classList.add('sel');
+    selectedAdType = btn.dataset.type;
+    updateRevenue();
+  });
+});
+
+function updateRevenue(){
+  const downloads = parseFloat(document.getElementById('downloads-input').value) || 0;
+  const cpmInput = parseFloat(document.getElementById('cpm-input').value);
+  const type = adTypes[selectedAdType];
+  const cpm = !isNaN(cpmInput) && cpmInput > 0 ? cpmInput : type.defaultCpm;
+  const revenue = (downloads/1000) * cpm;
+  document.getElementById('revenue-amount').textContent = '$' + revenue.toLocaleString('en-US',{maximumFractionDigits:0});
+  document.getElementById('revenue-note').textContent =
+    type.label+' — بمعدل CPM تقديري '+cpm+'$ لكل 1000 استماع. '+type.note;
+}
+document.getElementById('downloads-input').addEventListener('input', updateRevenue);
+document.getElementById('cpm-input').addEventListener('input', updateRevenue);
+updateRevenue();
+</script>
+</body>
+</html>
