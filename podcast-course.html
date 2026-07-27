@@ -96,6 +96,8 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   .hero{padding-top:2.5rem;}
 }
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -186,6 +188,11 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 <script>
+// ── FIREBASE ──
+var firebaseConfig = {apiKey:"AIzaSyBCheHz_5vWYWJdnTpaYstOVKUgvR5tCPQ",authDomain:"ahmed-quraish.firebaseapp.com",projectId:"ahmed-quraish",storageBucket:"ahmed-quraish.firebasestorage.app",messagingSenderId:"777596990140",appId:"1:777596990140:web:8f336a1f2336a450a416b9"};
+var app = firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+
 // ── ADMIN PASSWORD (change this) ──
 var ADMIN_PASS = 'quraish2025';
 
@@ -198,9 +205,18 @@ var DAYS = [
 ];
 
 // ── SCHEDULE (stored in localStorage, set by admin only) ──
+var SCHEDULE_CACHE = null;
+function loadScheduleAndRender(){
+  db.collection('podcast_course').doc('schedule').get().then(function(doc){
+    SCHEDULE_CACHE = doc.exists ? doc.data() : {};
+    render();
+  }).catch(function(){
+    SCHEDULE_CACHE = {};
+    render();
+  });
+}
 function getSchedule(){
-  var s = localStorage.getItem('pc_schedule');
-  return s ? JSON.parse(s) : {};
+  return SCHEDULE_CACHE || {};
 }
 
 function getProgress(){
@@ -364,10 +380,15 @@ function saveDates(){
       schedule['d'+i] = dateEl.value + 'T' + time + ':00';
     }
   }
-  localStorage.setItem('pc_schedule', JSON.stringify(schedule));
-  closeAdmin();
-  render();
-  toast('✅ تم حفظ المواعيد');
+  toast('جارٍ الحفظ...');
+  db.collection('podcast_course').doc('schedule').set(schedule).then(function(){
+    SCHEDULE_CACHE = schedule;
+    closeAdmin();
+    render();
+    toast('✅ تم حفظ المواعيد لجميع الطلاب');
+  }).catch(function(err){
+    toast('❌ خطأ في الحفظ: ' + err.message);
+  });
 }
 
 // Close on background click
@@ -375,9 +396,9 @@ document.getElementById('adminModalBg').addEventListener('click', function(e){
   if(e.target === this) closeAdmin();
 });
 
-render();
+loadScheduleAndRender();
 // Auto-refresh every minute to update unlock status
-setInterval(render, 60000);
+setInterval(loadScheduleAndRender, 60000);
 </script>
 </body>
 </html>
