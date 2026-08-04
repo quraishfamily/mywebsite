@@ -443,8 +443,8 @@ nav{top:36px !important;}
 }
 .testimonial-card{
   background:var(--dark2);border:1px solid var(--border);border-radius:6px;
-  padding:1.8rem;width:320px;flex-shrink:0;
-  position:relative;
+  padding:1.8rem;width:320px;max-width:320px;flex-shrink:0;
+  position:relative;overflow:hidden;
 }
 .testimonial-card::before{
   content:'"';
@@ -456,17 +456,17 @@ nav{top:36px !important;}
 .testimonial-stars span{color:var(--gold);font-size:.9rem;}
 .testimonial-text{
   font-size:.88rem;color:var(--text-muted);line-height:1.8;
-  margin-bottom:1.2rem;
+  margin-bottom:1.2rem;word-break:break-word;overflow-wrap:break-word;
 }
-.testimonial-author{display:flex;align-items:center;gap:.8rem;}
+.testimonial-author{display:flex;align-items:center;gap:.8rem;min-width:0;}
 .testimonial-avatar{
   width:42px;height:42px;border-radius:50%;
   background:linear-gradient(135deg,var(--gold-dim),var(--dark3));
   display:flex;align-items:center;justify-content:center;
   font-size:1.1rem;flex-shrink:0;border:1px solid var(--border);
 }
-.testimonial-name{font-weight:700;font-size:.88rem;}
-.testimonial-role{font-size:.75rem;color:var(--text-muted);}
+.testimonial-name{font-weight:700;font-size:.88rem;word-break:break-word;overflow-wrap:break-word;}
+.testimonial-role{font-size:.75rem;color:var(--text-muted);word-break:break-word;overflow-wrap:break-word;}
 
 /* HAMBURGER MENU */
 .hamburger{margin-right:auto;
@@ -1408,12 +1408,14 @@ function toggleNewsArchive(){
 }
 
 function renderPodcast(eps=null){
+  var grid = document.getElementById('podcastGrid');
+  if(!grid) return;
   if(!eps)eps=[];
   if(eps === 'failed' || !eps || eps.length===0){
-    document.getElementById('podcastGrid').innerHTML='<div style="text-align:center;padding:2rem;"><p style="color:var(--text-muted);font-size:.88rem;margin-bottom:1rem;">تعذّر تحميل الحلقات تلقائياً</p><a href="https://sabaho.libsyn.com" target="_blank" class="btn btn-outline" style="font-size:.82rem;padding:.5rem 1.2rem;">استمع على Libsyn ←</a></div>';
+    grid.innerHTML='<div style="text-align:center;padding:2rem;"><p style="color:var(--text-muted);font-size:.88rem;margin-bottom:1rem;">تعذّر تحميل الحلقات تلقائياً</p><a href="https://sabaho.libsyn.com" target="_blank" class="btn btn-outline" style="font-size:.82rem;padding:.5rem 1.2rem;">استمع على Libsyn ←</a></div>';
     return;
   }
-  document.getElementById('podcastGrid').innerHTML=eps.slice(0,5).map((e,i)=>{
+  grid.innerHTML=eps.slice(0,5).map((e,i)=>{
     const epPageLink = 'podcast-episode.html?ep=' + i;
     return `<div class="ep-card reveal" onclick="window.location.href='${epPageLink}'" style="cursor:pointer;">
       <div class="ep-num">${String(i+1).padStart(2,'0')}</div>
@@ -1632,9 +1634,12 @@ async function loadSettings() {
     const settingsSnap = await db.collection('settings').doc('main').get();
     if (settingsSnap.exists) {
       const s = settingsSnap.data();
-      if (s.email) document.getElementById('site-email').textContent = s.email;
-      if (s.phone) document.getElementById('site-phone').textContent = s.phone;
-      if (s.price) document.getElementById('site-price').textContent = s.price;
+      var elEmail = document.getElementById('site-email');
+      var elPhone = document.getElementById('site-phone');
+      var elPrice = document.getElementById('site-price');
+      if (s.email && elEmail) elEmail.textContent = s.email;
+      if (s.phone && elPhone) elPhone.textContent = s.phone;
+      if (s.price && elPrice) elPrice.textContent = s.price;
     }
     const socialsSnap = await db.collection('settings').doc('socials').get();
     if (socialsSnap.exists) {
