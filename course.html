@@ -153,16 +153,22 @@ function renderCourse(c){
     }
   }
 
-  var regBtn = c.reglink
-    ? '<a href="'+c.reglink+'" target="_blank" class="btn">التسجيل الآن 🎓</a>'
-    : '<button class="btn" onclick="scrollToReg()">التسجيل الآن 🎓</button>';
+  var isClosed = !!c.closed;
+
+  var regBtn = isClosed
+    ? '<button class="btn" disabled style="opacity:.5;cursor:not-allowed;background:var(--dark3);color:var(--text-muted);">🔒 التسجيل مغلق</button>'
+    : (c.reglink
+        ? '<a href="'+c.reglink+'" target="_blank" class="btn">التسجيل الآن 🎓</a>'
+        : '<button class="btn" onclick="scrollToReg()">التسجيل الآن 🎓</button>');
+
+  var descHtml = (c.desc||'').replace(/\n/g,'<br>');
 
   document.getElementById('courseContent').innerHTML =
     '<div class="course-hero">'
       +'<div>'
-        +'<span class="badge">'+(c.badge||'دورة تدريبية')+'</span>'
+        +'<span class="badge">'+(isClosed?'🔒 انتهت الدورة':(c.badge||'دورة تدريبية'))+'</span>'
         +'<h1>'+c.title+'</h1>'
-        +'<p class="desc">'+(c.desc||'')+'</p>'
+        +'<p class="desc">'+descHtml+'</p>'
         +'<div class="meta">'
           +'<div class="meta-item">⏱ <b>'+(c.dur||'—')+'</b></div>'
           +'<div class="meta-item">📚 <b>'+(c.sess||'—')+'</b></div>'
@@ -172,8 +178,8 @@ function renderCourse(c){
       +'</div>'
       +'<div>'
         +'<div class="price-card">'
-          +'<div class="price">'+(c.price||'تواصل معنا')+'</div>'
-          +'<p class="price-note">شامل جميع المواد والشهادة</p>'
+          +'<div class="price"'+(isClosed?' style="color:var(--text-muted);font-size:1.1rem;"':'')+'>'+(isClosed?'التسجيل مغلق':(c.price||'تواصل معنا'))+'</div>'
+          +'<p class="price-note">'+(isClosed?'انتهت هذه الدورة — تابع صفحتنا لمعرفة موعد الدورة القادمة':'شامل جميع المواد والشهادة')+'</p>'
           +regBtn
           +'<a href="https://wa.me/966565909049" target="_blank" class="btn btn-outline">💬 استفسر عبر واتساب</a>'
           +featuresHtml
@@ -182,7 +188,8 @@ function renderCourse(c){
     +'</div>'
     +outcomesHtml
     +outlineHtml
-    +'<div class="section" id="reg-section">'
+    +(isClosed ? '' :
+    '<div class="section" id="reg-section">'
       +'<div class="sec-title">سجّل الآن في '+c.title+'</div>'
       +'<div class="reg-box">'
         +'<form onsubmit="submitReg(event)" style="display:flex;flex-direction:column;gap:.9rem;">'
@@ -195,7 +202,7 @@ function renderCourse(c){
           +'<button type="submit" class="btn reg-btn">إرسال طلب التسجيل 🎓</button>'
         +'</form>'
       +'</div>'
-    +'</div>';
+    +'</div>');
 }
 
 function scrollToReg(){
