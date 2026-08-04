@@ -439,7 +439,7 @@ nav{top:36px !important;}
 .testimonials-track:hover{animation-play-state:paused;}
 @keyframes slide-testimonials{
   0%{transform:translateX(0);}
-  100%{transform:translateX(-50%);}
+  100%{transform:translateX(calc(-100% - 1.5rem));}
 }
 .testimonial-card{
   background:var(--dark2);border:1px solid var(--border);border-radius:6px;
@@ -1925,10 +1925,8 @@ function renderTestimonials(items) {
     return;
   }
   section.style.display = 'block';
-  // Duplicate for seamless loop
-  const all = [...items, ...items];
   const track = document.getElementById('testimonialsTrack');
-  track.innerHTML = all.map(t => `
+  track.innerHTML = items.map(t => `
     <div class="testimonial-card">
       <div class="testimonial-stars">${'<span>★</span>'.repeat(t.stars||5)}</div>
       <p class="testimonial-text">${t.text}</p>
@@ -1941,8 +1939,7 @@ function renderTestimonials(items) {
       </div>
     </div>
   `).join('');
-  // Adjust speed
-  const speed = Math.max(20, items.length * 8);
+  const speed = Math.max(15, items.length * 6);
   track.style.animationDuration = speed + 's';
 }
 
