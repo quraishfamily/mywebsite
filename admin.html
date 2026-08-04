@@ -199,6 +199,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   function addInterview(){ _wcall("addInterview", Array.prototype.slice.call(arguments)); }
   function addPodcast(){ _wcall("addPodcast", Array.prototype.slice.call(arguments)); }
   function addTestimonial(){ _wcall("addTestimonial", Array.prototype.slice.call(arguments)); }
+  function renderTestimonialsTable(){ _wcall("renderTestimonialsTable", []); }
   function addWork(){ _wcall("addWork", Array.prototype.slice.call(arguments)); }
   function changePw(){ _wcall("changePw", Array.prototype.slice.call(arguments)); }
   function closeConfirm(){ _wcall("closeConfirm", Array.prototype.slice.call(arguments)); }
@@ -3451,8 +3452,106 @@ function viewBookingDetails(r){
 // END CALENDAR BOOKING SYSTEM
 // ════════════════════════════════════════
 
+
+// ════════════════════════════════════════
+// TESTIMONIALS MANAGEMENT
+// ════════════════════════════════════════
+
+function renderTestimonialsTable(){
+  var container = document.getElementById('testimonials-table');
+  if(!container) return;
+  container.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">جارٍ التحميل...</p>';
+  db.collection('testimonials').orderBy('timestamp','desc').get().then(function(snap){
+    renderTestimonialsList(snap);
+  }).catch(function(){
+    // Fallback without orderBy in case of missing index
+    db.collection('testimonials').get().then(function(snap){
+      renderTestimonialsList(snap);
+    }).catch(function(){
+      container.innerHTML = '<p style="color:var(--red);font-size:.85rem;">فشل تحميل الشهادات</p>';
+    });
+  });
+}
+
+function renderTestimonialsList(snap){
+  var container = document.getElementById('testimonials-table');
+  if(!container) return;
+  if(snap.empty){
+    container.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;padding:1rem;text-align:center;">لا توجد شهادات مضافة بعد</p>';
+    return;
+  }
+  var items = [];
+  snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; items.push(d); });
+  items.sort(function(a,b){ return (b.timestamp||0)-(a.timestamp||0); });
+
+  var tbl = document.createElement('table');
+  tbl.innerHTML = '<thead><tr><th>الاسم</th><th>المسمى</th><th>التقييم</th><th>النص</th><th>إجراءات</th></tr></thead>';
+  var tbody = document.createElement('tbody');
+  items.forEach(function(t){
+    var tr = document.createElement('tr');
+    var stars = '★'.repeat(parseInt(t.stars||5)) + '☆'.repeat(5-parseInt(t.stars||5));
+    tr.innerHTML = [
+      '<td><span style="font-size:1.3rem;margin-left:.4rem;">'+escHtml(t.avatar||'👤')+'</span><strong>'+escHtml(t.name||'—')+'</strong></td>',
+      '<td style="font-size:.85rem;color:var(--text-muted);">'+escHtml(t.role||'—')+'</td>',
+      '<td style="color:var(--gold);letter-spacing:2px;">'+stars+'</td>',
+      '<td style="font-size:.82rem;max-width:280px;">'+escHtml((t.text||'').substring(0,80))+((t.text||'').length>80?'...':'')+'</td>',
+      '<td></td>'
+    ].join('');
+    var td = tr.cells[4];
+    var delBtn = document.createElement('button');
+    delBtn.className = 'btn btn-danger btn-sm';
+    delBtn.textContent = 'حذف';
+    (function(id){ delBtn.addEventListener('click', function(){
+      deleteDoc('testimonials', id, 'testimonials-table', renderTestimonialsTable);
+    }); })(t.id);
+    td.appendChild(delBtn);
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);
+  container.innerHTML = '';
+  container.appendChild(tbl);
+}
+
+function addTestimonial(){
+  var name = document.getElementById('tm-name').value.trim();
+  var role = document.getElementById('tm-role').value.trim();
+  var avatar = document.getElementById('tm-avatar').value.trim() || '👤';
+  var stars = document.getElementById('tm-stars').value;
+  var text = document.getElementById('tm-text').value.trim();
+
+  if(!name || !text){
+    toast('يرجى إدخال الاسم ونص الشهادة على الأقل', true);
+    return;
+  }
+
+  db.collection('testimonials').add({
+    name: name,
+    role: role,
+    avatar: avatar,
+    stars: parseInt(stars),
+    text: text,
+    timestamp: Date.now()
+  }).then(function(){
+    toast('تم إضافة الشهادة ✓');
+    document.getElementById('tm-name').value = '';
+    document.getElementById('tm-role').value = '';
+    document.getElementById('tm-avatar').value = '';
+    document.getElementById('tm-text').value = '';
+    document.getElementById('tm-stars').value = '5';
+    renderTestimonialsTable();
+  }).catch(function(){
+    toast('خطأ في إضافة الشهادة', true);
+  });
+}
+
+// ════════════════════════════════════════
+// END TESTIMONIALS MANAGEMENT
+// ════════════════════════════════════════
+
 // AUTO EXPORTS
 window._real_saveCollection = saveCollection;
+window._real_renderTestimonialsTable = renderTestimonialsTable;
+window._real_addTestimonial = addTestimonial;
 window._real_addToCollection = addToCollection;
 window._real_deleteFromCollection = deleteFromCollection;
 window._real_loadCollection = loadCollection;
