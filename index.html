@@ -250,6 +250,7 @@ section{padding:6rem 3rem;scroll-margin-top:100px;}
 .courses-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;}
 .course-card{background:var(--dark2);border:1px solid var(--border);border-radius:4px;overflow:hidden;transition:border-color .3s;position:relative;}
 .course-card:hover{border-color:var(--gold-dim);}
+.course-card.course-closed{opacity:.75;}
 .c-badge{position:absolute;top:1rem;left:1rem;background:var(--gold);color:var(--black);font-size:.68rem;font-weight:700;padding:.2rem .6rem;border-radius:2px;z-index:1;}
 .c-img{min-height:80px;background:var(--dark3);display:flex;align-items:center;justify-content:center;font-size:2.8rem;border-bottom:1px solid var(--border);overflow:hidden;}.c-img img{width:100%;height:auto;display:block;object-fit:contain;}
 .c-body{padding:1.3rem;}
@@ -1514,9 +1515,9 @@ function renderCourses(courses=null){
     return;
   }
   document.getElementById('coursesGrid').innerHTML=courses.map(c=>`
-    <div class="course-card reveal">
-      ${c.badge?'<div class="c-badge">'+c.badge+'</div>':''}
-      <div class="c-img">${c.img ? '<img src="'+c.img+'" alt="'+c.title+'">' : (c.icon||'📚')}</div>
+    <div class="course-card reveal${c.closed?' course-closed':''}">
+      ${c.closed?'<div class="c-badge" style="background:#555;color:#eee;">🔒 انتهت الدورة</div>':(c.badge?'<div class="c-badge">'+c.badge+'</div>':'')}
+      <div class="c-img">${c.img ? '<img src="'+c.img+'" alt="'+c.title+'"'+(c.closed?' style="filter:grayscale(1);opacity:.6;"':'')+'>' : (c.icon||'📚')}</div>
       <div class="c-body">
         <h3>${c.title}</h3>
         <p>${c.summary || (c.desc ? c.desc.substring(0,100)+(c.desc.length>100?'...':'') : '')}</p>
@@ -1526,9 +1527,11 @@ function renderCourses(courses=null){
           <span>📊 <b>${c.lvl||c.level}</b></span>
         </div>
         <div class="c-footer">
-          <span style="font-size:1.05rem;font-weight:700;color:var(--gold);">${c.price}</span>
+          <span style="font-size:1.05rem;font-weight:700;color:${c.closed?'var(--text-muted)':'var(--gold)'};">${c.closed?'التسجيل مغلق':c.price}</span>
           <a href="course.html?id=${c.id}" class="btn btn-outline" style="padding:.45rem 1.1rem;font-size:.78rem;text-decoration:none;">التفاصيل</a>
-          <a href="course.html?id=${c.id}#reg-section" class="btn btn-primary" style="padding:.45rem 1.1rem;font-size:.78rem;text-decoration:none;">سجّل الآن</a>
+          ${c.closed
+            ? '<button class="btn btn-outline" style="padding:.45rem 1.1rem;font-size:.78rem;opacity:.5;cursor:not-allowed;" disabled>التسجيل مغلق</button>'
+            : '<a href="course.html?id='+c.id+'#reg-section" class="btn btn-primary" style="padding:.45rem 1.1rem;font-size:.78rem;text-decoration:none;">سجّل الآن</a>'}
           <button class="share-btn" onclick="shareTw('${c.title}')">𝕏</button>
           <button class="share-btn" onclick="shareWa('${c.title}')">📲</button>
         </div>
