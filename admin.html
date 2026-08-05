@@ -906,7 +906,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
     <h3 id="news-modal-title">إضافة خبر</h3>
     <div class="form-grid">
       <div class="fg"><label>العنوان</label><input type="text" id="nm-title" placeholder="عنوان الخبر"></div>
-      <div class="fg"><label>التصنيف</label><select id="nm-cat"><option>أخبار</option><option>دورات</option><option>إنجازات</option><option>فعاليات</option><option>أخبار صباحو</option></select></div>
+      <div class="fg"><label>التصنيف</label><select id="nm-cat"><option>أخبار</option><option>مقال</option><option>دورات</option><option>إنجازات</option><option>فعاليات</option><option>أخبار صباحو</option></select></div>
       <div class="fg"><label>التاريخ والوقت</label><input type="datetime-local" id="nm-date"></div>
       <div class="fg">
         <label>حالة الخبر</label>
@@ -4786,57 +4786,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   </div><!-- /main -->
 </div><!-- /admin-layout -->
 
-<!-- NEWS MODAL -->
-<div class="modal-overlay" id="newsModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('newsModal')">✕</button>
-    <h3 id="news-modal-title">إضافة خبر</h3>
-    <div class="form-grid">
-      <div class="fg"><label>العنوان</label><input type="text" id="nm-title" placeholder="عنوان الخبر"></div>
-      <div class="fg"><label>التصنيف</label><select id="nm-cat"><option>أخبار</option><option>دورات</option><option>إنجازات</option><option>فعاليات</option><option>أخبار صباحو</option></select></div>
-      <div class="fg"><label>التاريخ والوقت</label><input type="datetime-local" id="nm-date"></div>
-      <div class="fg">
-        <label>حالة الخبر</label>
-        <select id="nm-status" onchange="toggleSchedule()">
-          <option value="published">منشور ✅</option>
-          <option value="draft">مسودة 📝</option>
-          <option value="scheduled">مجدول 📅</option>
-        </select>
-      </div>
-      <div class="fg" id="nm-schedule-wrap" style="display:none;">
-        <label>موعد النشر التلقائي</label>
-        <input type="datetime-local" id="nm-schedule">
-      </div>
-      <div class="fg"><label>الأيقونة (رمز)</label><input type="text" id="nm-icon" placeholder="🎙️"></div>
-      <div class="fg fg-full">
-        <label>صورة الخبر (اختياري)</label>
-        <input type="file" id="nm-img-file" accept="image/*" onchange="handleImageUpload('nm-img-file','nm-img-preview','nm-img')" style="background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem;color:var(--text);width:100%;cursor:pointer;">
-        <div style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;">📐 المقاس المثالي: <b style="color:var(--gold);">1200 × 630 px</b> — نسبة 16:9 — بحد أقصى 2MB</div>
-        <input type="hidden" id="nm-img">
-        <div id="nm-img-preview"></div>
-      </div>
-      <div class="fg fg-full"><label>صورة داخل الخبر — الأولى (اختياري)</label>
-        <input type="file" id="nm-img2-file" accept="image/*" onchange="handleImageUpload('nm-img2-file','nm-img2-preview','nm-img2')" style="background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem;color:var(--text);width:100%;cursor:pointer;">
-        <div style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;">📐 المقاس المثالي: <b style="color:var(--gold);">800 × 500 px</b> — بحد أقصى 2MB</div>
-        <input type="hidden" id="nm-img2">
-        <div id="nm-img2-preview"></div>
-      </div>
-      <div class="fg fg-full"><label>صورة داخل الخبر — الثانية (اختياري)</label>
-        <input type="file" id="nm-img3-file" accept="image/*" onchange="handleImageUpload('nm-img3-file','nm-img3-preview','nm-img3')" style="background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.6rem;color:var(--text);width:100%;cursor:pointer;">
-        <div style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;">📐 المقاس المثالي: <b style="color:var(--gold);">800 × 500 px</b> — بحد أقصى 2MB</div>
-        <input type="hidden" id="nm-img3">
-        <div id="nm-img3-preview"></div>
-      </div>
-      <div class="fg fg-full"><label>رابط الخبر (اختياري)</label><input type="url" id="nm-link" placeholder="https://..."></div>
-      <div class="fg fg-full"><label>ملخص الخبر</label><textarea id="nm-body" placeholder="اكتب نص الخبر..."></textarea></div>
-    </div>
-    <input type="hidden" id="nm-edit-id">
-    <div class="form-actions">
-      <button class="btn btn-primary btn-sm" onclick="saveNews()">حفظ</button>
-      <button class="btn btn-outline btn-sm" onclick="closeModal('newsModal')">إلغاء</button>
-    </div>
-  </div>
-</div>
+
 
 </div>
 </div>
