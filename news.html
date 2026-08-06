@@ -40,6 +40,8 @@ nav{position:fixed;top:0;right:0;left:0;z-index:900;padding:1rem 3rem;display:fl
 .news-meta{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;}
 .news-meta .cat{font-size:.72rem;letter-spacing:3px;color:var(--gold);text-transform:uppercase;background:rgba(201,168,76,.1);padding:.3rem .8rem;border-radius:100px;}
 .news-meta .date{font-size:.82rem;color:var(--text-muted);}
+.news-meta .top-rating{font-size:.82rem;color:var(--gold);display:flex;align-items:center;gap:.3rem;}
+.news-meta .top-rating .stars-mini{letter-spacing:1px;}
 /* TITLE */
 h1{font-family:"Cairo",sans-serif;font-size:clamp(1.6rem,4vw,2.2rem);font-weight:900;line-height:1.4;margin-bottom:1.5rem;}
 /* BODY */
@@ -185,6 +187,7 @@ async function loadNews(){
       <div class="news-meta">
         <span class="cat">${news.cat||news.category||'خبر'}</span>
         <span class="date">📅 ${news.date||''}</span>
+        <span class="top-rating" id="top-rating"></span>
       </div>
       <h1>${news.title}</h1>
       <div class="news-content"><p>${(news.body||news.excerpt||'').replace(/\n/g,'</p><p>')}</p></div>
@@ -302,6 +305,18 @@ function renderRatingUI(avg, count, userStars, previewStars){
     thanks.textContent = 'شكراً لتقييمك ✓';
   } else if(thanks){
     thanks.remove();
+  }
+
+  // Badge مختصر في أعلى المقال بجانب التصنيف والتاريخ
+  const topBadge = document.getElementById('top-rating');
+  if(topBadge){
+    if(count > 0){
+      const rounded = Math.round(avg);
+      const starsStr = '★'.repeat(rounded) + '☆'.repeat(5-rounded);
+      topBadge.innerHTML = `<span class="stars-mini">${starsStr}</span> ${avg.toFixed(1)} (${count})`;
+    } else {
+      topBadge.textContent = '';
+    }
   }
 }
 
