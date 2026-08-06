@@ -49,6 +49,16 @@ h1{font-family:"Cairo",sans-serif;font-size:clamp(1.6rem,4vw,2.2rem);font-weight
 .body-img-wrap{margin:2rem 0;}
 .body-img-wrap img{width:100%;border-radius:6px;border:1px solid var(--border);display:block;}
 .body-img-wrap:has(img + img){display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+/* RATING */
+.rating-box{background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:1.5rem;text-align:center;margin:2rem 0;}
+.rating-label{font-size:.85rem;color:var(--text-muted);margin-bottom:.8rem;font-family:"Cairo",sans-serif;font-weight:700;}
+.rating-stars{font-size:2rem;display:flex;justify-content:center;gap:.3rem;margin-bottom:.6rem;line-height:1;}
+.rate-star{cursor:pointer;color:var(--gold);transition:transform .15s;user-select:none;display:inline-block;}
+.rate-star:hover{transform:scale(1.15);}
+.rating-stars.voted .rate-star{cursor:default;}
+.rating-stars.voted .rate-star:hover{transform:none;}
+.rating-info{font-size:.82rem;color:var(--text-muted);}
+.rating-thanks{font-size:.8rem;color:var(--gold);margin-top:.4rem;font-weight:700;}
 /* DIVIDER */
 .divider{height:1px;background:var(--border);margin:2rem 0;}
 /* SHARE */
@@ -179,6 +189,10 @@ async function loadNews(){
       <h1>${news.title}</h1>
       <div class="news-content"><p>${(news.body||news.excerpt||'').replace(/\n/g,'</p><p>')}</p></div>
       ${bodyImgs}
+      <div class="rating-box" id="rating-box">
+        <div class="rating-label">⭐ قيّم هذا المقال</div>
+        <div class="rating-stars" id="rating-stars"><span style="font-size:.9rem;color:var(--text-muted);">جارٍ التحميل...</span></div>
+      </div>
       <div class="divider"></div>
       <div class="share-wrap">
         <span>شارك:</span>
@@ -198,6 +212,7 @@ async function loadNews(){
     
     renderComments();
     loadRelated(news, allNews);
+    loadAndRenderRating();
   } catch(e) {
     console.error(e);
     showNotFound();
@@ -234,6 +249,87 @@ function loadRelated(current, allNews){
       </div>
     </div>`;
   container.innerHTML += relatedHTML;
+}
+
+// RATING
+function ratedKey(){ return 'rated-'+newsId; }
+
+async function loadAndRenderRating(){
+  let avg = 0, count = 0;
+  try {
+    const doc = await db.collection('news').doc(newsId).get();
+    const data = doc.data() || {};
+    const sum = data.ratingSum || 0;
+    count = data.ratingCount || 0;
+    avg = count ? (sum / count) : 0;
+  } catch(e) { /* keep defaults */ }
+  const savedVote = parseInt(localStorage.getItem(ratedKey()) || '0');
+  _currentAvg = avg;
+  _currentCount = count;
+  renderRatingUI(avg, count, savedVote);
+}
+
+function renderRatingUI(avg, count, userStars, previewStars){
+  const wrap = document.getElementById('rating-stars');
+  const box = document.getElementById('rating-box');
+  if(!wrap) return;
+  const displayStars = previewStars || userStars || Math.round(avg);
+  const voted = !!userStars;
+  wrap.className = 'rating-stars' + (voted ? ' voted' : '');
+  let html = '';
+  for(let i=1;i<=5;i++){
+    const filled = i <= displayStars;
+    html += `<span class="rate-star" data-star="${i}"${voted?'':` onclick="submitRating(${i})" onmouseenter="previewRating(${i})" onmouseleave="previewRating(0)"`}>${filled?'★':'☆'}</span>`;
+  }
+  wrap.innerHTML = html;
+  const infoText = count > 0
+    ? `${avg.toFixed(1)} من 5 · ${count} ${count===1?'تقييم':'تقييمات'}`
+    : 'كن أول من يقيّم هذا المقال';
+  let extra = box.querySelector('.rating-info');
+  if(!extra){
+    extra = document.createElement('div');
+    extra.className = 'rating-info';
+    box.appendChild(extra);
+  }
+  extra.textContent = infoText;
+  let thanks = box.querySelector('.rating-thanks');
+  if(voted){
+    if(!thanks){
+      thanks = document.createElement('div');
+      thanks.className = 'rating-thanks';
+      box.appendChild(thanks);
+    }
+    thanks.textContent = 'شكراً لتقييمك ✓';
+  } else if(thanks){
+    thanks.remove();
+  }
+}
+
+let _currentAvg = 0, _currentCount = 0;
+function previewRating(n){
+  renderRatingUI(_currentAvg, _currentCount, 0, n);
+}
+
+async function submitRating(stars){
+  if(localStorage.getItem(ratedKey())) return; // منع التقييم المكرر من نفس الجهاز
+  localStorage.setItem(ratedKey(), stars);
+  const ref = db.collection('news').doc(newsId);
+  try {
+    await db.runTransaction(async (t) => {
+      const doc = await t.get(ref);
+      const data = doc.data() || {};
+      const newSum = (data.ratingSum || 0) + stars;
+      const newCount = (data.ratingCount || 0) + 1;
+      t.update(ref, { ratingSum: newSum, ratingCount: newCount });
+    });
+  } catch(e) {
+    try { await ref.set({ ratingSum: stars, ratingCount: 1 }, { merge: true }); } catch(e2) {}
+  }
+  const doc = await ref.get();
+  const data = doc.data() || {};
+  _currentCount = data.ratingCount || 1;
+  _currentAvg = _currentCount ? ((data.ratingSum||stars) / _currentCount) : stars;
+  renderRatingUI(_currentAvg, _currentCount, stars);
 }
 
 // COMMENTS
