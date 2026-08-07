@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تم استلام طلبك — شكرًا لك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0A0E1A;
+    --navy-panel:#121A2E;
+    --navy-panel-2:#182238;
+    --gold:#D4AF37;
+    --gold-soft:#E8C766;
+    --ink:#F1EFE8;
+    --muted:#8A93A8;
+    --line:rgba(212,175,55,0.18);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--navy-deep);
+    color:var(--ink);
+    font-family:'Tajawal',sans-serif;
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+  }
+  .card{
+    max-width:520px;width:100%;
+    background:var(--navy-panel);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:52px 40px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 50% 0%, rgba(212,175,55,0.14), transparent 60%);
+  }
+  .check-wrap{position:relative;z-index:1;margin-bottom:26px;}
+  .check-circle{
+    width:86px;height:86px;border-radius:50%;
+    background:rgba(212,175,55,0.12);
+    border:2px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto;
+  }
+  .check-circle svg{width:40px;height:40px;}
+  h1{position:relative;z-index:1;font-size:26px;font-weight:800;margin-bottom:14px;}
+  h1 span{color:var(--gold);}
+  p.lead{position:relative;z-index:1;color:var(--muted);font-size:15px;line-height:1.8;margin-bottom:30px;}
+
+  .steps{
+    position:relative;z-index:1;
+    text-align:right;
+    background:var(--navy-panel-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px 24px;
+    margin-bottom:30px;
+  }
+  .steps h3{font-size:14px;color:var(--gold-soft);font-weight:700;margin-bottom:14px;}
+  .step-item{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;}
+  .step-item:last-child{margin-bottom:0;}
+  .step-num{
+    width:26px;height:26px;border-radius:50%;
+    background:var(--gold);color:var(--navy-deep);
+    font-size:13px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .step-item p{font-size:14px;color:var(--ink);line-height:1.6;}
+
+  .btn-primary{
+    position:relative;z-index:1;
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--gold);color:var(--navy-deep);
+    padding:15px 30px;border-radius:9px;font-weight:700;font-size:15px;
+    text-decoration:none;
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(212,175,55,0.3);}
+
+  .footer-note{position:relative;z-index:1;margin-top:24px;font-size:12px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="check-wrap">
+    <div class="check-circle">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 13l4 4L19 7" stroke="#D4AF37" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <h1>تم استلام طلبك <span>بنجاح</span></h1>
+  <p class="lead">شكرًا لك على تعبئة بيانات مشروعك. راجعت التفاصيل وبتواصل معك شخصيًا خلال وقت قصير لتأكيد الباقة والخطوات القادمة.</p>
+
+  <div class="steps">
+    <h3>وش يصير بعدين؟</h3>
+    <div class="step-item">
+      <span class="step-num">١</span>
+      <p>براجع طلبك وأتأكد من كل التفاصيل اللي أرسلتها.</p>
+    </div>
+    <div class="step-item">
+      <span class="step-num">٢</span>
+      <p>براسلك على الواتساب خلال ٢٤–٤٨ ساعة لتأكيد الباقة وموعد البدء.</p>
+    </div>
+    <div class="step-item">
+      <span class="step-num">٣</span>
+      <p>بعد الاتفاق، نبدأ العمل مباشرة على موقعك.</p>
+    </div>
+  </div>
+
+  <a href="https://wa.me/966597904227" target="_blank" rel="noopener" class="btn-primary">تواصل واتساب الآن</a>
+
+  <p class="footer-note">إذا ما توصلك رسالة خلال ٤٨ ساعة، تواصل معي مباشرة على الرقم أعلاه</p>
+</div>
+
+</body>
+</html>
