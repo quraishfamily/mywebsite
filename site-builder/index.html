@@ -625,9 +625,8 @@
         body: new FormData(briefForm)
       });
       if(res.ok){
-        briefStatus.textContent = 'تم إرسال طلبك بنجاح! بنتواصل معك قريبًا على الواتساب.';
-        briefStatus.className = 'form-status ok';
-        briefForm.reset();
+        window.location.href = 'thank-you.html';
+        return;
       } else {
         throw new Error('فشل الإرسال');
       }
