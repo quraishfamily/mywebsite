@@ -68,6 +68,7 @@ textarea{resize:vertical;min-height:100px;}
 .toast-msg{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--dark2);border:1px solid var(--gold);border-radius:4px;padding:.8rem 1.5rem;font-size:.85rem;color:var(--text);z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
 .toast-msg.show{opacity:1;}
 @media(max-width:768px){nav{padding:1rem 1.5rem;}.main{padding:5rem 1.2rem 4rem;}.f-row{grid-template-columns:1fr;}.form-box{padding:1.5rem;}}
+.social-dyn-link:hover{color:var(--gold) !important;}
 </style>
 </head>
 <body>
@@ -163,7 +164,7 @@ async function loadSocials(){
     var names = {tw:'تويتر',ig:'انستقرام',yt:'يوتيوب',sn:'سناب شات',tiktok:'تيك توك',linkedin:'لينكدإن'};
     Object.keys(icons).forEach(function(key){
       if(s[key]){
-        links.push('<a href="'+s[key]+'" target="_blank" style="display:flex;align-items:center;gap:.8rem;color:var(--text);text-decoration:none;font-size:.9rem;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text)'"><span style="width:36px;height:36px;background:rgba(201,168,76,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;">'+icons[key].split(' ')[0]+'</span><span>'+names[key]+'</span></a>');
+        links.push('<a href="'+s[key]+'" target="_blank" class="social-dyn-link" style="display:flex;align-items:center;gap:.8rem;color:var(--text);text-decoration:none;font-size:.9rem;"><span style="width:36px;height:36px;background:rgba(201,168,76,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;">'+icons[key].split(' ')[0]+'</span><span>'+names[key]+'</span></a>');
       }
     });
     if(links.length) document.getElementById('social-links').innerHTML = links.join('');
@@ -186,7 +187,7 @@ async function submitContact(e){
   db.collection('messages').add(data).catch(function(){});
   try{
     await emailjs.send('service_6g3odwb','bozx1s3',{
-      from_name:data.name,from_email:data.email,phone:data.phone,
+      from_name:data.name,from_email:data.email,to_email:'quraishvoice@gmail.com',phone:data.phone,
       subject:'رسالة جديدة من '+data.name,
       message:data.message,course:'-',notes:'-',time:data.time
     },{publicKey:'QnIPBoSRBkpNWiNt4'});
