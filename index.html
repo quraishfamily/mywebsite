@@ -490,10 +490,13 @@ nav{top:36px !important;}
   backdrop-filter:blur(20px);
   z-index:850;
   display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
+  align-items:center;justify-content:flex-start;
   gap:0;
   opacity:0;pointer-events:none;
   transition:opacity .3s;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:6rem 0 3rem;
 }
 .mobile-menu.open{opacity:1;pointer-events:all;}
 .mobile-menu a{
