@@ -371,7 +371,7 @@ async function submitBooking(){
   try{
     await db.collection('consulting_bookings').add(bookingData);
     await emailjs.send('service_6g3odwb','bozx1s3',{
-      from_name:name,from_email:email,phone:phone,
+      from_name:name,from_email:email,to_email:'quraishvoice@gmail.com',phone:phone,
       subject:'طلب حجز استشارة — '+field,
       message:['اسم: '+name,'جوال: '+phone,'مجال: '+field,'الموعد: '+dateLabel+' الساعة '+state.selectedSlot,'رقم الطلب: '+bookingId,'المستوى: '+level,'الهدف: '+goal,'','هذه استشارة مدفوعة (100 ريال/الساعة) — سيقوم أحمد قريش بمراجعة طلبك شخصياً والتواصل معك لتأكيد الموعد والتكلفة وطريقة الدفع.'].join('\n'),
       course:field,notes:goal||'—',time:bookingData.time
