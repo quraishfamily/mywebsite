@@ -188,10 +188,9 @@ async function submitVO(e){
   db.collection('voiceover_requests').add(data).catch(function(){});
   try{
     await emailjs.send('service_6g3odwb','bozx1s3',{
-      from_name:data.name,from_email:data.email,phone:data.phone,
+      from_name:data.name,from_email:data.email,to_email:'quraishvoice@gmail.com',phone:data.phone,
       subject:'طلب تعليق صوتي — '+data.type+' ('+requestId+')',
-      message:['رقم الطلب: '+requestId,'النوع: '+data.type,'الموعد: '+data.deadline,'الكلمات: '+data.words,'الوصف: '+data.desc,'السكريبت: '+data.script].join('
-'),
+      message:['رقم الطلب: '+requestId,'النوع: '+data.type,'الموعد: '+data.deadline,'الكلمات: '+data.words,'الوصف: '+data.desc,'السكريبت: '+data.script].join('\n'),
       course:data.type,notes:data.notes||'-',time:data.time
     },{publicKey:'QnIPBoSRBkpNWiNt4'});
   }catch(err){}
