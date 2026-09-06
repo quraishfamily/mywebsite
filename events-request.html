@@ -183,10 +183,9 @@ async function submitEvent(e){
   db.collection('event_requests').add(data).catch(function(){});
   try{
     await emailjs.send('service_6g3odwb','bozx1s3',{
-      from_name:data.name,from_email:data.email,phone:data.phone,
+      from_name:data.name,from_email:data.email,to_email:'quraishvoice@gmail.com',phone:data.phone,
       subject:'طلب تقديم حفل — '+data.title+' ('+requestId+')',
-      message:['رقم الطلب: '+requestId,'الحفل: '+data.title,'النوع: '+data.audience,'الساعات: '+data.hours,'التاريخ: '+data.date,'المكان: '+data.location,'ملاحظات: '+data.notes].join('
-'),
+      message:['رقم الطلب: '+requestId,'الحفل: '+data.title,'النوع: '+data.audience,'الساعات: '+data.hours,'التاريخ: '+data.date,'المكان: '+data.location,'ملاحظات: '+data.notes].join('\n'),
       course:data.title,notes:data.notes||'-',time:data.time
     },{publicKey:'QnIPBoSRBkpNWiNt4'});
   }catch(err){}
