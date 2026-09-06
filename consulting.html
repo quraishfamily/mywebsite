@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
   <!-- SEO -->
-  <meta name="description" content="احجز جلسة استشارة مجانية مع أحمد قريش — متخصص في التعليق الصوتي وصناعة البودكاست. تشخيص دقيق وخطة واضحة في 30 دقيقة.">
+  <meta name="description" content="احجز جلسة استشارة مع أحمد قريش — متخصص في التعليق الصوتي وصناعة البودكاست. 100 ريال/الساعة — تشخيص دقيق وخطة واضحة.">
   <meta name="keywords" content="استشارة تعليق صوتي, تدريب صوتي, استشارة بودكاست, أحمد قريش">
   <meta name="author" content="أحمد قريش">
   <link rel="canonical" href="https://quraishvoice.me/consulting.html">
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://quraishvoice.me/consulting.html">
-  <meta property="og:title" content="احجز استشارة مجانية في التعليق الصوتي والبودكاست | أحمد قريش">
-  <meta property="og:description" content="احجز جلسة استشارة مجانية مع أحمد قريش — متخصص في التعليق الصوتي وصناعة البودكاست. تشخيص دقيق وخطة واضحة في 30 دقيقة.">
+  <meta property="og:title" content="احجز استشارة في التعليق الصوتي والبودكاست | أحمد قريش">
+  <meta property="og:description" content="احجز جلسة استشارة مع أحمد قريش — متخصص في التعليق الصوتي وصناعة البودكاست. 100 ريال/الساعة — تشخيص دقيق وخطة واضحة.">
   <meta property="og:image" content="https://quraishvoice.me/og-image.jpg">
   <meta property="og:locale" content="ar_SA">
   <meta property="og:site_name" content="أحمد قريش | Quraish Voice">
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="احجز استشارة مجانية في التعليق الصوتي والبودكاست | أحمد قريش">
-  <meta name="twitter:description" content="احجز جلسة استشارة مجانية مع أحمد قريش — متخصص في التعليق الصوتي وصناعة البودكاست. تشخيص دقيق وخطة واضحة في 30 دقيقة.">
+  <meta name="twitter:title" content="احجز استشارة في التعليق الصوتي والبودكاست | أحمد قريش">
+  <meta name="twitter:description" content="احجز جلسة استشارة مع أحمد قريش — متخصص في التعليق الصوتي وصناعة البودكاست. 100 ريال/الساعة — تشخيص دقيق وخطة واضحة.">
   <meta name="twitter:image" content="https://quraishvoice.me/og-image.jpg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>احجز استشارة مجانية في التعليق الصوتي والبودكاست | أحمد قريش</title>
+<title>احجز استشارة في التعليق الصوتي والبودكاست | أحمد قريش</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SZMRCRHTTM"></script>
@@ -109,7 +109,7 @@ nav{position:fixed;top:0;right:0;left:0;z-index:900;padding:1rem 3rem;display:fl
 <div class="page-header">
   <span class="sec-label">الاستشارات التدريبية</span>
   <h1 class="page-title">احجز موعد استشارتك</h1>
-  <p class="page-desc">اختر الوقت المناسب لك واحجز جلستك مع أحمد قريش</p>
+  <p class="page-desc">استشارة تدريبية بسعر <strong style="color:var(--gold)">100 ريال / الساعة</strong> — اختر الوقت المناسب، وسيتم التواصل معك بعد مراجعة أحمد قريش لطلبك</p>
   <div class="sec-line"></div>
 </div>
 <div class="steps" id="steps-bar">
@@ -152,6 +152,8 @@ nav{position:fixed;top:0;right:0;left:0;z-index:900;padding:1rem 3rem;display:fl
   <div class="summary-box">
     <div class="summary-row"><span>📅 الموعد</span><strong id="sum-datetime"></strong></div>
     <div class="summary-row"><span>⏱ المدة</span><strong id="sum-duration"></strong></div>
+    <div class="summary-row"><span>💵 التكلفة التقديرية</span><strong id="sum-price" style="color:var(--gold);"></strong></div>
+    <p style="font-size:.75rem;color:var(--text-muted);margin-top:.5rem;line-height:1.7;">الاستشارة مدفوعة (100 ريال/الساعة) — سيتم تأكيد السعر النهائي وطريقة الدفع بعد مراجعة طلبك.</p>
     <button class="btn btn-outline" style="padding:.4rem .8rem;font-size:.78rem;margin-top:.5rem;" onclick="goStep(1)">تغيير الموعد</button>
   </div>
   <div class="form-card">
@@ -179,7 +181,7 @@ nav{position:fixed;top:0;right:0;left:0;z-index:900;padding:1rem 3rem;display:fl
       </select>
     </div>
     <div class="fg"><label>ما الذي تريد تحقيقه من هذه الجلسة؟</label><textarea id="b-goal" placeholder="اشرح لنا هدفك بإيجاز..."></textarea></div>
-    <button class="btn btn-full" onclick="submitBooking()" id="submit-btn">تأكيد الحجز ✓</button>
+    <button class="btn btn-full" onclick="submitBooking()" id="submit-btn">إرسال طلب الحجز ←</button>
   </div>
 </div>
 <div id="section-result" style="display:none;">
@@ -187,7 +189,7 @@ nav{position:fixed;top:0;right:0;left:0;z-index:900;padding:1rem 3rem;display:fl
     <div class="icon">⏳</div>
     <h2>تم استلام طلب الحجز!</h2>
     <div class="booking-ref" id="booking-ref-display"></div>
-    <p id="result-desc">سيتم مراجعة طلبك وإرسال التأكيد على بريدك الإلكتروني قريباً.</p>
+    <p id="result-desc">سيقوم أحمد قريش بمراجعة طلبك شخصياً، وسيتم التواصل معك لتأكيد الموعد والتكلفة النهائية (100 ريال/الساعة).</p>
   </div>
 </div>
 </main>
@@ -333,6 +335,8 @@ function fillSummary(date,slot,duration){
   var label=dayNames[date.getDay()]+' '+date.getDate()+' '+MONTHS_AR[date.getMonth()]+' '+date.getFullYear()+' — '+slot;
   document.getElementById('sum-datetime').textContent=label;
   document.getElementById('sum-duration').textContent=duration+' دقيقة';
+  var price = Math.round((duration/60)*100);
+  document.getElementById('sum-price').textContent=price+' ريال تقريباً';
 }
 
 function timeToMins(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);}
@@ -369,14 +373,15 @@ async function submitBooking(){
     await emailjs.send('service_6g3odwb','bozx1s3',{
       from_name:name,from_email:email,phone:phone,
       subject:'طلب حجز استشارة — '+field,
-      message:['اسم: '+name,'جوال: '+phone,'مجال: '+field,'الموعد: '+dateLabel+' الساعة '+state.selectedSlot,'رقم الطلب: '+bookingId,'المستوى: '+level,'الهدف: '+goal,'','سيتم مراجعة طلبك وإرسال تأكيد على بريدك الإلكتروني قريباً.'].join('\n'),
+      message:['اسم: '+name,'جوال: '+phone,'مجال: '+field,'الموعد: '+dateLabel+' الساعة '+state.selectedSlot,'رقم الطلب: '+bookingId,'المستوى: '+level,'الهدف: '+goal,'','هذه استشارة مدفوعة (100 ريال/الساعة) — سيقوم أحمد قريش بمراجعة طلبك شخصياً والتواصل معك لتأكيد الموعد والتكلفة وطريقة الدفع.'].join('\n'),
       course:field,notes:goal||'—',time:bookingData.time
     },{publicKey:'QnIPBoSRBkpNWiNt4'});
     document.getElementById('booking-ref-display').textContent=bookingId;
-    document.getElementById('result-desc').innerHTML='موعدك المقترح: <strong>'+dateLabel+' — '+state.selectedSlot+'</strong><br><br>رقم طلبك: <strong style="color:var(--gold)">'+bookingId+'</strong><br><br>سيتم مراجعة طلبك وإرسال تأكيد على بريدك <strong>'+email+'</strong> قريباً.';
+    var estPrice = Math.round((bookingData.duration/60)*100);
+    document.getElementById('result-desc').innerHTML='موعدك المقترح: <strong>'+dateLabel+' — '+state.selectedSlot+'</strong><br>التكلفة التقديرية: <strong style="color:var(--gold)">'+estPrice+' ريال</strong> (100 ريال/الساعة)<br><br>رقم طلبك: <strong style="color:var(--gold)">'+bookingId+'</strong><br><br>سيقوم أحمد قريش بمراجعة طلبك شخصياً، وسيتم التواصل معك على <strong>'+email+'</strong> لتأكيد الموعد وطريقة الدفع.';
     goStep(4);
   }catch(err){
-    btn.disabled=false;btn.textContent='تأكيد الحجز ✓';
+    btn.disabled=false;btn.textContent='إرسال طلب الحجز ←';
     showToast('حدث خطأ، يرجى المحاولة مجدداً',true);
   }
 }
