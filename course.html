@@ -224,7 +224,7 @@ async function submitReg(e){
   db.collection('registrations').add({name:name,phone:phone,email:email,notes:notes,course:cName,time:new Date().toLocaleString('ar-SA')}).catch(function(){});
   try{
     await emailjs.send('service_6g3odwb','t2l4rkn',{
-      from_name:name,phone:phone,from_email:email,course:cName,notes:notes||'-',
+      from_name:name,phone:phone,from_email:email,to_email:'quraishvoice@gmail.com',course:cName,notes:notes||'-',
       subject:'طلب تسجيل — '+cName,time:new Date().toLocaleString('ar-SA')
     },{publicKey:'QnIPBoSRBkpNWiNt4'});
   }catch(err){}
