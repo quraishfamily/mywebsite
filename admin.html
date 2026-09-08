@@ -3231,7 +3231,7 @@ function confirmBooking(id, data){
     }, {publicKey:'QnIPBoSRBkpNWiNt4'}).catch(function(){});
 
     var gcalLink = buildGCalLink(data);
-    var t = document.getElementById('toastMsg');
+    var t = document.getElementById('toast');
     t.innerHTML = '✅ تم التأكيد | <a href="'+gcalLink+'" target="_blank" style="color:var(--gold);font-weight:700;margin-right:.4rem;">📅 أضف لـ Google Calendar</a>';
     t.style.borderColor = 'var(--gold)';
     t.classList.add('show');
@@ -3263,7 +3263,9 @@ function openRejectModal(id){
   CAL_BOOKING_REJECT_ID = id;
   document.getElementById('reject-preset').value = '';
   document.getElementById('reject-reason').value = '';
-  document.getElementById('rejectModal').style.display = 'flex';
+  var m = document.getElementById('rejectModal');
+  m.style.display = 'flex';
+  m.style.pointerEvents = 'auto';
 }
 
 function fillRejectReason(val){
@@ -3279,7 +3281,9 @@ function doRejectBooking(){
   db.collection('consulting_bookings').doc(id).get().then(function(doc){
     var data = doc.data();
     db.collection('consulting_bookings').doc(id).update({status:'rejected', rejectReason: reason}).then(function(){
-      document.getElementById('rejectModal').style.display = 'none';
+      var m = document.getElementById('rejectModal');
+      m.style.display = 'none';
+      m.style.pointerEvents = 'none';
       // Send rejection email
       emailjs.send('service_6g3odwb','bozx1s3',{
         from_name: data.name||'',
