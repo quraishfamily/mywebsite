@@ -3261,21 +3261,21 @@ function buildGCalLink(data){
 
 function openRejectModal(id){
   CAL_BOOKING_REJECT_ID = id;
-  document.getElementById('reject-preset').value = '';
-  document.getElementById('reject-reason').value = '';
+  document.getElementById('cal-reject-preset').value = '';
+  document.getElementById('cal-reject-reason').value = '';
   var m = document.getElementById('rejectModal');
   m.style.display = 'flex';
   m.style.pointerEvents = 'auto';
 }
 
 function fillRejectReason(val){
-  if(val && val !== 'custom') document.getElementById('reject-reason').value = val;
-  else if(val === 'custom') document.getElementById('reject-reason').value = '';
+  if(val && val !== 'custom') document.getElementById('cal-reject-reason').value = val;
+  else if(val === 'custom') document.getElementById('cal-reject-reason').value = '';
 }
 
 function doRejectBooking(){
   var id = CAL_BOOKING_REJECT_ID;
-  var reason = document.getElementById('reject-reason').value.trim();
+  var reason = document.getElementById('cal-reject-reason').value.trim();
   if(!reason){ toast('يرجى كتابة سبب الرفض', true); return; }
   // Get booking data first for email
   db.collection('consulting_bookings').doc(id).get().then(function(doc){
@@ -5207,7 +5207,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
         <h3 style="font-family:Cairo,sans-serif;color:var(--gold);margin-bottom:1rem;">❌ سبب الرفض</h3>
         <div class="fg">
           <label>اختر سبباً جاهزاً أو اكتب سبباً مخصصاً</label>
-          <select id="reject-preset" onchange="fillRejectReason(this.value)">
+          <select id="cal-reject-preset" onchange="fillRejectReason(this.value)">
             <option value="">— أسباب جاهزة —</option>
             <option value="الوقت المختار لم يعد متاحاً">الوقت المختار لم يعد متاحاً</option>
             <option value="لدي ارتباط في هذا الموعد">لدي ارتباط في هذا الموعد</option>
@@ -5215,7 +5215,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
             <option value="custom">سبب مخصص...</option>
           </select>
         </div>
-        <div class="fg"><textarea id="reject-reason" placeholder="اكتب سبب الرفض..." style="min-height:80px;"></textarea></div>
+        <div class="fg"><textarea id="cal-reject-reason" placeholder="اكتب سبب الرفض..." style="min-height:80px;"></textarea></div>
         <div style="display:flex;gap:.5rem;justify-content:flex-end;">
           <button data-action="closeRejectModal" class="btn btn-outline btn-sm">إلغاء</button>
           <button onclick="doRejectBooking()" class="btn btn-danger btn-sm">إرسال الرفض</button>
