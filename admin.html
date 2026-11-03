@@ -2748,7 +2748,7 @@ function renderApprovalsTable(){
     var tbody=document.createElement('tbody');
     items.forEach(function(r){
       var tr=document.createElement('tr');
-      var typeLabel=r.type==='vo'?'🎙️ تعليق صوتي':'🎤 فعالية';
+      var typeLabel=r.type==='vo'?'🎙️ تعليق صوتي':(r.type==='course'?'🎓 دورة':'🎤 فعالية');
       var details=r.eventTitle?'الفعالية: '+r.eventTitle:'—';
       tr.innerHTML=[
         '<td><strong>'+escHtml(r.name||'—')+'</strong></td>',
@@ -2912,11 +2912,11 @@ function renderPendingReviews(){
     var tbody=document.createElement('tbody');
     items.forEach(function(r){
       var tr=document.createElement('tr');
-      var typeLabel=r.type==='vo'?'🎙️ تعليق صوتي':'🎤 فعالية';
+      var typeLabel=r.type==='vo'?'🎙️ تعليق صوتي':(r.type==='course'?'🎓 دورة':'🎤 فعالية');
       tr.innerHTML=[
         '<td style="color:var(--gold);font-size:1rem;">'+starsDisplay(r.rating||5)+'</td>',
         '<td><strong>'+escHtml(r.title||'—')+'</strong></td>',
-        '<td style="max-width:200px;color:var(--text-muted);font-size:.82rem;">'+escHtml((r.comment||'').substring(0,80))+(r.comment&&r.comment.length>80?'...':'')+'</td>',
+        '<td style="max-width:280px;color:var(--text-muted);font-size:.82rem;">'+escHtml((r.comment||'').substring(0,250))+(r.comment&&r.comment.length>250?'...':'')+'</td>',
         '<td>'+escHtml(r.name||'—')+(r.project?'<br><span style="font-size:.75rem;color:var(--text-muted);">'+escHtml(r.project)+'</span>':'')+'</td>',
         '<td><span class="badge badge-gold">'+typeLabel+'</span></td>',
         '<td style="font-size:.78rem;color:var(--text-muted);">'+escHtml(r.time||'—')+'</td>',
@@ -2980,11 +2980,11 @@ function renderApprovedReviews(){
     var tbody=document.createElement('tbody');
     items.forEach(function(r){
       var tr=document.createElement('tr');
-      var typeLabel=r.type==='vo'?'🎙️ تعليق صوتي':'🎤 فعالية';
+      var typeLabel=r.type==='vo'?'🎙️ تعليق صوتي':(r.type==='course'?'🎓 دورة':'🎤 فعالية');
       tr.innerHTML=[
         '<td style="color:var(--gold);font-size:1rem;">'+starsDisplay(r.rating||5)+'</td>',
         '<td><strong>'+escHtml(r.title||'—')+'</strong></td>',
-        '<td style="max-width:200px;color:var(--text-muted);font-size:.82rem;">'+escHtml((r.comment||'').substring(0,80))+(r.comment&&r.comment.length>80?'...':'')+'</td>',
+        '<td style="max-width:280px;color:var(--text-muted);font-size:.82rem;">'+escHtml((r.comment||'').substring(0,250))+(r.comment&&r.comment.length>250?'...':'')+'</td>',
         '<td>'+escHtml(r.name||'—')+(r.project?'<br><span style="font-size:.75rem;color:var(--text-muted);">'+escHtml(r.project)+'</span>':'')+'</td>',
         '<td><span class="badge badge-green">'+typeLabel+'</span></td>',
         '<td style="font-size:.78rem;color:var(--text-muted);">'+escHtml(r.time||'—')+'</td>',
