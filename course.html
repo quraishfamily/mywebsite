@@ -54,6 +54,25 @@ label{font-size:.8rem;color:var(--text-muted);font-weight:600;}
 input,textarea,select{background:var(--dark3);border:1px solid var(--border);border-radius:4px;padding:.7rem 1rem;color:var(--text);font-family:'Tajawal',sans-serif;font-size:.88rem;outline:none;transition:border-color .3s;width:100%;}
 input:focus,textarea:focus{border-color:var(--gold);}
 .reg-btn{margin-top:.5rem;max-width:280px;}
+.cr-summary{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;font-size:.9rem;color:var(--text-muted);}
+.cr-avg-stars{color:var(--gold);font-size:1.3rem;letter-spacing:2px;}
+.cr-list{display:flex;flex-direction:column;gap:.8rem;margin-bottom:1.8rem;}
+.cr-card{background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.3rem;}
+.cr-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:.5rem;}
+.cr-stars{color:var(--gold);letter-spacing:2px;}
+.cr-text{font-size:.9rem;line-height:1.9;color:var(--text-muted);word-break:break-word;overflow-wrap:break-word;white-space:pre-line;}
+.cr-date{font-size:.72rem;color:var(--text-muted);margin-top:.5rem;opacity:.7;}
+.cr-empty{font-size:.88rem;color:var(--text-muted);padding:.5rem 0;}
+.cr-form{background:var(--dark2);border:1px solid var(--border);border-radius:8px;padding:1.5rem;display:flex;flex-direction:column;gap:.9rem;position:relative;}
+.cr-form-title{font-family:'Cairo',sans-serif;font-size:1rem;}
+.cr-star-input{display:flex;gap:.25rem;font-size:2rem;line-height:1;}
+.cr-star{cursor:pointer;color:var(--gold);user-select:none;transition:transform .15s;}
+.cr-star:hover{transform:scale(1.15);}
+.cr-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;}
+.cr-msg{font-size:.82rem;min-height:1.2em;}
+.cr-msg.err{color:#f44336;}
+.cr-thanks{color:var(--gold);font-size:.92rem;line-height:1.8;}
+.cr-btn{max-width:220px;}
 .not-found{text-align:center;padding:5rem 2rem;}
 .not-found h2{font-family:'Cairo',sans-serif;color:var(--gold);margin-bottom:1rem;}
 @media(max-width:900px){
@@ -202,7 +221,9 @@ function renderCourse(c){
           +'<button type="submit" class="btn reg-btn">إرسال طلب التسجيل 🎓</button>'
         +'</form>'
       +'</div>'
-    +'</div>');
+    +'</div>')
+    +'<div class="section" id="course-reviews"></div>';
+  initCourseReviews(c);
 }
 
 function scrollToReg(){
@@ -212,6 +233,162 @@ function scrollToReg(){
 
 function showNotFound(){
   document.getElementById('courseContent').innerHTML='<div class="not-found"><h2>الدورة غير موجودة</h2><p style="color:var(--text-muted);margin-bottom:1.5rem;">ربما تم حذف الدورة أو الرابط غير صحيح.</p><a href="index.html#courses" class="btn" style="display:inline-block;width:auto;">← الدورات</a></div>';
+}
+
+// ===== آراء الدورة (تخضع لمراجعة أحمد قبل النشر) =====
+var REVIEW_STARS = 0;
+
+function crEl(tag, cls, text){
+  var el = document.createElement(tag);
+  if(cls) el.className = cls;
+  if(text !== undefined) el.textContent = text;
+  return el;
+}
+
+function crStarsText(n){
+  n = Math.max(0, Math.min(5, Math.round(n)));
+  return '★★★★★'.substring(0, n) + '☆☆☆☆☆'.substring(0, 5 - n);
+}
+
+function initCourseReviews(c){
+  var box = document.getElementById('course-reviews');
+  if(!box) return;
+  box.innerHTML = '';
+  box.appendChild(crEl('div', 'sec-title', 'آراء المتدربين'));
+  var summary = crEl('div', 'cr-summary');
+  summary.id = 'cr-summary';
+  var list = crEl('div', 'cr-list');
+  list.id = 'cr-list';
+  box.appendChild(summary);
+  box.appendChild(list);
+  box.appendChild(buildReviewForm(c));
+  loadCourseReviews(c);
+}
+
+function loadCourseReviews(c){
+  var list = document.getElementById('cr-list');
+  var summary = document.getElementById('cr-summary');
+  db.collection('reviews').where('courseId', '==', c.id).where('approved', '==', true).get().then(function(snap){
+    var items = [];
+    snap.forEach(function(d){ items.push(d.data()); });
+    items.sort(function(a, b){ return (b.timestamp || 0) - (a.timestamp || 0); });
+    list.innerHTML = '';
+    summary.innerHTML = '';
+    if(!items.length){
+      list.appendChild(crEl('p', 'cr-empty', 'لا توجد آراء منشورة بعد — كن أول من يشاركنا رأيه.'));
+      return;
+    }
+    var sum = 0;
+    items.forEach(function(r){ sum += (r.rating || 0); });
+    var avg = sum / items.length;
+    summary.appendChild(crEl('span', 'cr-avg-stars', crStarsText(avg)));
+    summary.appendChild(crEl('span', 'cr-avg-text', avg.toFixed(1) + ' من 5 · ' + items.length + (items.length === 1 ? ' رأي' : ' آراء')));
+    items.forEach(function(r){
+      var card = crEl('div', 'cr-card');
+      var head = crEl('div', 'cr-head');
+      head.appendChild(crEl('strong', 'cr-name', r.name || 'متدرب'));
+      head.appendChild(crEl('span', 'cr-stars', crStarsText(r.rating || 5)));
+      card.appendChild(head);
+      card.appendChild(crEl('p', 'cr-text', r.comment || ''));
+      var day = String(r.time || '').split(/[،,]/)[0];
+      if(day) card.appendChild(crEl('div', 'cr-date', day));
+      list.appendChild(card);
+    });
+  }).catch(function(){});
+}
+
+function buildReviewForm(c){
+  var key = 'cr-sent-' + c.id;
+  var wrap = crEl('div', 'cr-form');
+  wrap.id = 'cr-form';
+  if(localStorage.getItem(key)){
+    wrap.appendChild(crEl('p', 'cr-thanks', 'شكراً لمشاركتك! رأيك قيد المراجعة وسيظهر بعد الموافقة عليه.'));
+    return wrap;
+  }
+  REVIEW_STARS = 0;
+  wrap.appendChild(crEl('h3', 'cr-form-title', 'شاركنا رأيك في هذه الدورة'));
+
+  var starsRow = crEl('div', 'cr-star-input');
+  var starEls = [];
+  function paintStars(n){
+    starEls.forEach(function(el, idx){ el.textContent = (idx < n) ? '★' : '☆'; });
+  }
+  for(var i = 1; i <= 5; i++){
+    (function(v){
+      var s = crEl('span', 'cr-star', '☆');
+      s.addEventListener('click', function(){ REVIEW_STARS = v; paintStars(v); });
+      starEls.push(s);
+      starsRow.appendChild(s);
+    })(i);
+  }
+  wrap.appendChild(starsRow);
+
+  var nameGroup = crEl('div', 'fg');
+  nameGroup.appendChild(crEl('label', '', 'الاسم *'));
+  var nameIn = document.createElement('input');
+  nameIn.type = 'text';
+  nameIn.maxLength = 60;
+  nameIn.placeholder = 'اسمك الكريم';
+  nameGroup.appendChild(nameIn);
+  wrap.appendChild(nameGroup);
+
+  var txtGroup = crEl('div', 'fg');
+  txtGroup.appendChild(crEl('label', '', 'رأيك *'));
+  var txt = document.createElement('textarea');
+  txt.maxLength = 600;
+  txt.rows = 4;
+  txt.placeholder = 'ما الذي استفدته من الدورة؟ وهل تنصح بها؟';
+  txtGroup.appendChild(txt);
+  wrap.appendChild(txtGroup);
+
+  var hp = document.createElement('input');
+  hp.type = 'text';
+  hp.className = 'cr-hp';
+  hp.tabIndex = -1;
+  hp.setAttribute('autocomplete', 'off');
+  wrap.appendChild(hp);
+
+  var msg = crEl('div', 'cr-msg');
+  wrap.appendChild(msg);
+
+  var btn = crEl('button', 'btn cr-btn', 'إرسال رأيي');
+  btn.type = 'button';
+  wrap.appendChild(btn);
+  wrap.appendChild(crEl('p', 'cr-empty', 'تتم مراجعة الآراء قبل نشرها.'));
+
+  btn.addEventListener('click', function(){
+    if(hp.value) return;
+    var name = nameIn.value.trim();
+    var comment = txt.value.trim();
+    msg.className = 'cr-msg err';
+    if(!REVIEW_STARS){ msg.textContent = 'اختر عدد النجوم أولاً'; return; }
+    if(name.length < 2){ msg.textContent = 'اكتب اسمك'; return; }
+    if(comment.length < 10){ msg.textContent = 'اكتب رأيك (10 أحرف على الأقل)'; return; }
+    msg.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'جارٍ الإرسال...';
+    db.collection('reviews').add({
+      type: 'course',
+      courseId: c.id,
+      title: c.title || '',
+      name: name,
+      rating: REVIEW_STARS,
+      comment: comment,
+      approved: false,
+      time: new Date().toLocaleString('ar-SA'),
+      timestamp: Date.now()
+    }).then(function(){
+      localStorage.setItem(key, '1');
+      wrap.innerHTML = '';
+      wrap.appendChild(crEl('p', 'cr-thanks', 'شكراً لمشاركتك! رأيك قيد المراجعة وسيظهر بعد الموافقة عليه.'));
+    }).catch(function(){
+      btn.disabled = false;
+      btn.textContent = 'إرسال رأيي';
+      msg.className = 'cr-msg err';
+      msg.textContent = 'تعذّر الإرسال، حاول مرة أخرى لاحقاً.';
+    });
+  });
+  return wrap;
 }
 
 // إضافة بريد المسجّل لقائمة النشرة (لا يكرر، ولا يعيد تفعيل من ألغى اشتراكه)
