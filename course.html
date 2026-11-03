@@ -301,7 +301,9 @@ function buildReviewForm(c){
   var key = 'cr-sent-' + c.id;
   var wrap = crEl('div', 'cr-form');
   wrap.id = 'cr-form';
-  if(localStorage.getItem(key)){
+  // حماية قصيرة من تكرار الإرسال بالخطأ فقط (دقيقة واحدة) — بعدها يستطيع الكتابة من جديد
+  var lastSent = parseInt(localStorage.getItem(key) || '0', 10);
+  if(lastSent && (Date.now() - lastSent) < 60000){
     wrap.appendChild(crEl('p', 'cr-thanks', 'شكراً لمشاركتك! رأيك قيد المراجعة وسيظهر بعد الموافقة عليه.'));
     return wrap;
   }
@@ -378,7 +380,7 @@ function buildReviewForm(c){
       time: new Date().toLocaleString('ar-SA'),
       timestamp: Date.now()
     }).then(function(){
-      localStorage.setItem(key, '1');
+      localStorage.setItem(key, String(Date.now()));
       wrap.innerHTML = '';
       wrap.appendChild(crEl('p', 'cr-thanks', 'شكراً لمشاركتك! رأيك قيد المراجعة وسيظهر بعد الموافقة عليه.'));
     }).catch(function(){
